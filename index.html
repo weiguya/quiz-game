@@ -10163,7 +10163,6 @@ function updatePlayScreenVisibility() {
     }
 }
 
-// แทนที่ฟังก์ชัน loginPlayer ทั้งหมด
 function loginPlayer() {
     const playerNameInput = document.getElementById('player-name');
     const rememberPlayer = document.getElementById('remember-player');
@@ -10176,15 +10175,22 @@ function loginPlayer() {
     // ตรวจสอบว่ามีการกรอกชื่อผู้เล่นหรือไม่
     const playerName = playerNameInput.value.trim();
     if (!playerName) {
-    alert('กรุณากรอกชื่อผู้เล่น');
-    return;
-}
+        alert('กรุณากรอกชื่อผู้เล่น');
+        return;
+    }
 
-// ป้องกันการใส่รหัสผ่านเป็นชื่อผู้เล่น
-if (playerName.includes(ADMIN_PASSWORD) || playerName.toLowerCase().includes('admin')) {
-    alert('ไม่สามารถใช้ชื่อนี้ได้ กรุณาเลือกชื่ออื่น');
-    return;
-}
+    // ตรวจสอบว่าเป็นการเข้าสู่โหมดแอดมินหรือไม่
+    if (playerName.toLowerCase() === 'admin') {
+        playerNameInput.value = ''; // ล้างชื่อ
+        showAdminPasswordPrompt();
+        return;
+    }
+
+    // ป้องกันการใส่รหัสผ่านเป็นชื่อผู้เล่น
+    if (playerName.includes(ADMIN_PASSWORD)) {
+        alert('ไม่สามารถใช้ชื่อนี้ได้ กรุณาเลือกชื่ออื่น');
+        return;
+    }
     
     // บันทึกชื่อผู้เล่นลงในตัวแปร
     currentPlayer = {
@@ -12188,44 +12194,20 @@ function closeGameDetailsModal() {
     document.body.style.overflow = '';
 }
 
-// ระบบ Admin Mode
 function initAdminSystem() {
     console.log("กำลังเริ่มต้นระบบแอดมิน...");
     
     // ซ่อนแท็บแอดมินเป็นค่าเริ่มต้น
     updateAdminTabs();
     
-    // ฟังการพิมพ์คีย์บอร์ด
-    document.addEventListener('keydown', handleAdminKeyInput);
+    // ไม่ต้องฟัง F10 แล้ว เนื่องจากเปลี่ยนเป็นใช้การกรอกชื่อผู้เล่น
     
     console.log("ระบบแอดมินพร้อมใช้งานแล้ว");
 }
 
-// ตัวแปรสำหรับนับการกด F10
-let f10Count = 0;
-let f10Timer = null;
-
-// ฟังก์ชันจัดการการกดปุ่มคีย์บอร์ด
+// ฟังก์ชันจัดการการกดปุ่มคีย์บอร์ด (ไม่ใช้แล้ว แต่เก็บไว้เผื่ออนาคต)
 function handleAdminKeyInput(event) {
-    // ตรวจสอบการกด F10 สามครั้ง
-    if (event.key === 'F10') {
-        event.preventDefault(); // ป้องกันการทำงานปกติของ F10
-        
-        f10Count++;
-        
-        // ตั้งเวลารีเซ็ต (3 วินาที)
-        if (f10Timer) clearTimeout(f10Timer);
-        f10Timer = setTimeout(() => {
-            f10Count = 0;
-        }, 3000);
-        
-        // ถ้ากด F10 สามครั้ง
-        if (f10Count >= 3) {
-            f10Count = 0;
-            clearTimeout(f10Timer);
-            showAdminPasswordPrompt();
-        }
-    }
+    // ไม่ใช้ F10 แล้ว เปลี่ยนเป็นใช้การกรอกชื่อผู้เล่น
 }
 
 // ฟังก์ชันแสดงป็อปอัพใส่รหัสผ่าน
