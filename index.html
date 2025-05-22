@@ -5661,7 +5661,8 @@ button.delete:hover {
 // Supabase Configuration
 const SUPABASE_URL = 'https://sfugtyqygjfdksmpcqhq.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdWd0eXF5Z2pmZGtzbXBjcWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NTIzMDgsImV4cCI6MjA2MzUyODMwOH0.G7SrGAbd1t3mioHsXHuyHYJdHwRwrVYp1AbshRwJ6l8';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ตัวแปรสำหรับเก็บโครงสร้างหมวดหมู่
 let categories = {
@@ -8388,7 +8389,7 @@ async function saveQuestion() {
   
   try {
     // บันทึกลง Supabase
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('questions')
       .insert([questionData])
       .select();
@@ -8428,7 +8429,7 @@ function saveQuestions() {
 // ฟังก์ชันโหลดคำถามจาก Database
 async function loadQuestions() {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('questions')
       .select('*')
       .order('created_at', { ascending: false });
