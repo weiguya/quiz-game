@@ -12201,12 +12201,30 @@ function initAdminSystem() {
     console.log("ระบบแอดมินพร้อมใช้งานแล้ว");
 }
 
+// ตัวแปรสำหรับนับการกด F10
+let f10Count = 0;
+let f10Timer = null;
+
 // ฟังก์ชันจัดการการกดปุ่มคีย์บอร์ด
 function handleAdminKeyInput(event) {
-    // ตรวจสอบ Ctrl + Shift + A
-    if (event.ctrlKey && event.altKey && event.key === 'A') {
-        event.preventDefault(); // ป้องกันการทำงานปกติของ Ctrl+Shift+A
-        showAdminPasswordPrompt();
+    // ตรวจสอบการกด F10 สามครั้ง
+    if (event.key === 'F10') {
+        event.preventDefault(); // ป้องกันการทำงานปกติของ F10
+        
+        f10Count++;
+        
+        // ตั้งเวลารีเซ็ต (3 วินาที)
+        if (f10Timer) clearTimeout(f10Timer);
+        f10Timer = setTimeout(() => {
+            f10Count = 0;
+        }, 3000);
+        
+        // ถ้ากด F10 สามครั้ง
+        if (f10Count >= 3) {
+            f10Count = 0;
+            clearTimeout(f10Timer);
+            showAdminPasswordPrompt();
+        }
     }
 }
 
