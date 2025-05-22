@@ -12204,7 +12204,7 @@ function initAdminSystem() {
 // ฟังก์ชันจัดการการกดปุ่มคีย์บอร์ด
 function handleAdminKeyInput(event) {
     // ตรวจสอบ Ctrl + Shift + A
-    if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+    if (event.ctrlKey && event.altKey && event.key === 'A') {
         event.preventDefault(); // ป้องกันการทำงานปกติของ Ctrl+Shift+A
         showAdminPasswordPrompt();
     }
