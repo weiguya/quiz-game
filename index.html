@@ -5695,52 +5695,49 @@ let currentHistoryPage = 1;
 let historyItemsPerPage = 10;
 let filteredHistory = [];
 
-// ฟังก์ชันเพื่อเพิ่มประวัติการเล่นใหม่
-// ฟังก์ชันเพื่อเพิ่มประวัติการเล่นใหม่
-function addGameHistoryEntry(player, score, totalQuestions, category, percentage) {
-    if (!Array.isArray(gameHistory)) {
-        gameHistory = [];
-    }
-    
-    // สร้างรายการประวัติใหม่
-    const historyEntry = {
-        id: Date.now().toString(), // ใช้เวลาปัจจุบันเป็น ID
-        playerName: player ? player.name : 'ไม่ระบุชื่อ',
-        score: score || 0,
-        totalQuestions: totalQuestions || 0,
-        percentage: percentage || 0,
-        category: category || null,
-        playedAt: new Date().toISOString(), // เก็บเวลาปัจจุบัน
-        // *** เพิ่มข้อมูลรายละเอียดการเล่น ***
-        gameData: {
-            questions: currentGameQuestions ? [...currentGameQuestions] : [],
-            userAnswers: userAnswers ? {...userAnswers} : {},
-            randomOrder: randomQuestionOrder ? [...randomQuestionOrder] : [],
-            choiceOrder: choiceOrderMap ? {...choiceOrderMap} : {}
-        }
-    };
-    
-    console.log("กำลังบันทึกประวัติการเล่น:", historyEntry);
-    
-    // เพิ่มไปที่ต้นอาเรย์ (เพื่อให้รายการล่าสุดอยู่ข้างบน)
-    gameHistory.unshift(historyEntry);
-    
-    // บันทึกลง localStorage
+// ฟังก์ชันเพิ่มประวัติการเล่นใหม่ (ใช้ Database)
+async function addGameHistoryEntry(player, score, totalQuestions, category, percentage) {
     try {
-        localStorage.setItem('quiz-game-history', JSON.stringify(gameHistory));
-        console.log("บันทึกประวัติการเล่นสำเร็จ");
+        const historyData = {
+            player_name: player ? player.name : 'ไม่ระบุชื่อ',
+            score: score || 0,
+            total_questions: totalQuestions || 0,
+            percentage: percentage || 0,
+            category: JSON.stringify(category || {}),
+            game_data: JSON.stringify({
+                questions: currentGameQuestions ? [...currentGameQuestions] : [],
+                userAnswers: userAnswers ? {...userAnswers} : {},
+                randomOrder: randomQuestionOrder ? [...randomQuestionOrder] : [],
+                choiceOrder: choiceOrderMap ? {...choiceOrderMap} : {}
+            })
+        };
+
+        const { data, error } = await supabaseClient
+            .from('game_history')
+            .insert([historyData])
+            .select();
+
+        if (error) {
+            console.error('เกิดข้อผิดพลาดในการบันทึกประวัติ:', error);
+            return false;
+        }
+
+        console.log('บันทึกประวัติการเล่นสำเร็จ:', data);
+        
+        // โหลดประวัติใหม่และอัพเดตการแสดงผล
+        await loadGameHistory();
+        
+        // อัพเดตการแสดงผลถ้าเปิดหน้าประวัติอยู่
+        const historyTab = document.getElementById('history-tab');
+        if (historyTab && historyTab.classList.contains('active')) {
+            currentHistoryPage = 1;
+            displayGameHistory();
+        }
+        
+        return true;
     } catch (error) {
-        console.error("เกิดข้อผิดพลาดในการบันทึกประวัติการเล่น:", error);
-    }
-    
-    // อัพเดตการกรอง
-    filteredHistory = [...gameHistory];
-    
-    // อัพเดตการแสดงผลถ้าเปิดหน้าประวัติอยู่
-    const historyTab = document.getElementById('history-tab');
-    if (historyTab && historyTab.classList.contains('active')) {
-        currentHistoryPage = 1; // รีเซ็ตหน้าไปที่หน้าแรก
-        displayGameHistory();
+        console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
+        return false;
     }
 }
 
@@ -8462,12 +8459,40 @@ async function loadQuestions() {
   }
 }
 
-// ฟังก์ชันโหลดประวัติการเล่นจาก localStorage
-function loadGameHistory() {
-    const savedHistory = localStorage.getItem('quiz-game-history');
-    if (savedHistory) {
-        gameHistory = JSON.parse(savedHistory);
-        filteredHistory = [...gameHistory]; // เริ่มต้นด้วยประวัติทั้งหมด
+// ฟังก์ชันโหลดประวัติการเล่นจาก Database
+async function loadGameHistory() {
+    try {
+        const { data, error } = await supabaseClient
+            .from('game_history')
+            .select('*')
+            .order('played_at', { ascending: false });
+
+        if (error) {
+            console.error('เกิดข้อผิดพลาดในการโหลดประวัติ:', error);
+            gameHistory = [];
+            filteredHistory = [];
+            return;
+        }
+
+        // แปลงข้อมูลจาก Database เป็นรูปแบบที่โค้ดเดิมใช้
+        gameHistory = data.map(item => ({
+            id: item.id.toString(),
+            playerName: item.player_name,
+            score: item.score,
+            totalQuestions: item.total_questions,
+            percentage: item.percentage,
+            category: JSON.parse(item.category || '{}'),
+            playedAt: item.played_at,
+            gameData: JSON.parse(item.game_data || '{}')
+        }));
+
+        filteredHistory = [...gameHistory];
+        console.log('โหลดประวัติการเล่นสำเร็จ:', gameHistory.length, 'รายการ');
+
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
+        gameHistory = [];
+        filteredHistory = [];
     }
 }
 
