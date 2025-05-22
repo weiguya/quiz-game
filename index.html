@@ -5252,6 +5252,7 @@ button.delete:hover {
 
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <div class="nav-tabs">
@@ -5657,6 +5658,11 @@ button.delete:hover {
   </div>
 </div>
 <script>
+// Supabase Configuration
+const SUPABASE_URL = 'https://sfugtyqygjfdksmpcqhq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdWd0eXF5Z2pmZGtzbXBjcWhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc5NTIzMDgsImV4cCI6MjA2MzUyODMwOH0.G7SrGAbd1t3mioHsXHuyHYJdHwRwrVYp1AbshRwJ6l8';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // ตัวแปรสำหรับเก็บโครงสร้างหมวดหมู่
 let categories = {
     // โครงสร้าง: { "mainCategory": { "subCategory1": ["subCategory2"] } }
@@ -8316,15 +8322,14 @@ function updateQuestionSystem() {
     }
 }
 
-// ปรับปรุงฟังก์ชัน saveQuestion สำหรับบันทึกคำถาม
-function saveQuestion() {
+// ฟังก์ชันบันทึกคำถามลง Database
+async function saveQuestion() {
   const questionText = document.getElementById('question-text').value.trim();
   const choiceA = document.getElementById('choice-a').value.trim();
   const choiceB = document.getElementById('choice-b').value.trim();
   const choiceC = document.getElementById('choice-c').value.trim();
   const choiceD = document.getElementById('choice-d').value.trim();
   
-  // ใช้วิธีดึงค่าที่เรียบง่ายกว่า
   const correctAnswerElem = document.querySelector('input[name="correct-answer"]:checked');
   const correctAnswer = correctAnswerElem ? correctAnswerElem.value : null;
   
@@ -8355,47 +8360,64 @@ function saveQuestion() {
   }
   
   // ตรวจสอบรูปภาพ
-let imageValue = null;
-const imagePreview = document.getElementById('image-preview');
-if (imagePreview.src && imagePreview.src !== "about:blank" && 
-    imagePreview.style.display !== 'none' &&
-    (imagePreview.src.startsWith('data:') || 
-     imagePreview.src.startsWith('http://') || 
-     imagePreview.src.startsWith('https://'))) {
-  imageValue = imagePreview.src;
-}
-
-// สร้างอ็อบเจกต์คำถาม
-const question = {
-  id: Date.now().toString(),
-  text: questionText,
-  image: imageValue,
-  choices: [
-    { id: 'A', text: choiceA },
-    { id: 'B', text: choiceB },
-    { id: 'C', text: choiceC },
-    { id: 'D', text: choiceD }
-  ],
-  correctAnswer: correctAnswer,
-  category: {
-    main: mainCategory,
-    sub1: subCategory1,
-    sub2: subCategory2
+  let imageValue = null;
+  const imagePreview = document.getElementById('image-preview');
+  if (imagePreview.src && imagePreview.src !== "about:blank" && 
+      imagePreview.style.display !== 'none' &&
+      (imagePreview.src.startsWith('data:') || 
+       imagePreview.src.startsWith('http://') || 
+       imagePreview.src.startsWith('https://'))) {
+    imageValue = imagePreview.src;
   }
-};
+
+  // สร้างข้อมูลคำถาม
+  const questionData = {
+    text: questionText,
+    image_url: imageValue,
+    choices: JSON.stringify([
+      { id: 'A', text: choiceA },
+      { id: 'B', text: choiceB },
+      { id: 'C', text: choiceC },
+      { id: 'D', text: choiceD }
+    ]),
+    correct_answer: correctAnswer,
+    category_main: mainCategory,
+    category_sub1: subCategory1,
+    category_sub2: subCategory2
+  };
   
-  // บันทึกคำถาม
-  questions.push(question);
-  saveQuestions();
-  
-  // อัพเดตการแสดงผล
-  displayQuestions();
-  
-  // รีเซ็ตฟอร์ม
-  clearForm();
-  
-  alert('บันทึกคำถามเรียบร้อยแล้ว');
-  return true;
+  try {
+    // บันทึกลง Supabase
+    const { data, error } = await supabase
+      .from('questions')
+      .insert([questionData])
+      .select();
+    
+    if (error) {
+      console.error('เกิดข้อผิดพลาดในการบันทึก:', error);
+      alert('เกิดข้อผิดพลาดในการบันทึกคำถาม: ' + error.message);
+      return false;
+    }
+    
+    console.log('บันทึกคำถามสำเร็จ:', data);
+    
+    // โหลดคำถามใหม่จาก Database
+    await loadQuestions();
+    
+    // อัพเดตการแสดงผล
+    displayQuestions();
+    
+    // รีเซ็ตฟอร์ม
+    clearForm();
+    
+    alert('บันทึกคำถามเรียบร้อยแล้ว');
+    return true;
+    
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
+    alert('เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
+    return false;
+  }
 }
 
 // ฟังก์ชันบันทึกคำถามลง localStorage
@@ -8403,12 +8425,40 @@ function saveQuestions() {
     localStorage.setItem('quiz-questions', JSON.stringify(questions));
 }
 
-// ฟังก์ชันโหลดคำถามจาก localStorage
-function loadQuestions() {
-    const savedQuestions = localStorage.getItem('quiz-questions');
-    if (savedQuestions) {
-        questions = JSON.parse(savedQuestions);
+// ฟังก์ชันโหลดคำถามจาก Database
+async function loadQuestions() {
+  try {
+    const { data, error } = await supabase
+      .from('questions')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error('เกิดข้อผิดพลาดในการโหลดคำถาม:', error);
+      questions = []; // ใช้ array ว่างถ้าโหลดไม่ได้
+      return;
     }
+    
+    // แปลงข้อมูลจาก Database เป็นรูปแบบที่โค้ดเดิมใช้
+    questions = data.map(item => ({
+      id: item.id.toString(),
+      text: item.text,
+      image: item.image_url,
+      choices: JSON.parse(item.choices),
+      correctAnswer: item.correct_answer,
+      category: {
+        main: item.category_main,
+        sub1: item.category_sub1,
+        sub2: item.category_sub2
+      }
+    }));
+    
+    console.log('โหลดคำถามสำเร็จ:', questions.length, 'ข้อ');
+    
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
+    questions = [];
+  }
 }
 
 // ฟังก์ชันโหลดประวัติการเล่นจาก localStorage
