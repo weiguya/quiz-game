@@ -12635,8 +12635,8 @@ function verifyAdminPassword() {
     }
 }
 
-// ฟังก์ชันเปิดโหมดแอดมินพร้อมล็อกอินอัตโนมัติ
-function activateAdminModeWithAutoLogin() {
+// แทนที่ฟังก์ชัน activateAdminModeWithAutoLogin() เดิมด้วยโค้ดนี้
+async function activateAdminModeWithAutoLogin() {
     isAdminMode = true;
     console.log("เข้าสู่โหมดแอดมิน");
     
@@ -12647,6 +12647,9 @@ function activateAdminModeWithAutoLogin() {
         avatar: "🔑",
         isAdmin: true
     };
+    
+    // โหลดประวัติการเล่นทั้งหมดสำหรับ Admin
+    await loadGameHistory();
     
     // แสดงแท็บแอดมิน
     updateAdminTabs();
