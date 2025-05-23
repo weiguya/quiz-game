@@ -8622,88 +8622,132 @@ function clearForm() {
   document.getElementById('question-sub-category2').disabled = true;
   document.getElementById('question-sub-category1').disabled = true;
 }
-// ฟังก์ชันลบคำถาม
-function deleteQuestion(questionId) {
+// แทนที่ฟังก์ชัน deleteQuestion() เดิมด้วยโค้ดนี้
+async function deleteQuestion(questionId) {
     if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบคำถามนี้?')) {
-        questions = questions.filter(q => q.id !== questionId);
-        saveQuestions();
-        
-        // อัพเดตตัวเลขแสดงจำนวนคำถามในหมวดหมู่
-        renderCategoryTree();
-        
-        // แสดงคำถามตามตัวกรอง
-        applyFilters();
+        try {
+            // ลบจาก Supabase Database
+            const { error } = await supabaseClient
+                .from('questions')
+                .delete()
+                .eq('id', questionId);
+            
+            if (error) {
+                console.error('เกิดข้อผิดพลาดในการลบคำถาม:', error);
+                alert('เกิดข้อผิดพลาดในการลบคำถาม: ' + error.message);
+                return;
+            }
+            
+            // โหลดคำถามใหม่จาก Database
+            await loadQuestions();
+            
+            // อัพเดตการแสดงผล
+            displayQuestions();
+            
+            // อัพเดตตัวเลขแสดงจำนวนคำถามในหมวดหมู่
+            renderCategoryTree();
+            
+            console.log('ลบคำถามสำเร็จ ID:', questionId);
+            alert('ลบคำถามเรียบร้อยแล้ว');
+            
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
+        }
     }
 }
 
-// ฟังก์ชันแก้ไขคำถาม
-function editQuestion(questionId) {
+// แทนที่ฟังก์ชัน editQuestion() เดิมด้วยโค้ดนี้
+async function editQuestion(questionId) {
     const question = questions.find(q => q.id === questionId);
     
     if (question) {
-        // เติมข้อมูลในฟอร์ม
-        document.getElementById('question-text').value = question.text;
-        document.getElementById('choice-a').value = question.choices.find(c => c.id === 'A')?.text || '';
-        document.getElementById('choice-b').value = question.choices.find(c => c.id === 'B')?.text || '';
-        document.getElementById('choice-c').value = question.choices.find(c => c.id === 'C')?.text || '';
-        document.getElementById('choice-d').value = question.choices.find(c => c.id === 'D')?.text || '';
-        
-        // เลือกคำตอบที่ถูกต้อง
-        const correctRadio = document.querySelector(`input[name="correct-answer"][value="${question.correctAnswer}"]`);
-        if (correctRadio) {
-            correctRadio.checked = true;
-        }
-        
-        // แสดงรูปภาพ (ถ้ามี)
-        const imagePreview = document.getElementById('image-preview');
-        if (question.image) {
-            imagePreview.src = question.image;
-            imagePreview.style.display = 'block';
-        } else {
-            imagePreview.src = '';
-            imagePreview.style.display = 'none';
-        }
-        
-        // เลือกหมวดหมู่
-        if (question.category) {
-            const mainCategorySelect = document.getElementById('question-main-category');
-            mainCategorySelect.value = question.category.main || '';
+        try {
+            // เติมข้อมูลในฟอร์ม
+            document.getElementById('question-text').value = question.text;
+            document.getElementById('choice-a').value = question.choices.find(c => c.id === 'A')?.text || '';
+            document.getElementById('choice-b').value = question.choices.find(c => c.id === 'B')?.text || '';
+            document.getElementById('choice-c').value = question.choices.find(c => c.id === 'C')?.text || '';
+            document.getElementById('choice-d').value = question.choices.find(c => c.id === 'D')?.text || '';
             
-            // อัพเดต dropdown หมวดหมู่ย่อย 1
-            if (question.category.main) {
-                updateSubCategory1Select(
-                    document.getElementById('question-sub-category1'),
-                    question.category.main
-                );
+            // เลือกคำตอบที่ถูกต้อง
+            const correctRadio = document.querySelector(`input[name="correct-answer"][value="${question.correctAnswer}"]`);
+            if (correctRadio) {
+                correctRadio.checked = true;
+            }
+            
+            // แสดงรูปภาพ (ถ้ามี)
+            const imagePreview = document.getElementById('image-preview');
+            if (question.image) {
+                imagePreview.src = question.image;
+                imagePreview.style.display = 'block';
+            } else {
+                imagePreview.src = '';
+                imagePreview.style.display = 'none';
+            }
+            
+            // เลือกหมวดหมู่
+            if (question.category) {
+                const mainCategorySelect = document.getElementById('question-main-category');
+                mainCategorySelect.value = question.category.main || '';
                 
-                // เลือกหมวดหมู่ย่อย 1
-                document.getElementById('question-sub-category1').value = question.category.sub1 || '';
-                
-                // อัพเดต dropdown หมวดหมู่ย่อย 2
-                if (question.category.sub1) {
-                    updateSubCategory2Select(
-                        document.getElementById('question-sub-category2'),
-                        question.category.main,
-                        question.category.sub1
+                // อัพเดต dropdown หมวดหมู่ย่อย 1
+                if (question.category.main) {
+                    updateSubCategory1Select(
+                        document.getElementById('question-sub-category1'),
+                        question.category.main
                     );
                     
-                    // เลือกหมวดหมู่ย่อย 2
-                    document.getElementById('question-sub-category2').value = question.category.sub2 || '';
+                    // เลือกหมวดหมู่ย่อย 1
+                    document.getElementById('question-sub-category1').value = question.category.sub1 || '';
+                    
+                    // อัพเดต dropdown หมวดหมู่ย่อย 2
+                    if (question.category.sub1) {
+                        updateSubCategory2Select(
+                            document.getElementById('question-sub-category2'),
+                            question.category.main,
+                            question.category.sub1
+                        );
+                        
+                        // เลือกหมวดหมู่ย่อย 2
+                        document.getElementById('question-sub-category2').value = question.category.sub2 || '';
+                    }
                 }
             }
+            
+            // ลบคำถามเดิมจาก Database
+            const { error } = await supabaseClient
+                .from('questions')
+                .delete()
+                .eq('id', questionId);
+            
+            if (error) {
+                console.error('เกิดข้อผิดพลาดในการลบคำถามเดิม:', error);
+                alert('เกิดข้อผิดพลาดในการแก้ไขคำถาม: ' + error.message);
+                return;
+            }
+            
+            // โหลดคำถามใหม่จาก Database
+            await loadQuestions();
+            
+            // อัพเดตการแสดงผล
+            displayQuestions();
+            
+            // เลื่อนไปที่ฟอร์ม
+            document.getElementById('question-form').scrollIntoView({ behavior: 'smooth' });
+            
+            // ตั้งค่า Radio Buttons ใหม่
+            setupChoiceRadioButtons();
+            
+            console.log('เตรียมแก้ไขคำถาม ID:', questionId);
+            
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดในการแก้ไขคำถาม:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
         }
-        
-        // ลบคำถามเดิม
-        questions = questions.filter(q => q.id !== questionId);
-        displayQuestions();
-        
-        // เลื่อนไปที่ฟอร์ม
-        document.getElementById('question-form').scrollIntoView({ behavior: 'smooth' });
-        
-        // ตั้งค่า Radio Buttons ใหม่
-        setupChoiceRadioButtons();
     }
 }
+
 // ฟังก์ชันสำหรับส่งออกข้อมูลทั้งหมด
 function exportAllData() {
     // สร้างอ็อบเจกต์สำหรับส่งออก
@@ -8737,15 +8781,37 @@ function exportAllData() {
     URL.revokeObjectURL(url);
 }
 
-// ฟังก์ชันสำหรับลบข้อมูลทั้งหมด
-function clearAllData() {
+// ฟังก์ชันลบคำถามทั้งหมด - แก้ไขให้ลบใน Database ด้วย
+async function clearAllData() {
     if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบคำถามทั้งหมด? การกระทำนี้ไม่สามารถเรียกคืนได้')) {
-        // ลบคำถามทั้งหมด
-        questions = [];
-        saveQuestions();
-        displayQuestions();
-        
-        alert('ลบคำถามทั้งหมดเรียบร้อยแล้ว');
+        try {
+            // ลบจาก Supabase Database
+            const { error } = await supabaseClient
+                .from('questions')
+                .delete()
+                .neq('id', 0); // ลบทั้งหมด (neq คือ not equal, ใช้เงื่อนไขที่เป็นจริงเสมอ)
+            
+            if (error) {
+                console.error('เกิดข้อผิดพลาดในการลบคำถามทั้งหมด:', error);
+                alert('เกิดข้อผิดพลาดในการลบคำถาม: ' + error.message);
+                return;
+            }
+            
+            // โหลดคำถามใหม่จาก Database (จะเป็น array ว่าง)
+            await loadQuestions();
+            
+            // อัพเดตการแสดงผล
+            displayQuestions();
+            
+            // อัพเดตตัวเลขแสดงจำนวนคำถามในหมวดหมู่
+            renderCategoryTree();
+            
+            alert('ลบคำถามทั้งหมดเรียบร้อยแล้ว');
+            
+        } catch (error) {
+            console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
+        }
     }
 }
 
