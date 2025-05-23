@@ -7366,14 +7366,13 @@ function setupHistoryEventListeners() {
     }
 }
 
-// แทนที่ฟังก์ชัน initializeApp() ทั้งหมด
-function initializeApp() {
+async function initializeApp() {
     console.log("กำลังเริ่มต้นแอปพลิเคชัน...");
     
-    // 1. โหลดข้อมูลจาก localStorage
-    loadCategories();
-    loadQuestions();
-    loadGameHistory(); 
+    // 1. โหลดข้อมูลจาก Database และ localStorage
+    await loadCategories();
+    await loadQuestions();
+    await loadGameHistory(); 
     
     // 2. ตั้งค่า event listeners สำหรับแท็บ
     setupTabNavigation();
@@ -7382,7 +7381,7 @@ function initializeApp() {
     initPlayerSystem();
     
     // 4. ตั้งค่าระบบหมวดหมู่แบบใหม่
-    initCategorySystemNew();
+    await initCategorySystemNew();
     
     // 5. ตั้งค่าระบบคำถาม
     initQuestionSystem();
@@ -7403,8 +7402,8 @@ function initializeApp() {
     // ตั้งค่าการแสดงผลแท็บเริ่มต้น
     setInitialTabState();
     
-       // เริ่มต้นระบบแอดมิน
-       initAdminSystem();
+    // เริ่มต้นระบบแอดมิน
+    initAdminSystem();
 
     console.log("เริ่มต้นแอปพลิเคชันเรียบร้อยแล้ว");
 }
@@ -7542,27 +7541,71 @@ function setupTabNavigation() {
     return true;
 }
 
-// ฟังก์ชันโหลดหมวดหมู่จาก localStorage
-function loadCategories() {
-    const savedCategories = localStorage.getItem('quiz-categories');
-    if (savedCategories) {
-        categories = JSON.parse(savedCategories);
+// ฟังก์ชันโหลดหมวดหมู่จาก Database
+async function loadCategories() {
+  try {
+    const { data, error } = await supabaseClient
+      .from('categories')
+      .select('*')
+      .order('level', { ascending: true })
+      .order('name', { ascending: true });
+    
+    if (error) {
+      console.error('เกิดข้อผิดพลาดในการโหลดหมวดหมู่:', error);
+      categories = {};
+      return;
     }
+    
+    // แปลงข้อมูลจาก Database เป็นรูปแบบ nested object เดิม
+    categories = {};
+    
+    data.forEach(item => {
+      if (item.level === 1) {
+        // หมวดหมู่หลัก
+        if (!categories[item.name]) {
+          categories[item.name] = {};
+        }
+      } else if (item.level === 2) {
+        // หมวดหมู่ย่อย 1
+        if (!categories[item.parent_name]) {
+          categories[item.parent_name] = {};
+        }
+        if (!categories[item.parent_name][item.name]) {
+          categories[item.parent_name][item.name] = [];
+        }
+      } else if (item.level === 3) {
+        // หมวดหมู่ย่อย 2
+        const parts = item.parent_name.split(' > ');
+        const mainCategory = parts[0];
+        const sub1Category = parts[1];
+        
+        if (!categories[mainCategory]) {
+          categories[mainCategory] = {};
+        }
+        if (!categories[mainCategory][sub1Category]) {
+          categories[mainCategory][sub1Category] = [];
+        }
+        categories[mainCategory][sub1Category].push(item.name);
+      }
+    });
+    
+    console.log('โหลดหมวดหมู่สำเร็จ:', Object.keys(categories).length, 'หมวดหมู่หลัก');
+    
+  } catch (error) {
+    console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
+    categories = {};
+  }
 }
 
-// ฟังก์ชันบันทึกหมวดหมู่ลง localStorage
+// ฟังก์ชันบันทึกหมวดหมู่ลง Database (ไม่ใช้แล้ว แต่เก็บไว้)
 function saveCategories() {
-    localStorage.setItem('quiz-categories', JSON.stringify(categories));
+    // ไม่ต้องทำอะไรเพราะบันทึกไปยัง database แล้วในแต่ละฟังก์ชัน
+    console.log('หมวดหมู่ถูกบันทึกใน database อัตโนมัติ');
 }
 
-// ฟังก์ชัน addCategory ที่ปรับปรุงใหม่
-function addCategory(type, parent, grandparent) {
-    // ตัวแปรสำหรับเก็บผลลัพธ์การทำงาน
-    let success = false;
-
+async function addCategory(type, parent, grandparent) {
     console.log("เริ่มเพิ่มหมวดหมู่:", type, parent, grandparent);
 
-    // ดึงชื่อหมวดหมู่จากฟอร์ม
     const categoryName = document.getElementById('category-name').value.trim();
     
     if (!categoryName) {
@@ -7571,61 +7614,104 @@ function addCategory(type, parent, grandparent) {
     }
     
     try {
-        // ดำเนินการตามประเภทหมวดหมู่
+        let categoryData = { name: categoryName };
+        
         switch (type) {
             case 'main':
-                if (categories[categoryName]) {
+                // ตรวจสอบว่ามีหมวดหมู่หลักนี้อยู่แล้วหรือไม่
+                const { data: existingMain } = await supabaseClient
+                    .from('categories')
+                    .select('id')
+                    .eq('name', categoryName)
+                    .eq('level', 1);
+                
+                if (existingMain && existingMain.length > 0) {
                     alert('มีหมวดหมู่หลักนี้อยู่แล้ว');
-                } else {
-                    categories[categoryName] = {};
-                    success = true;
+                    return false;
                 }
+                
+                categoryData.level = 1;
+                categoryData.parent_name = null;
                 break;
                 
             case 'sub1':
-                if (!categories[parent]) {
+                if (!parent) {
                     alert('ไม่พบหมวดหมู่หลักที่ระบุ');
-                } else if (categories[parent][categoryName]) {
-                    alert('มีหมวดหมู่ย่อย 1 นี้อยู่แล้ว');
-                } else {
-                    categories[parent][categoryName] = [];
-                    success = true;
+                    return false;
                 }
+                
+                // ตรวจสอบว่ามีหมวดหมู่ย่อย 1 นี้อยู่แล้วหรือไม่
+                const { data: existingSub1 } = await supabaseClient
+                    .from('categories')
+                    .select('id')
+                    .eq('name', categoryName)
+                    .eq('level', 2)
+                    .eq('parent_name', parent);
+                
+                if (existingSub1 && existingSub1.length > 0) {
+                    alert('มีหมวดหมู่ย่อย 1 นี้อยู่แล้ว');
+                    return false;
+                }
+                
+                categoryData.level = 2;
+                categoryData.parent_name = parent;
                 break;
                 
             case 'sub2':
-                if (!categories[parent] || !categories[parent][grandparent]) {
+                if (!parent || !grandparent) {
                     alert('ไม่พบหมวดหมู่ที่ระบุ');
-                } else if (categories[parent][grandparent].includes(categoryName)) {
-                    alert('มีหมวดหมู่ย่อย 2 นี้อยู่แล้ว');
-                } else {
-                    categories[parent][grandparent].push(categoryName);
-                    success = true;
+                    return false;
                 }
+                
+                const parentPath = `${parent} > ${grandparent}`;
+                
+                // ตรวจสอบว่ามีหมวดหมู่ย่อย 2 นี้อยู่แล้วหรือไม่
+                const { data: existingSub2 } = await supabaseClient
+                    .from('categories')
+                    .select('id')
+                    .eq('name', categoryName)
+                    .eq('level', 3)
+                    .eq('parent_name', parentPath);
+                
+                if (existingSub2 && existingSub2.length > 0) {
+                    alert('มีหมวดหมู่ย่อย 2 นี้อยู่แล้ว');
+                    return false;
+                }
+                
+                categoryData.level = 3;
+                categoryData.parent_name = parentPath;
                 break;
                 
             default:
                 alert('ประเภทหมวดหมู่ไม่ถูกต้อง');
+                return false;
         }
         
-        // ถ้าสำเร็จ บันทึกและอัพเดต UI
-        if (success) {
-            console.log("บันทึกหมวดหมู่สำเร็จ:", categoryName);
-            
-            // บันทึกหมวดหมู่ลง localStorage
-            localStorage.setItem('quiz-categories', JSON.stringify(categories));
-            
-            // ปิดฟอร์ม
-            closeAddCategoryForm();
-            
-            // อัพเดตการแสดงผล - ต้องเรียกหลังจากปิดฟอร์ม
-            renderCategoryTree();
-            updateCategoryUI();
-            
-            alert('เพิ่มหมวดหมู่เรียบร้อยแล้ว');
-            
-            return true;
+        // บันทึกลง database
+        const { error } = await supabaseClient
+            .from('categories')
+            .insert([categoryData]);
+        
+        if (error) {
+            throw new Error('เกิดข้อผิดพลาดในการบันทึก: ' + error.message);
         }
+        
+        console.log("บันทึกหมวดหมู่สำเร็จ:", categoryName);
+        
+        // โหลดหมวดหมู่ใหม่จาก Database
+        await loadCategories();
+        
+        // ปิดฟอร์ม
+        closeAddCategoryForm();
+        
+        // อัพเดตการแสดงผล
+        renderCategoryTree();
+        updateCategoryUI();
+        
+        alert('เพิ่มหมวดหมู่เรียบร้อยแล้ว');
+        
+        return true;
+        
     } catch (error) {
         console.error("เกิดข้อผิดพลาดในการเพิ่มหมวดหมู่:", error);
         alert("เกิดข้อผิดพลาด: " + error.message);
@@ -7633,6 +7719,7 @@ function addCategory(type, parent, grandparent) {
     
     return false;
 }
+
 // ลบหมวดหมู่
 function deleteMainCategory(mainCategory) {
     if (categories[mainCategory]) {
@@ -7668,20 +7755,16 @@ function deleteSubCategory2(mainCategory, subCategory1, subCategory2) {
     return false;
 }
 
-// อัพเดท UI ของหมวดหมู่
-function updateCategoryUI() {
+async function updateCategoryUI() {
     console.log("กำลังอัพเดต UI ทั้งหมด...");
+    
+    // โหลดหมวดหมู่ใหม่จาก database
+    await loadCategories();
     
     // อัพเดตตัวเลือกหมวดหมู่ในทุกฟอร์ม
     updateCategorySelects();
-    
-    // อัพเดตตัวเลือกในฟอร์มคำถาม
     updateQuestionCategorySelects();
-    
-    // อัพเดตตัวเลือกในฟอร์มกรอง
     updateFilterMainCategory();
-    
-    // อัพเดตตัวเลือกในหน้าเล่นเกม
     updatePlayMainCategorySelect();
     
     console.log("อัพเดต UI เรียบร้อยแล้ว");
@@ -10094,12 +10177,12 @@ function setupPlayCategoryListeners() {
 }
 
 // เพิ่มในส่วน DOMContentLoaded
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     // เพิ่มคลาส fade-in เพื่อให้เนื้อหาค่อยๆ ปรากฏ
     document.getElementById('play-content').classList.add('fade-in');
     
     // เริ่มต้นแอปพลิเคชัน
-    initializeApp();
+    await initializeApp(); // ใหม่
 });
 
 function initPlayerSystem() {
@@ -11403,8 +11486,7 @@ function closeAddCategoryForm() {
         formContainer.style.display = 'none';
     }
 }
-// นำฟังก์ชันนี้ไปแทนที่ฟังก์ชัน updateCategory() เดิมทั้งหมด
-function updateCategory(type, oldName, mainCategory = null, subCategory1 = null) {
+async function updateCategory(type, oldName, mainCategory = null, subCategory1 = null) {
     const newName = document.getElementById('category-name').value.trim();
     
     if (!newName) {
@@ -11412,108 +11494,156 @@ function updateCategory(type, oldName, mainCategory = null, subCategory1 = null)
         return;
     }
     
-    // ไม่ต้องทำอะไรถ้าชื่อเดิมและชื่อใหม่เหมือนกัน
     if (oldName === newName) {
         closeAddCategoryForm();
         return;
     }
     
-    let success = false;
-    
     try {
         switch (type) {
             case 'main':
                 // ตรวจสอบว่ามีหมวดหมู่หลักใหม่นี้อยู่แล้วหรือไม่
-                if (categories[newName]) {
+                const { data: existingMain } = await supabaseClient
+                    .from('categories')
+                    .select('id')
+                    .eq('name', newName)
+                    .eq('level', 1);
+                
+                if (existingMain && existingMain.length > 0) {
                     alert('มีหมวดหมู่หลักนี้อยู่แล้ว');
                     return;
                 }
                 
-                // อัพเดตชื่อหมวดหมู่หลัก
-                categories[newName] = { ...categories[oldName] };
-                delete categories[oldName];
+                // อัพเดตหมวดหมู่หลัก
+                await supabaseClient
+                    .from('categories')
+                    .update({ name: newName })
+                    .eq('name', oldName)
+                    .eq('level', 1);
                 
-                // อัพเดตหมวดหมู่ในคำถาม
-                questions.forEach(question => {
-                    if (question.category && question.category.main === oldName) {
-                        question.category.main = newName;
+                // อัพเดต parent_name ของหมวดหมู่ย่อย 1
+                await supabaseClient
+                    .from('categories')
+                    .update({ parent_name: newName })
+                    .eq('parent_name', oldName)
+                    .eq('level', 2);
+                
+                // อัพเดต parent_name ของหมวดหมู่ย่อย 2
+                const { data: sub2Categories } = await supabaseClient
+                    .from('categories')
+                    .select('*')
+                    .like('parent_name', `${oldName} > %`)
+                    .eq('level', 3);
+                
+                if (sub2Categories) {
+                    for (const sub2 of sub2Categories) {
+                        const newParentName = sub2.parent_name.replace(oldName, newName);
+                        await supabaseClient
+                            .from('categories')
+                            .update({ parent_name: newParentName })
+                            .eq('id', sub2.id);
                     }
-                });
+                }
                 
-                success = true;
+                // อัพเดตคำถาม
+                await supabaseClient
+                    .from('questions')
+                    .update({ category_main: newName })
+                    .eq('category_main', oldName);
                 break;
                 
             case 'sub1':
                 // ตรวจสอบว่ามีหมวดหมู่ย่อย 1 ใหม่นี้อยู่แล้วหรือไม่
-                if (categories[mainCategory][newName]) {
+                const { data: existingSub1 } = await supabaseClient
+                    .from('categories')
+                    .select('id')
+                    .eq('name', newName)
+                    .eq('level', 2)
+                    .eq('parent_name', mainCategory);
+                
+                if (existingSub1 && existingSub1.length > 0) {
                     alert('มีหมวดหมู่ย่อย 1 นี้อยู่แล้ว');
                     return;
                 }
                 
-                // อัพเดตชื่อหมวดหมู่ย่อย 1
-                categories[mainCategory][newName] = [...categories[mainCategory][oldName]];
-                delete categories[mainCategory][oldName];
+                // อัพเดตหมวดหมู่ย่อย 1
+                await supabaseClient
+                    .from('categories')
+                    .update({ name: newName })
+                    .eq('name', oldName)
+                    .eq('level', 2)
+                    .eq('parent_name', mainCategory);
                 
-                // อัพเดตหมวดหมู่ในคำถาม
-                questions.forEach(question => {
-                    if (question.category && 
-                        question.category.main === mainCategory && 
-                        question.category.sub1 === oldName) {
-                        question.category.sub1 = newName;
-                    }
-                });
+                // อัพเดต parent_name ของหมวดหมู่ย่อย 2
+                const oldParentPath = `${mainCategory} > ${oldName}`;
+                const newParentPath = `${mainCategory} > ${newName}`;
                 
-                success = true;
+                await supabaseClient
+                    .from('categories')
+                    .update({ parent_name: newParentPath })
+                    .eq('parent_name', oldParentPath)
+                    .eq('level', 3);
+                
+                // อัพเดตคำถาม
+                await supabaseClient
+                    .from('questions')
+                    .update({ category_sub1: newName })
+                    .eq('category_main', mainCategory)
+                    .eq('category_sub1', oldName);
                 break;
                 
             case 'sub2':
                 // ตรวจสอบว่ามีหมวดหมู่ย่อย 2 ใหม่นี้อยู่แล้วหรือไม่
-                if (categories[mainCategory][subCategory1].includes(newName)) {
+                const { data: existingSub2 } = await supabaseClient
+                    .from('categories')
+                    .select('id')
+                    .eq('name', newName)
+                    .eq('level', 3)
+                    .eq('parent_name', `${mainCategory} > ${subCategory1}`);
+                
+                if (existingSub2 && existingSub2.length > 0) {
                     alert('มีหมวดหมู่ย่อย 2 นี้อยู่แล้ว');
                     return;
                 }
                 
-                // อัพเดตชื่อหมวดหมู่ย่อย 2
-                const index = categories[mainCategory][subCategory1].indexOf(oldName);
-                if (index !== -1) {
-                    categories[mainCategory][subCategory1][index] = newName;
-                }
+                // อัพเดตหมวดหมู่ย่อย 2
+                await supabaseClient
+                    .from('categories')
+                    .update({ name: newName })
+                    .eq('name', oldName)
+                    .eq('level', 3)
+                    .eq('parent_name', `${mainCategory} > ${subCategory1}`);
                 
-                // อัพเดตหมวดหมู่ในคำถาม
-                questions.forEach(question => {
-                    if (question.category && 
-                        question.category.main === mainCategory && 
-                        question.category.sub1 === subCategory1 && 
-                        question.category.sub2 === oldName) {
-                        question.category.sub2 = newName;
-                    }
-                });
-                
-                success = true;
+                // อัพเดตคำถาม
+                await supabaseClient
+                    .from('questions')
+                    .update({ category_sub2: newName })
+                    .eq('category_main', mainCategory)
+                    .eq('category_sub1', subCategory1)
+                    .eq('category_sub2', oldName);
                 break;
         }
         
-        if (success) {
-            // บันทึกหมวดหมู่ลง localStorage
-            saveCategories();
-            
-            // บันทึกคำถามที่อัพเดตแล้ว
-            saveQuestions();
-            
-            // ปิดฟอร์ม
-            closeAddCategoryForm();
-            
-            // อัพเดตการแสดงผล
-            renderCategoryTree();
-            
-            // แจ้งเตือน
-            alert('แก้ไขหมวดหมู่เรียบร้อยแล้ว');
-        }
+        // โหลดข้อมูลใหม่
+        await loadCategories();
+        await loadQuestions();
+        
+        // ปิดฟอร์ม
+        closeAddCategoryForm();
+        
+        // อัพเดตการแสดงผล
+        renderCategoryTree();
+        updateCategoryUI();
+        displayQuestions();
+        
+        alert('แก้ไขหมวดหมู่เรียบร้อยแล้ว');
+        
     } catch (error) {
         console.error("เกิดข้อผิดพลาดในการแก้ไขหมวดหมู่:", error);
-        alert("เกิดข้อผิดพลาดในการแก้ไขหมวดหมู่: " + error.message);
+        alert("เกิดข้อผิดพลาด: " + error.message);
     }
 }
+
 // นำฟังก์ชันนี้ไปแทนที่ฟังก์ชัน confirmDeleteCategory() เดิมทั้งหมด
 function confirmDeleteCategory(type, categoryName, mainCategory = null, subCategory1 = null) {
     // หยุดการ propagation ของ event click เพื่อไม่ให้ไปเรียก toggle
@@ -11609,73 +11739,98 @@ function closeConfirmDeleteDialog() {
     }
 }
 
-// นำฟังก์ชันนี้ไปแทนที่ฟังก์ชัน deleteCategory() เดิมทั้งหมด
-function deleteCategory(type, categoryName, mainCategory = null, subCategory1 = null) {
+async function deleteCategory(type, categoryName, mainCategory = null, subCategory1 = null) {
     try {
         switch (type) {
             case 'main':
-                // ลบหมวดหมู่หลัก
-                delete categories[categoryName];
+                // ลบหมวดหมู่ย่อยทั้งหมดที่เกี่ยวข้อง
+                await supabaseClient
+                    .from('categories')
+                    .delete()
+                    .or(`parent_name.eq.${categoryName},parent_name.like.${categoryName} > %`);
                 
-                // ลบคำถามที่อยู่ในหมวดหมู่หลักนี้
-                questions = questions.filter(q => 
-                    !q.category || q.category.main !== categoryName
-                );
+                // ลบหมวดหมู่หลัก
+                await supabaseClient
+                    .from('categories')
+                    .delete()
+                    .eq('name', categoryName)
+                    .eq('level', 1);
+                
+                // ลบคำถามที่เกี่ยวข้อง
+                await supabaseClient
+                    .from('questions')
+                    .delete()
+                    .eq('category_main', categoryName);
                 break;
                 
             case 'sub1':
-                // ลบหมวดหมู่ย่อย 1
-                delete categories[mainCategory][categoryName];
+                // ลบหมวดหมู่ย่อย 2 ที่เกี่ยวข้อง
+                const parentPath = `${mainCategory} > ${categoryName}`;
+                await supabaseClient
+                    .from('categories')
+                    .delete()
+                    .eq('level', 3)
+                    .eq('parent_name', parentPath);
                 
-                // ลบคำถามที่อยู่ในหมวดหมู่ย่อย 1 นี้
-                questions = questions.filter(q => 
-                    !q.category || 
-                    q.category.main !== mainCategory || 
-                    q.category.sub1 !== categoryName
-                );
+                // ลบหมวดหมู่ย่อย 1
+                await supabaseClient
+                    .from('categories')
+                    .delete()
+                    .eq('name', categoryName)
+                    .eq('level', 2)
+                    .eq('parent_name', mainCategory);
+                
+                // ลบคำถามที่เกี่ยวข้อง
+                await supabaseClient
+                    .from('questions')
+                    .delete()
+                    .eq('category_main', mainCategory)
+                    .eq('category_sub1', categoryName);
                 break;
                 
             case 'sub2':
                 // ลบหมวดหมู่ย่อย 2
-                const index = categories[mainCategory][subCategory1].indexOf(categoryName);
-                if (index !== -1) {
-                    categories[mainCategory][subCategory1].splice(index, 1);
-                }
+                await supabaseClient
+                    .from('categories')
+                    .delete()
+                    .eq('name', categoryName)
+                    .eq('level', 3)
+                    .eq('parent_name', `${mainCategory} > ${subCategory1}`);
                 
-                // ลบคำถามที่อยู่ในหมวดหมู่ย่อย 2 นี้
-                questions = questions.filter(q => 
-                    !q.category || 
-                    q.category.main !== mainCategory || 
-                    q.category.sub1 !== subCategory1 || 
-                    q.category.sub2 !== categoryName
-                );
+                // ลบคำถามที่เกี่ยวข้อง
+                await supabaseClient
+                    .from('questions')
+                    .delete()
+                    .eq('category_main', mainCategory)
+                    .eq('category_sub1', subCategory1)
+                    .eq('category_sub2', categoryName);
                 break;
         }
         
-        // บันทึกหมวดหมู่ลง localStorage
-        saveCategories();
-        
-        // บันทึกคำถามที่อัพเดตแล้ว
-        saveQuestions();
+        // โหลดข้อมูลใหม่
+        await loadCategories();
+        await loadQuestions();
         
         // ปิดหน้าต่างยืนยัน
         closeConfirmDeleteDialog();
         
         // อัพเดตการแสดงผล
         renderCategoryTree();
+        updateCategoryUI();
+        displayQuestions();
         
-        // แจ้งเตือน
         alert('ลบหมวดหมู่เรียบร้อยแล้ว');
         
         return true;
     } catch (error) {
         console.error("เกิดข้อผิดพลาดในการลบหมวดหมู่:", error);
-        alert("เกิดข้อผิดพลาดในการลบหมวดหมู่: " + error.message);
+        alert("เกิดข้อผิดพลาด: " + error.message);
         return false;
     }
 }
+
 // ฟังก์ชันเริ่มต้นระบบหมวดหมู่แบบใหม่
-function initCategorySystemNew() {
+async function initCategorySystemNew() {
     console.log("กำลังเริ่มต้นระบบหมวดหมู่...");
 
 // เพิ่ม CSS เข้าไปในหน้าเว็บ
@@ -12023,37 +12178,133 @@ width: 100%;
 `;
 document.head.appendChild(styleElement);
     
-    // โหลดหมวดหมู่จาก localStorage
-    loadCategories();
-    
-    // ตรวจสอบว่ามีหมวดหมู่หรือไม่ ถ้าไม่มี ให้สร้างหมวดหมู่ตัวอย่าง
-    if (Object.keys(categories).length === 0) {
-        console.log("ไม่มีหมวดหมู่ในระบบ กำลังเพิ่มหมวดหมู่ตัวอย่าง...");
+    try {
+        // โหลดหมวดหมู่จาก Database
+        await loadCategories();
         
-        // เพิ่มหมวดหมู่ตัวอย่าง - เปลี่ยนจากการเรียก addCategory เป็นการกำหนดค่าโดยตรง
+        // ถ้าไม่มีหมวดหมู่ ให้สร้างตัวอย่าง
+        if (Object.keys(categories).length === 0) {
+            console.log("ไม่มีหมวดหมู่ กำลังสร้างตัวอย่าง...");
+            await createSampleCategories();
+            await loadCategories();
+        }
+        
+        // สร้างโครงสร้าง UI
+        renderCategoryTree();
+        updateCategorySelects();
+        
+        console.log("ระบบหมวดหมู่พร้อมใช้งานแล้ว");
+        
+    } catch (error) {
+        console.error("เกิดข้อผิดพลาด:", error);
+        // ใช้หมวดหมู่เริ่มต้น
         categories = {
             "ความรู้ทั่วไป": {
-                "วิทยาศาสตร์": ["ฟิสิกส์", "เคมี"],
+                "วิทยาศาสตร์": ["ฟิสิกส์"],
                 "คณิตศาสตร์": ["พีชคณิต"]
-            },
-            "ภาษา": {
-                "ภาษาอังกฤษ": ["ไวยากรณ์"]
             }
         };
-        
-        // บันทึกหมวดหมู่
-        saveCategories();
-        
-        console.log("เพิ่มหมวดหมู่ตัวอย่างเรียบร้อยแล้ว");
+        renderCategoryTree();
+        updateCategorySelects();
     }
-    
-    // สร้างโครงสร้าง UI สำหรับจัดการหมวดหมู่
-    renderCategoryTree();
-    
-    // อัพเดตตัวเลือกหมวดหมู่ในฟอร์มต่างๆ
-    updateCategorySelects();
-    
-    console.log("ระบบหมวดหมู่พร้อมใช้งานแล้ว");
+}
+
+async function createSampleCategories() {
+    try {
+        const sampleCategories = [
+            // หมวดหมู่หลัก
+            { name: "ความรู้ทั่วไป", level: 1, parent_name: null },
+            { name: "ภาษา", level: 1, parent_name: null },
+            
+            // หมวดหมู่ย่อย 1
+            { name: "วิทยาศาสตร์", level: 2, parent_name: "ความรู้ทั่วไป" },
+            { name: "คณิตศาสตร์", level: 2, parent_name: "ความรู้ทั่วไป" },
+            { name: "ภาษาอังกฤษ", level: 2, parent_name: "ภาษา" },
+            
+            // หมวดหมู่ย่อย 2
+            { name: "ฟิสิกส์", level: 3, parent_name: "ความรู้ทั่วไป > วิทยาศาสตร์" },
+            { name: "เคมี", level: 3, parent_name: "ความรู้ทั่วไป > วิทยาศาสตร์" },
+            { name: "พีชคณิต", level: 3, parent_name: "ความรู้ทั่วไป > คณิตศาสตร์" },
+            { name: "ไวยากรณ์", level: 3, parent_name: "ภาษา > ภาษาอังกฤษ" }
+        ];
+        
+        const { error } = await supabaseClient
+            .from('categories')
+            .insert(sampleCategories);
+        
+        if (error) {
+            throw new Error('เกิดข้อผิดพลาด: ' + error.message);
+        }
+        
+        console.log("สร้างหมวดหมู่ตัวอย่างเรียบร้อยแล้ว");
+        return true;
+        
+    } catch (error) {
+        console.error("เกิดข้อผิดพลาดในการสร้างหมวดหมู่ตัวอย่าง:", error);
+        return false;
+    }
+}
+
+async function migrateCategoriesFromLocalStorage() {
+    try {
+        const savedCategories = localStorage.getItem('quiz-categories');
+        if (!savedCategories) {
+            return false;
+        }
+        
+        const oldCategories = JSON.parse(savedCategories);
+        if (Object.keys(oldCategories).length === 0) {
+            return false;
+        }
+        
+        console.log('กำลัง migrate ข้อมูลหมวดหมู่...');
+        
+        const categoriesToInsert = [];
+        
+        for (const mainCategory in oldCategories) {
+            // เพิ่มหมวดหมู่หลัก
+            categoriesToInsert.push({
+                name: mainCategory,
+                level: 1,
+                parent_name: null
+            });
+            
+            for (const subCategory1 in oldCategories[mainCategory]) {
+                // เพิ่มหมวดหมู่ย่อย 1
+                categoriesToInsert.push({
+                    name: subCategory1,
+                    level: 2,
+                    parent_name: mainCategory
+                });
+                
+                for (const subCategory2 of oldCategories[mainCategory][subCategory1]) {
+                    // เพิ่มหมวดหมู่ย่อย 2
+                    categoriesToInsert.push({
+                        name: subCategory2,
+                        level: 3,
+                        parent_name: `${mainCategory} > ${subCategory1}`
+                    });
+                }
+            }
+        }
+        
+        const { error } = await supabaseClient
+            .from('categories')
+            .insert(categoriesToInsert);
+        
+        if (error) {
+            throw new Error('เกิดข้อผิดพลาด: ' + error.message);
+        }
+        
+        console.log('Migrate สำเร็จ');
+        localStorage.removeItem('quiz-categories');
+        
+        return true;
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการ migrate:', error);
+        return false;
+    }
 }
 
 // ฟังก์ชันแสดงรายละเอียดการเล่นเกม
