@@ -8485,8 +8485,11 @@ async function saveQuestion() {
     // โหลดคำถามใหม่จาก Database
     await loadQuestions();
     
-    // อัพเดตการแสดงผล
-    displayQuestions();
+    // รีเซ็ตตัวกรองและแสดงข้อความ "กรุณาเลือกหมวดหมู่"
+    resetFiltersAndDisplay();
+    
+    // อัพเดตการแสดงผลหมวดหมู่ (tree)
+    renderCategoryTree();
     
     // รีเซ็ตฟอร์ม
     clearForm();
@@ -8501,9 +8504,33 @@ async function saveQuestion() {
   }
 }
 
-// ฟังก์ชันบันทึกคำถามลง localStorage
-function saveQuestions() {
-    localStorage.setItem('quiz-questions', JSON.stringify(questions));
+function resetFiltersAndDisplay() {
+    // รีเซ็ตตัวกรองทั้งหมด
+    const filterMainCategory = document.getElementById('filter-main-category');
+    const filterSubCategory1 = document.getElementById('filter-sub-category1');
+    const filterSubCategory2 = document.getElementById('filter-sub-category2');
+    const searchInput = document.getElementById('search-questions');
+    
+    if (filterMainCategory) {
+        filterMainCategory.value = '';
+    }
+    
+    if (filterSubCategory1) {
+        filterSubCategory1.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 1</option>';
+        filterSubCategory1.disabled = true;
+    }
+    
+    if (filterSubCategory2) {
+        filterSubCategory2.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 2</option>';
+        filterSubCategory2.disabled = true;
+    }
+    
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    
+    // แสดงข้อความ "กรุณาเลือกหมวดหมู่"
+    displayFilteredQuestions([], false, true);
 }
 
 // ฟังก์ชันโหลดคำถามจาก Database
@@ -8997,33 +9024,33 @@ function importFromExcel(file) {
                     }
                     
                     // ตรวจสอบว่าคำถามซ้ำหรือไม่
-if (isDuplicateQuestion(row['คำถาม'])) {
-    errors.push(`แถวที่ ${index + 2}: คำถามซ้ำกับที่มีอยู่แล้ว "${row['คำถาม'].substring(0, 30)}..."`);
-    errorCount++;
-} else {
-    // สร้างอ็อบเจกต์คำถาม
-    const question = {
-        id: Date.now().toString() + index,
-        text: row['คำถาม'],
-        image: row['รูปภาพ (URL)'] ? row['รูปภาพ (URL)'] : null,
-        choices: [
-            { id: 'A', text: row['ตัวเลือก A'] },
-            { id: 'B', text: row['ตัวเลือก B'] },
-            { id: 'C', text: row['ตัวเลือก C'] },
-            { id: 'D', text: row['ตัวเลือก D'] }
-        ],
-        correctAnswer: correctAnswer,
-        category: {
-            main: mainCategory,
-            sub1: subCategory1,
-            sub2: subCategory2
-        }
-    };
+                    if (isDuplicateQuestion(row['คำถาม'])) {
+                        errors.push(`แถวที่ ${index + 2}: คำถามซ้ำกับที่มีอยู่แล้ว "${row['คำถาม'].substring(0, 30)}..."`);
+                        errorCount++;
+                    } else {
+                        // สร้างอ็อบเจกต์คำถาม
+                        const question = {
+                            id: Date.now().toString() + index,
+                            text: row['คำถาม'],
+                            image: row['รูปภาพ (URL)'] ? row['รูปภาพ (URL)'] : null,
+                            choices: [
+                                { id: 'A', text: row['ตัวเลือก A'] },
+                                { id: 'B', text: row['ตัวเลือก B'] },
+                                { id: 'C', text: row['ตัวเลือก C'] },
+                                { id: 'D', text: row['ตัวเลือก D'] }
+                            ],
+                            correctAnswer: correctAnswer,
+                            category: {
+                                main: mainCategory,
+                                sub1: subCategory1,
+                                sub2: subCategory2
+                            }
+                        };
 
-    // เพิ่มคำถาม
-    questions.push(question);
-    importedCount++;
-}
+                        // เพิ่มคำถาม
+                        questions.push(question);
+                        importedCount++;
+                    }
                     
                 } catch (err) {
                     console.error(`เกิดข้อผิดพลาดในแถวที่ ${index + 2}:`, err);
@@ -9039,7 +9066,9 @@ if (isDuplicateQuestion(row['คำถาม'])) {
             // อัพเดตการแสดงผล
             renderCategoryTree();
             updateCategoryUI();
-            displayQuestions();
+            
+            // รีเซ็ตตัวกรองและแสดงข้อความ "กรุณาเลือกหมวดหมู่"
+            resetFiltersAndDisplay();
             
             // ลบตัวแสดงความคืบหน้า
             if (document.getElementById('import-progress')) {
