@@ -5250,6 +5250,116 @@ button.delete:hover {
     }
 }
 
+/* CSS สำหรับ Admin UI - แทนที่ CSS เก่า */
+.admin-ui-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+}
+
+/* Admin Mode Indicator (แสดงอย่างเดียว) */
+.admin-mode-indicator {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #8b4513;
+    border: 2px solid #daa520;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'Prompt', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 3px 8px rgba(255, 215, 0, 0.3),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    user-select: none;
+    text-align: center;
+}
+
+/* Admin Logout Button (กดได้) */
+.admin-logout-btn {
+    background: linear-gradient(135deg, #f44336, #e57373);
+    color: white;
+    border: 2px solid #d32f2f;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        0 3px 8px rgba(244, 67, 54, 0.3),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+}
+
+.admin-logout-btn:hover {
+    background: linear-gradient(135deg, #d32f2f, #f44336);
+    border-color: #b71c1c;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        0 5px 12px rgba(244, 67, 54, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.admin-logout-btn:active {
+    transform: translateY(0) scale(1);
+    box-shadow: 
+        0 2px 6px rgba(244, 67, 54, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ปรับแต่งสำหรับหน้าจอมือถือ */
+@media (max-width: 768px) {
+    .admin-ui-container {
+        top: 10px;
+        right: 10px;
+        gap: 6px;
+    }
+    
+    .admin-mode-indicator,
+    .admin-logout-btn {
+        padding: 8px 12px;
+        font-size: 13px;
+        border-radius: 16px;
+    }
+}
+
+/* ปิด autocomplete และ suggestions - เพิ่มใน <style> */
+.login-input {
+    -webkit-autofill: none !important;
+    -webkit-autocomplete: off !important;
+    autocomplete: off !important;
+}
+
+.login-input::-webkit-credentials-auto-fill-button {
+    display: none !important;
+}
+
+.login-input::-webkit-contacts-auto-fill-button {
+    display: none !important;
+}
+
+/* ซ่อน dropdown suggestions */
+.login-input::-webkit-list-button {
+    display: none;
+}
+
+.login-input::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -5568,7 +5678,7 @@ button.delete:hover {
       
       <div class="form-group">
         <label for="player-name">ชื่อผู้เล่น</label>
-        <input type="text" id="player-name" class="login-input" placeholder="กรอกชื่อของคุณที่นี่" maxlength="20">
+        <input type="text" id="player-name" class="login-input" placeholder="กรอกชื่อของคุณที่นี่" maxlength="20" autocomplete="off" spellcheck="false">
       </div>
       
       <div class="form-group remember-me">
@@ -5836,15 +5946,10 @@ if (totalHistoryCount) {
     // เพิ่มแถวข้อมูล
     currentPageItems.forEach((entry, index) => {
         try {
-            // แปลงเวลาให้เป็นรูปแบบที่อ่านง่าย
-            const playedDate = new Date(entry.playedAt);
-            
-            // แยกวันที่และเวลาออกจากกัน
-            const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
-            const timeOptions = { hour: '2-digit', minute: '2-digit' };
-            
-            const formattedDate = playedDate.toLocaleDateString('th-TH', dateOptions);
-            const formattedTime = playedDate.toLocaleTimeString('th-TH', timeOptions);
+            // แปลงเวลาให้เป็นรูปแบบที่อ่านง่าย (24 ชั่วโมง)
+                       const dateTimeFormatted = formatDateTime24Hour(entry.playedAt);
+                                              const formattedDate = dateTimeFormatted.date;
+                                              const formattedTime = dateTimeFormatted.time;
             
             // แยกชื่อหมวดหมู่และทำให้ดูดีขึ้น
             let categoryHTML = '<div class="category-path">';
@@ -6291,13 +6396,7 @@ function confirmDeleteHistory(id) {
                 <div style="margin: 15px 0; padding: 10px; background-color: #f0f7ff; border-radius: 6px; border-left: 4px solid #1976d2;">
                     <p><strong>ผู้เล่น:</strong> ${historyToDelete.playerName}</p>
                     <p><strong>คะแนน:</strong> ${historyToDelete.score}/${historyToDelete.totalQuestions} (${historyToDelete.percentage}%)</p>
-                    <p><strong>วันที่:</strong> ${new Date(historyToDelete.playedAt).toLocaleDateString('th-TH', {
-                        day: '2-digit',
-                        month: '2-digit', 
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })}</p>
+                    <p><strong>วันที่:</strong> ${formatDateTime24Hour(historyToDelete.playedAt).full}</p>
                 </div>
                 <p style="color: #f44336; font-weight: 600;">⚠️ การลบนี้จะลบข้อมูลออกจากฐานข้อมูลถาวร และไม่สามารถเรียกคืนได้</p>
             </div>
@@ -9078,20 +9177,24 @@ function isDuplicateQuestion(questionText) {
     return questions.some(q => q.text.trim().toLowerCase() === questionText.trim().toLowerCase());
 }
 
-// ฟังก์ชันสำหรับนำเข้าจาก Excel
-function importFromExcel(file) {
+// ฟังก์ชันสำหรับนำเข้าจาก Excel - แทนที่ฟังก์ชันเดิมทั้งหมด
+async function importFromExcel(file) {
     const reader = new FileReader();
     
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         try {
             // เพิ่มตัวแสดงความคืบหน้า
             const progressDiv = document.createElement('div');
             progressDiv.id = 'import-progress';
-            progressDiv.style.margin = '10px 0';
-            progressDiv.style.padding = '10px';
-            progressDiv.style.backgroundColor = '#f0f7ff';
-            progressDiv.style.borderRadius = '4px';
-            progressDiv.innerHTML = '<p>กำลังนำเข้าข้อมูล... โปรดรอสักครู่</p>';
+            progressDiv.style.cssText = `
+                margin: 10px 0;
+                padding: 15px;
+                background-color: #f0f7ff;
+                border-radius: 8px;
+                border: 1px solid #1976d2;
+                text-align: center;
+            `;
+            progressDiv.innerHTML = '<p>🔄 กำลังประมวลผลไฟล์ Excel... โปรดรอสักครู่</p>';
             document.getElementById('import-excel').parentNode.appendChild(progressDiv);
             
             const data = new Uint8Array(e.target.result);
@@ -9105,203 +9208,324 @@ function importFromExcel(file) {
             const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
             
             if (jsonData.length === 0) {
-                // ลบตัวแสดงความคืบหน้า
-                if (document.getElementById('import-progress')) {
-                    document.getElementById('import-progress').remove();
-                }
-                
+                removeProgressDiv();
                 alert('ไม่พบข้อมูลในไฟล์ Excel');
                 return;
             }
             
             console.log("ข้อมูลที่อ่านได้:", jsonData);
+            updateProgressDiv('📊 กำลังตรวจสอบและเตรียมข้อมูล...');
             
-            let importedCount = 0;
-            let errorCount = 0;
-            let errors = [];
+            // ขั้นตอนที่ 1: ประมวลผลข้อมูลและตรวจสอบ
+            const { validQuestions, errors, newCategoriesToCreate } = await processExcelData(jsonData);
             
-            // สร้าง map ของชื่อคอลัมน์ที่ยอมรับได้
-            const columnMap = {
-                'คำถาม': ['คำถาม', 'question', 'text', 'ข้อคำถาม', 'คำถาม?'],
-                'รูปภาพ (URL)': ['รูปภาพ (URL)', 'รูปภาพ', 'image', 'url', 'รูป'],
-                'ตัวเลือก A': ['ตัวเลือก A', 'ตัวเลือกA', 'choice A', 'choiceA', 'A', 'ตัวเลือก a', 'ตัวเลือกa'],
-                'ตัวเลือก B': ['ตัวเลือก B', 'ตัวเลือกB', 'choice B', 'choiceB', 'B', 'ตัวเลือก b', 'ตัวเลือกb'],
-                'ตัวเลือก C': ['ตัวเลือก C', 'ตัวเลือกC', 'choice C', 'choiceC', 'C', 'ตัวเลือก c', 'ตัวเลือกc'],
-                'ตัวเลือก D': ['ตัวเลือก D', 'ตัวเลือกD', 'choice D', 'choiceD', 'D', 'ตัวเลือก d', 'ตัวเลือกd'],
-                'คำตอบที่ถูกต้อง (A, B, C, D)': ['คำตอบที่ถูกต้อง (A, B, C, D)', 'คำตอบที่ถูกต้อง', 'correct answer', 'answer', 'คำตอบ', 'เฉลย'],
-                'หมวดหมู่หลัก': ['หมวดหมู่หลัก', 'main category', 'category', 'หมวดหมู่', 'หมวด'],
-                'หมวดหมู่ย่อย 1': ['หมวดหมู่ย่อย 1', 'sub category 1', 'subcategory1', 'หมวดหมู่ย่อย1', 'หมวดย่อย 1', 'หมวดย่อย1'],
-                'หมวดหมู่ย่อย 2': ['หมวดหมู่ย่อย 2', 'sub category 2', 'subcategory2', 'หมวดหมู่ย่อย2', 'หมวดย่อย 2', 'หมวดย่อย2']
-            };
-            
-            // หา key ในข้อมูลที่ตรงกับชื่อคอลัมน์ที่ต้องการ
-            function findColumnKey(row, columnType) {
-                const possibleNames = columnMap[columnType];
-                for (const name of possibleNames) {
-                    if (row[name] !== undefined) {
-                        return name;
-                    }
-                }
-                return null;
+            if (validQuestions.length === 0) {
+                removeProgressDiv();
+                showImportResult(0, errors.length, errors);
+                return;
             }
             
-            // แปลง array ของแถวข้อมูลให้เป็นรูปแบบที่ถูกต้อง
-            const formattedData = jsonData.map(row => {
-                const formattedRow = {};
-                
-                for (const columnType in columnMap) {
-                    const key = findColumnKey(row, columnType);
-                    if (key) {
-                        formattedRow[columnType] = String(row[key]).trim();
-                    } else {
-                        formattedRow[columnType] = "";
-                    }
-                }
-                
-                return formattedRow;
-            });
+            // ขั้นตอนที่ 2: สร้างหมวดหมู่ใหม่ (ถ้ามี)
+            updateProgressDiv('📝 กำลังสร้างหมวดหมู่ใหม่...');
+            await createNewCategories(newCategoriesToCreate);
             
-            console.log("ข้อมูลที่ปรับรูปแบบแล้ว:", formattedData);
+            // ขั้นตอนที่ 3: บันทึกคำถามแบบ batch
+            updateProgressDiv('💾 กำลังบันทึกคำถาม...');
+            const { successCount, batchErrors } = await saveQuestionsInBatches(validQuestions);
             
-            // ตรวจสอบและเพิ่มคำถามทีละข้อ
-            formattedData.forEach((row, index) => {
-                try {
-                    // ตรวจสอบข้อมูลจำเป็น
-                    if (!row['คำถาม']) {
-                        errors.push(`แถวที่ ${index + 2}: ไม่พบข้อมูลคำถาม`);
-                        errorCount++;
-                        return;
-                    }
-                    
-                    // ตรวจสอบตัวเลือก
-                    if (!row['ตัวเลือก A'] || !row['ตัวเลือก B'] || !row['ตัวเลือก C'] || !row['ตัวเลือก D']) {
-                        errors.push(`แถวที่ ${index + 2}: ตัวเลือกไม่ครบทั้ง 4 ตัวเลือก`);
-                        errorCount++;
-                        return;
-                    }
-                    
-                    // ตรวจสอบและแปลงคำตอบที่ถูกต้อง
-                    let correctAnswer = String(row['คำตอบที่ถูกต้อง (A, B, C, D)']).trim().toUpperCase();
-                    if (!correctAnswer) {
-                        errors.push(`แถวที่ ${index + 2}: ไม่พบข้อมูลคำตอบที่ถูกต้อง`);
-                        errorCount++;
-                        return;
-                    }
-                    
-                    // รองรับรูปแบบคำตอบที่หลากหลาย
-                    if (correctAnswer.includes('A') || correctAnswer.includes('1')) correctAnswer = 'A';
-                    else if (correctAnswer.includes('B') || correctAnswer.includes('2')) correctAnswer = 'B';
-                    else if (correctAnswer.includes('C') || correctAnswer.includes('3')) correctAnswer = 'C';
-                    else if (correctAnswer.includes('D') || correctAnswer.includes('4')) correctAnswer = 'D';
-                    
-                    if (!['A', 'B', 'C', 'D'].includes(correctAnswer)) {
-                        errors.push(`แถวที่ ${index + 2}: รูปแบบคำตอบที่ถูกต้องไม่ถูกต้อง (${correctAnswer})`);
-                        errorCount++;
-                        return;
-                    }
-                    
-                    // ตรวจสอบหมวดหมู่
-                    const mainCategory = row['หมวดหมู่หลัก'] || 'ทั่วไป';
-                    const subCategory1 = row['หมวดหมู่ย่อย 1'] || 'ทั่วไป';
-                    const subCategory2 = row['หมวดหมู่ย่อย 2'] || 'ทั่วไป';
-                    
-                    // ตรวจสอบและสร้างหมวดหมู่ถ้ายังไม่มี
-                    if (!categories[mainCategory]) {
-                        categories[mainCategory] = {};
-                    }
-                    
-                    if (!categories[mainCategory][subCategory1]) {
-                        categories[mainCategory][subCategory1] = [];
-                    }
-                    
-                    if (!categories[mainCategory][subCategory1].includes(subCategory2)) {
-                        categories[mainCategory][subCategory1].push(subCategory2);
-                    }
-                    
-                    // ตรวจสอบว่าคำถามซ้ำหรือไม่
-                    if (isDuplicateQuestion(row['คำถาม'])) {
-                        errors.push(`แถวที่ ${index + 2}: คำถามซ้ำกับที่มีอยู่แล้ว "${row['คำถาม'].substring(0, 30)}..."`);
-                        errorCount++;
-                    } else {
-                        // สร้างอ็อบเจกต์คำถาม
-                        const question = {
-                            id: Date.now().toString() + index,
-                            text: row['คำถาม'],
-                            image: row['รูปภาพ (URL)'] ? row['รูปภาพ (URL)'] : null,
-                            choices: [
-                                { id: 'A', text: row['ตัวเลือก A'] },
-                                { id: 'B', text: row['ตัวเลือก B'] },
-                                { id: 'C', text: row['ตัวเลือก C'] },
-                                { id: 'D', text: row['ตัวเลือก D'] }
-                            ],
-                            correctAnswer: correctAnswer,
-                            category: {
-                                main: mainCategory,
-                                sub1: subCategory1,
-                                sub2: subCategory2
-                            }
-                        };
-
-                        // เพิ่มคำถาม
-                        questions.push(question);
-                        importedCount++;
-                    }
-                    
-                } catch (err) {
-                    console.error(`เกิดข้อผิดพลาดในแถวที่ ${index + 2}:`, err);
-                    errors.push(`แถวที่ ${index + 2}: ${err.message}`);
-                    errorCount++;
-                }
-            });
+            // รวมข้อผิดพลาดทั้งหมด
+            const allErrors = [...errors, ...batchErrors];
             
-            // บันทึกหมวดหมู่และคำถาม
-            saveCategories();
-            saveQuestions();
+            // โหลดข้อมูลใหม่
+            await loadCategories();
+            await loadQuestions();
             
             // อัพเดตการแสดงผล
             renderCategoryTree();
             updateCategoryUI();
-            
-            // รีเซ็ตตัวกรองและแสดงข้อความ "กรุณาเลือกหมวดหมู่"
             resetFiltersAndDisplay();
             
             // ลบตัวแสดงความคืบหน้า
-            if (document.getElementById('import-progress')) {
-                document.getElementById('import-progress').remove();
-            }
+            removeProgressDiv();
             
-            // แจ้งผลลัพธ์
-            let message = `นำเข้าคำถามสำเร็จ ${importedCount} รายการ, ผิดพลาด ${errorCount} รายการ`;
-            
-            if (errorCount > 0) {
-                message += "\n\nรายละเอียดข้อผิดพลาด:\n" + errors.slice(0, 10).join("\n");
-                if (errors.length > 10) {
-                    message += "\n... และอีก " + (errors.length - 10) + " ข้อผิดพลาด";
-                }
-            }
-            
-            alert(message);
+            // แสดงผลลัพธ์
+            showImportResult(successCount, allErrors.length, allErrors);
             
         } catch (error) {
-            console.error("เกิดข้อผิดพลาดในการประมวลผลไฟล์ Excel:", error);
-            
-            // ลบตัวแสดงความคืบหน้าในกรณีเกิดข้อผิดพลาด
-            if (document.getElementById('import-progress')) {
-                document.getElementById('import-progress').remove();
-            }
-            
+            console.error("เกิดข้อผิดพลาดในการประมวลผลไฟル์ Excel:", error);
+            removeProgressDiv();
             alert(`เกิดข้อผิดพลาดในการประมวลผลไฟล์: ${error.message}`);
         }
     };
     
     reader.onerror = function(error) {
         console.error('เกิดข้อผิดพลาดในการอ่านไฟล์:', error);
+        removeProgressDiv();
         alert('เกิดข้อผิดพลาดในการอ่านไฟล์');
     };
     
     reader.readAsArrayBuffer(file);
 }
 
+// ฟังก์ชันประมวลผลข้อมูล Excel - เพิ่มใหม่
+async function processExcelData(jsonData) {
+    const validQuestions = [];
+    const errors = [];
+    const newCategoriesToCreate = new Set();
+    
+    // สร้าง map ของชื่อคอลัมน์ที่ยอมรับได้
+    const columnMap = {
+        'คำถาม': ['คำถาม', 'question', 'text', 'ข้อคำถาม', 'คำถาม?'],
+        'รูปภาพ (URL)': ['รูปภาพ (URL)', 'รูปภาพ', 'image', 'url', 'รูป'],
+        'ตัวเลือก A': ['ตัวเลือก A', 'ตัวเลือกA', 'choice A', 'choiceA', 'A', 'ตัวเลือก a', 'ตัวเลือกa'],
+        'ตัวเลือก B': ['ตัวเลือก B', 'ตัวเลือกB', 'choice B', 'choiceB', 'B', 'ตัวเลือก b', 'ตัวเลือกb'],
+        'ตัวเลือก C': ['ตัวเลือก C', 'ตัวเลือกC', 'choice C', 'choiceC', 'C', 'ตัวเลือก c', 'ตัวเลือกc'],
+        'ตัวเลือก D': ['ตัวเลือก D', 'ตัวเลือกD', 'choice D', 'choiceD', 'D', 'ตัวเลือก d', 'ตัวเลือกd'],
+        'คำตอบที่ถูกต้อง (A, B, C, D)': ['คำตอบที่ถูกต้อง (A, B, C, D)', 'คำตอบที่ถูกต้อง', 'correct answer', 'answer', 'คำตอบ', 'เฉลย'],
+        'หมวดหมู่หลัก': ['หมวดหมู่หลัก', 'main category', 'category', 'หมวดหมู่', 'หมวด'],
+        'หมวดหมู่ย่อย 1': ['หมวดหมู่ย่อย 1', 'sub category 1', 'subcategory1', 'หมวดหมู่ย่อย1', 'หมวดย่อย 1', 'หมวดย่อย1'],
+        'หมวดหมู่ย่อย 2': ['หมวดหมู่ย่อย 2', 'sub category 2', 'subcategory2', 'หมวดหมู่ย่อย2', 'หมวดย่อย 2', 'หมวดย่อย2']
+    };
+    
+    // หา key ในข้อมูลที่ตรงกับชื่อคอลัมน์ที่ต้องการ
+    function findColumnKey(row, columnType) {
+        const possibleNames = columnMap[columnType];
+        for (const name of possibleNames) {
+            if (row[name] !== undefined) {
+                return name;
+            }
+        }
+        return null;
+    }
+    
+    // สร้างรายการคำถามที่มีอยู่แล้วเพื่อตรวจสอบการซ้ำ
+    const existingQuestions = new Set();
+    questions.forEach(q => {
+        if (q.category) {
+            const key = `${q.text.trim().toLowerCase()}|${q.category.main}|${q.category.sub1}|${q.category.sub2}`;
+            existingQuestions.add(key);
+        }
+    });
+    
+    // ประมวลผลข้อมูลทีละแถว
+    for (let index = 0; index < jsonData.length; index++) {
+        const row = jsonData[index];
+        
+        try {
+            // แปลงข้อมูลให้เป็นรูปแบบมาตรฐาน
+            const formattedRow = {};
+            for (const columnType in columnMap) {
+                const key = findColumnKey(row, columnType);
+                formattedRow[columnType] = key ? String(row[key]).trim() : "";
+            }
+            
+            // ตรวจสอบข้อมูลจำเป็น
+            if (!formattedRow['คำถาม']) {
+                errors.push(`แถวที่ ${index + 2}: ไม่พบข้อมูลคำถาม`);
+                continue;
+            }
+            
+            // ตรวจสอบตัวเลือก
+            if (!formattedRow['ตัวเลือก A'] || !formattedRow['ตัวเลือก B'] || 
+                !formattedRow['ตัวเลือก C'] || !formattedRow['ตัวเลือก D']) {
+                errors.push(`แถวที่ ${index + 2}: ตัวเลือกไม่ครบทั้ง 4 ตัวเลือก`);
+                continue;
+            }
+            
+            // ตรวจสอบและแปลงคำตอบที่ถูกต้อง
+            let correctAnswer = String(formattedRow['คำตอบที่ถูกต้อง (A, B, C, D)']).trim().toUpperCase();
+            if (!correctAnswer) {
+                errors.push(`แถวที่ ${index + 2}: ไม่พบข้อมูลคำตอบที่ถูกต้อง`);
+                continue;
+            }
+            
+            // รองรับรูปแบบคำตอบที่หลากหลาย
+            if (correctAnswer.includes('A') || correctAnswer.includes('1')) correctAnswer = 'A';
+            else if (correctAnswer.includes('B') || correctAnswer.includes('2')) correctAnswer = 'B';
+            else if (correctAnswer.includes('C') || correctAnswer.includes('3')) correctAnswer = 'C';
+            else if (correctAnswer.includes('D') || correctAnswer.includes('4')) correctAnswer = 'D';
+            
+            if (!['A', 'B', 'C', 'D'].includes(correctAnswer)) {
+                errors.push(`แถวที่ ${index + 2}: รูปแบบคำตอบไม่ถูกต้อง (${correctAnswer})`);
+                continue;
+            }
+            
+            // กำหนดหมวดหมู่ (ใช้ค่าเริ่มต้นถ้าไม่มี)
+            const mainCategory = formattedRow['หมวดหมู่หลัก'] || 'ทั่วไป';
+            const subCategory1 = formattedRow['หมวดหมู่ย่อย 1'] || 'ทั่วไป';
+            const subCategory2 = formattedRow['หมวดหมู่ย่อย 2'] || 'ทั่วไป';
+            
+            // ตรวจสอบคำถามซ้ำ
+            const questionKey = `${formattedRow['คำถาม'].toLowerCase()}|${mainCategory}|${subCategory1}|${subCategory2}`;
+            if (existingQuestions.has(questionKey)) {
+                errors.push(`แถวที่ ${index + 2}: คำถามซ้ำกับที่มีอยู่แล้ว "${formattedRow['คำถาม'].substring(0, 30)}..."`);
+                continue;
+            }
+            
+            // เพิ่มเข้าไปในรายการที่ตรวจสอบแล้ว
+            existingQuestions.add(questionKey);
+            
+            // เก็บหมวดหมู่ที่ต้องสร้างใหม่
+            if (!categories[mainCategory]) {
+                newCategoriesToCreate.add(`main|${mainCategory}`);
+            }
+            if (!categories[mainCategory] || !categories[mainCategory][subCategory1]) {
+                newCategoriesToCreate.add(`sub1|${mainCategory}|${subCategory1}`);
+            }
+            if (!categories[mainCategory] || !categories[mainCategory][subCategory1] || 
+                !categories[mainCategory][subCategory1].includes(subCategory2)) {
+                newCategoriesToCreate.add(`sub2|${mainCategory}|${subCategory1}|${subCategory2}`);
+            }
+            
+            // สร้างข้อมูลคำถาม
+            const questionData = {
+                text: formattedRow['คำถาม'],
+                image_url: formattedRow['รูปภาพ (URL)'] || null,
+                choices: JSON.stringify([
+                    { id: 'A', text: formattedRow['ตัวเลือก A'] },
+                    { id: 'B', text: formattedRow['ตัวเลือก B'] },
+                    { id: 'C', text: formattedRow['ตัวเลือก C'] },
+                    { id: 'D', text: formattedRow['ตัวเลือก D'] }
+                ]),
+                correct_answer: correctAnswer,
+                category_main: mainCategory,
+                category_sub1: subCategory1,
+                category_sub2: subCategory2
+            };
+            
+            validQuestions.push(questionData);
+            
+        } catch (err) {
+            console.error(`เกิดข้อผิดพลาดในแถวที่ ${index + 2}:`, err);
+            errors.push(`แถวที่ ${index + 2}: ${err.message}`);
+        }
+    }
+    
+    return { validQuestions, errors, newCategoriesToCreate };
+}
+
+// ฟังก์ชันสร้างหมวดหมู่ใหม่ - เพิ่มใหม่
+async function createNewCategories(newCategoriesToCreate) {
+    if (newCategoriesToCreate.size === 0) return;
+    
+    const categoriesToInsert = [];
+    
+    for (const categoryStr of newCategoriesToCreate) {
+        const parts = categoryStr.split('|');
+        const type = parts[0];
+        
+        if (type === 'main') {
+            categoriesToInsert.push({
+                name: parts[1],
+                level: 1,
+                parent_name: null
+            });
+        } else if (type === 'sub1') {
+            categoriesToInsert.push({
+                name: parts[2],
+                level: 2,
+                parent_name: parts[1]
+            });
+        } else if (type === 'sub2') {
+            categoriesToInsert.push({
+                name: parts[3],
+                level: 3,
+                parent_name: `${parts[1]} > ${parts[2]}`
+            });
+        }
+    }
+    
+    if (categoriesToInsert.length > 0) {
+        const { error } = await supabaseClient
+            .from('categories')
+            .insert(categoriesToInsert);
+        
+        if (error) {
+            console.error('เกิดข้อผิดพลาดในการสร้างหมวดหมู่:', error);
+            throw new Error('ไม่สามารถสร้างหมวดหมู่ใหม่ได้: ' + error.message);
+        }
+        
+        console.log('สร้างหมวดหมู่ใหม่สำเร็จ:', categoriesToInsert.length, 'หมวดหมู่');
+    }
+}
+
+// ฟังก์ชันบันทึกคำถามแบบ batch - เพิ่มใหม่
+async function saveQuestionsInBatches(questions) {
+    const BATCH_SIZE = 25;
+    let successCount = 0;
+    const batchErrors = [];
+    
+    // แยกคำถามเป็นกลุ่มๆ
+    const batches = [];
+    for (let i = 0; i < questions.length; i += BATCH_SIZE) {
+        batches.push(questions.slice(i, i + BATCH_SIZE));
+    }
+    
+    console.log(`กำลังบันทึก ${questions.length} คำถาม เป็น ${batches.length} batch`);
+    
+    // บันทึกทีละ batch
+    for (let i = 0; i < batches.length; i++) {
+        const batch = batches[i];
+        const batchNumber = i + 1;
+        
+        try {
+            updateProgressDiv(`💾 กำลังบันทึก batch ${batchNumber}/${batches.length} (${batch.length} ข้อ)...`);
+            
+            const { data, error } = await supabaseClient
+                .from('questions')
+                .insert(batch);
+            
+            if (error) {
+                console.error(`Batch ${batchNumber} ผิดพลาด:`, error);
+                batchErrors.push(`Batch ${batchNumber} (${batch.length} ข้อ): ${error.message}`);
+            } else {
+                successCount += batch.length;
+                console.log(`Batch ${batchNumber} สำเร็จ: ${batch.length} ข้อ`);
+            }
+            
+        } catch (err) {
+            console.error(`เกิดข้อผิดพลาดใน batch ${batchNumber}:`, err);
+            batchErrors.push(`Batch ${batchNumber} (${batch.length} ข้อ): ${err.message}`);
+        }
+    }
+    
+    return { successCount, batchErrors };
+}
+
+// ฟังก์ชันอัพเดตแถบความคืบหน้า - เพิ่มใหม่
+function updateProgressDiv(message) {
+    const progressDiv = document.getElementById('import-progress');
+    if (progressDiv) {
+        progressDiv.innerHTML = `<p>${message}</p>`;
+    }
+}
+
+// ฟังก์ชันลบแถบความคืบหน้า - เพิ่มใหม่
+function removeProgressDiv() {
+    const progressDiv = document.getElementById('import-progress');
+    if (progressDiv) {
+        progressDiv.remove();
+    }
+}
+
+// ฟังก์ชันแสดงผลการนำเข้า - เพิ่มใหม่
+function showImportResult(successCount, errorCount, errors) {
+    let message = `🎉 การนำเข้าเสร็จสิ้น!\n\n`;
+    message += `✅ นำเข้าสำเร็จ: ${successCount} คำถาม\n`;
+    message += `❌ ไม่สามารถนำเข้าได้: ${errorCount} รายการ\n`;
+    
+    if (errorCount > 0 && errors.length > 0) {
+        message += `\n📋 รายละเอียดข้อผิดพลาด:\n`;
+        const displayErrors = errors.slice(0, 10);
+        message += displayErrors.join('\n');
+        
+        if (errors.length > 10) {
+            message += `\n... และอีก ${errors.length - 10} ข้อผิดพลาด`;
+        }
+    }
+    
+    alert(message);
+}
 
 // ฟังก์ชันสำหรับแสดงรูปภาพคำถาม
 function handleImageUpload(event) {
@@ -12654,17 +12878,10 @@ function createModalContent(historyEntry) {
     const { gameData, playerName, score, totalQuestions, percentage, category, playedAt } = historyEntry;
     const { questions, userAnswers, randomOrder } = gameData;
     
-    // แปลงวันที่
-    const playedDate = new Date(playedAt);
-    const formattedDate = playedDate.toLocaleDateString('th-TH', {
-        day: '2-digit',
-        month: '2-digit', 
-        year: 'numeric'
-    });
-    const formattedTime = playedDate.toLocaleTimeString('th-TH', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    // แปลงวันที่และเวลา (24 ชั่วโมง)
+const dateTimeFormatted = formatDateTime24Hour(playedAt);
+const formattedDate = dateTimeFormatted.date;
+const formattedTime = dateTimeFormatted.time;
     
     // สร้าง container หลัก
     const container = document.createElement('div');
@@ -12817,8 +13034,6 @@ function initAdminSystem() {
     // ซ่อนแท็บแอดมินเป็นค่าเริ่มต้น
     updateAdminTabs();
     
-    // ไม่ต้องฟัง F10 แล้ว เนื่องจากเปลี่ยนเป็นใช้การกรอกชื่อผู้เล่น
-    
     console.log("ระบบแอดมินพร้อมใช้งานแล้ว");
 }
 
@@ -12925,16 +13140,15 @@ function verifyAdminPassword() {
     }
 }
 
-// แทนที่ฟังก์ชัน activateAdminModeWithAutoLogin() เดิมด้วยโค้ดนี้
 async function activateAdminModeWithAutoLogin() {
     isAdminMode = true;
     console.log("เข้าสู่โหมดแอดมิน");
     
     // ตั้งชื่อผู้เล่นแอดมินอัตโนมัติ
     currentPlayer = {
-        name: "ผู้เล่น Admin",
+        name: "Admin",
         loginTime: new Date().toISOString(),
-        avatar: "🔑",
+        avatar: "👑",
         isAdmin: true
     };
     
@@ -12944,11 +13158,8 @@ async function activateAdminModeWithAutoLogin() {
     // แสดงแท็บแอดมิน
     updateAdminTabs();
     
-    // แสดงข้อความแจ้งเตือน
-    showAdminNotification('🔑 เข้าสู่โหมดแอดมิน สำเร็จ!');
-    
-    // เพิ่มปุ่มออกจากระบบ
-    addLogoutButton();
+    // เพิ่ม Admin UI (ลบการแสดงข้อความแจ้งเตือนออก)
+    addAdminUI();
     
     // อัพเดตการแสดงผลหน้าล็อกอิน
     updateLoginDisplay();
@@ -12977,7 +13188,6 @@ function activateAdminMode() {
     addLogoutButton();
 }
 
-// ฟังก์ชันออกจากโหมดแอดมิน
 function deactivateAdminMode() {
     isAdminMode = false;
     console.log("ออกจากโหมดแอดมิน");
@@ -12988,13 +13198,50 @@ function deactivateAdminMode() {
     // แสดงข้อความแจ้งเตือน
     showAdminNotification('👋 ออกจากโหมดแอดมิน');
     
-    // ลบปุ่มออกจากระบบ
-    removeLogoutButton();
+    // ลบ Admin UI
+    removeAdminUI();
     
     // กลับไปแท็บเล่นเกม
     const playTab = document.getElementById('play-tab');
     if (playTab && !playTab.classList.contains('active')) {
         playTab.click();
+    }
+}
+
+// ฟังก์ชันเพิ่ม Admin UI - เพิ่มใหม่
+function addAdminUI() {
+    // ตรวจสอบว่ามี UI อยู่แล้วหรือไม่
+    if (document.getElementById('admin-ui-container')) return;
+    
+    // สร้าง container สำหรับ Admin UI
+    const adminContainer = document.createElement('div');
+    adminContainer.id = 'admin-ui-container';
+    adminContainer.className = 'admin-ui-container';
+    
+    // สร้าง Admin Mode Badge (แสดงอย่างเดียว)
+    const adminBadge = document.createElement('div');
+    adminBadge.className = 'admin-mode-indicator';
+    adminBadge.innerHTML = '👑 Admin Mode';
+    
+    // สร้างปุ่มออกจากระบบ (กดได้)
+    const logoutBtn = document.createElement('button');
+    logoutBtn.className = 'admin-logout-btn';
+    logoutBtn.innerHTML = '🚪 ออกจากระบบ';
+    logoutBtn.onclick = deactivateAdminMode;
+    
+    // รวม elements
+    adminContainer.appendChild(adminBadge);
+    adminContainer.appendChild(logoutBtn);
+    
+    // เพิ่มเข้าไปในหน้าเว็บ
+    document.body.appendChild(adminContainer);
+}
+
+// ฟังก์ชันลบ Admin UI - เพิ่มใหม่
+function removeAdminUI() {
+    const adminContainer = document.getElementById('admin-ui-container');
+    if (adminContainer) {
+        adminContainer.remove();
     }
 }
 
@@ -13037,29 +13284,6 @@ function showAdminNotification(message) {
             notification.remove();
         }
     }, 3000);
-}
-
-// ฟังก์ชันเพิ่มปุ่มออกจากระบบ
-function addLogoutButton() {
-    // ตรวจสอบว่ามีปุ่มอยู่แล้วหรือไม่
-    if (document.getElementById('admin-logout-btn')) return;
-    
-    const logoutBtn = document.createElement('button');
-    logoutBtn.id = 'admin-logout-btn';
-    logoutBtn.className = 'admin-logout-btn';
-    logoutBtn.innerHTML = '🚪 ออกจากระบบ';
-    logoutBtn.onclick = deactivateAdminMode;
-    
-    // เพิ่มปุ่มที่มุมขวาบน
-    document.body.appendChild(logoutBtn);
-}
-
-// ฟังก์ชันลบปุ่มออกจากระบบ
-function removeLogoutButton() {
-    const logoutBtn = document.getElementById('admin-logout-btn');
-    if (logoutBtn) {
-        logoutBtn.remove();
-    }
 }
 
 // เพิ่ม CSS สำหรับ confirm dialog ที่ปรับปรุงแล้ว
@@ -13177,6 +13401,34 @@ enhancedConfirmStyles.textContent = `
 
 document.head.appendChild(enhancedConfirmStyles);
 
+function formatDateTime24Hour(dateString) {
+    // บังคับให้ข้อมูลเป็น UTC โดยเพิ่ม Z ถ้าไม่มี
+    let utcDateString = dateString;
+    if (!dateString.endsWith('Z') && !dateString.includes('+')) {
+        utcDateString = dateString + 'Z';
+    }
+    
+    // สร้าง Date object (จะแปลง UTC เป็น local time)
+    const date = new Date(utcDateString);
+    
+    if (isNaN(date.getTime())) {
+        return { date: 'Invalid Date', time: 'Invalid Time', full: 'Invalid Date' };
+    }
+    
+    // ใช้ getHours(), getMinutes() (จะได้เวลา local ที่ถูกต้อง)
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    
+    return {
+        date: `${day}/${month}/${year}`,
+        time: `${hours}:${minutes}`,
+        full: `${day}/${month}/${year} ${hours}:${minutes}`
+    };
+}
 </script>
 </body>
 </html>
