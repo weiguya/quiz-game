@@ -5320,19 +5320,25 @@ button.delete:hover {
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* ปรับแต่งสำหรับหน้าจอมือถือ */
+/* ปรับแต่งสำหรับหน้าจอมือถือ - ย้ายลงล่างสุด */
 @media (max-width: 768px) {
     .admin-ui-container {
-        top: 10px;
+        top: auto;
+        bottom: 5px;
         right: 10px;
         gap: 6px;
     }
     
-    .admin-mode-indicator,
+    /* ซ่อน indicator บนมือถือ */
+    .admin-mode-indicator {
+        display: none;
+    }
+    
+    /* ปุ่มออกจากระบบเล็กลงอีก */
     .admin-logout-btn {
-        padding: 8px 12px;
-        font-size: 13px;
-        border-radius: 16px;
+        padding: 3px 6px;
+        font-size: 9px;
+        border-radius: 8px;
     }
 }
 
