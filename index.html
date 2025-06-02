@@ -1579,21 +1579,6 @@ button.delete:hover {
     outline: none;
 }
 
-.form-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-@media (max-width: 768px) {
-    .form-actions {
-        flex-direction: column;
-    }
-    
-    .primary-btn, .secondary-btn {
-        width: 100%;
-    }
-}
 /* ปรับปรุงสไตล์สำหรับส่วนคำถามที่บันทึกไว้ */
 .saved-questions-section {
     background: linear-gradient(145deg, #ffffff, #f9fbff);
@@ -1689,32 +1674,6 @@ button.delete:hover {
         min-width: 80px;
         font-size: 13px;
     }
-}
-
-.edit-btn {
-    background: linear-gradient(45deg, #1976d2, #4791db);
-    color: white;
-    border: none;
-    box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
-}
-
-.edit-btn:hover {
-    background: linear-gradient(45deg, #115293, #1976d2);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(25, 118, 210, 0.3);
-}
-
-.delete-btn {
-    background: linear-gradient(45deg, #f44336, #e57373);
-    color: white;
-    border: none;
-    box-shadow: 0 3px 8px rgba(244, 67, 54, 0.2);
-}
-
-.delete-btn:hover {
-    background: linear-gradient(45deg, #d32f2f, #f44336);
-    transform: translateY(-2px);
-    box-shadow: 0 5px 12px rgba(244, 67, 54, 0.3);
 }
 
 .empty-state {
@@ -1827,66 +1786,6 @@ button.delete:hover {
     font-size: 20px;
     color: var(--primary-color);
     font-weight: bold;
-}
-/* สไตล์สำหรับแท็บ */
-.tab-content {
-  display: none;
-  opacity: 0;
-  visibility: hidden;
-  height: 0;
-  overflow: hidden;
-  transition: opacity 0.3s ease;
-}
-
-.tab-content.active {
-  display: block;
-  opacity: 1;
-  visibility: visible;
-  height: auto;
-  overflow: visible;
-}
-
-/* สไตล์สำหรับ radio buttons แบบใหม่ */
-.choice-radio-input {
-  margin-right: 5px;
-  cursor: pointer;
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary-color);
-}
-
-.choice-container {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-  background-color: var(--secondary-color);
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.choice-container:hover {
-  background-color: var(--hover-color);
-}
-
-.choice-label {
-  margin-right: 10px;
-  font-weight: 600;
-  color: var(--primary-dark);
-  width: 20px;
-}
-
-.choice-input {
-  flex-grow: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
-  transition: border 0.2s ease;
-}
-
-.choice-input:focus {
-  border-color: var(--primary-color);
-  outline: none;
 }
 
 /* เพิ่ม CSS สำหรับคำถามที่ไม่ได้ตอบ */
@@ -2292,22 +2191,6 @@ button.delete:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-}
-
-/* ปรับแต่งการแสดงผลบนมือถือ */
-@media (max-width: 600px) {
-    .category-selection-container {
-        padding: 18px;
-        margin: 0 15px 20px;
-    }
-    
-    .category-selection-header h3 {
-        font-size: 18px;
-    }
-    
-    .category-selection-header p {
-        font-size: 14px;
-    }
 }
 
 /* สไตล์สำหรับหน้าล็อกอิน - ปรับปรุงใหม่ */
@@ -7481,12 +7364,6 @@ async function loadCategories() {
   }
 }
 
-// ฟังก์ชันบันทึกหมวดหมู่ลง Database (ไม่ใช้แล้ว แต่เก็บไว้)
-function saveCategories() {
-    // ไม่ต้องทำอะไรเพราะบันทึกไปยัง database แล้วในแต่ละฟังก์ชัน
-    console.log('หมวดหมู่ถูกบันทึกใน database อัตโนมัติ');
-}
-
 async function addCategory(type, parent, grandparent) {
     console.log("เริ่มเพิ่มหมวดหมู่:", type, parent, grandparent);
 
@@ -8491,11 +8368,6 @@ async function loadGameHistory() {
         gameHistory = [];
         filteredHistory = [];
     }
-}
-
-// ฟังก์ชันบันทึกประวัติการเล่นลง localStorage
-function saveGameHistory() {
-    localStorage.setItem('quiz-game-history', JSON.stringify(gameHistory));
 }
 
 // นำไปแทนที่ฟังก์ชัน displayQuestions ทั้งหมด
