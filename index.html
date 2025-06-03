@@ -5301,6 +5301,92 @@ let currentGameQuestions = [];
 // ตัวแปรสำหรับเก็บข้อมูลผู้เล่น
 let currentPlayer = null;
 
+// ตัวแปรสำหรับระบบแอดมินใหม่
+let currentUser = null;
+let isAdminMode = false;
+let adminProfile = null;
+
+// ฟังก์ชันตรวจสอบว่าเป็นแอดมินหรือไม่
+async function checkIsAdmin(userId) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('admin_users')
+            .select('*')
+            .eq('id', userId)
+            .eq('is_active', true)
+            .single();
+        
+        if (error) {
+            console.log('ไม่ใช่แอดมิน:', error.message);
+            return null;
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Error checking admin:', error);
+        return null;
+    }
+}
+
+// ฟังก์ชันล็อกอินแอดมิน
+async function loginAdmin(email, password) {
+    try {
+        // ล็อกอินด้วย Supabase Auth
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) {
+            throw error;
+        }
+        
+        // ตรวจสอบว่าเป็นแอดมินหรือไม่
+        const adminData = await checkIsAdmin(data.user.id);
+        
+        if (!adminData) {
+            // ไม่ใช่แอดมิน ต้องออกจากระบบ
+            await supabaseClient.auth.signOut();
+            throw new Error('คุณไม่มีสิทธิ์เข้าใช้งานระบบแอดมิน');
+        }
+        
+        // เป็นแอดมิน
+        currentUser = data.user;
+        adminProfile = adminData;
+        isAdminMode = true;
+        
+        console.log('ล็อกอินแอดมินสำเร็จ:', adminData);
+        
+        // เปิดโหมดแอดมิน
+        activateAdminMode();
+        
+        return true;
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการล็อกอิน:', error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+        return false;
+    }
+}
+
+// ฟังก์ชันออกจากระบบแอดมิน
+async function logoutAdmin() {
+    try {
+        await supabaseClient.auth.signOut();
+        
+        currentUser = null;
+        adminProfile = null;
+        isAdminMode = false;
+        
+        deactivateAdminMode();
+        
+        console.log('ออกจากระบบแอดมินแล้ว');
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการออกจากระบบ:', error);
+    }
+}
+
 // ตัวแปรระบบสำหรับประวัติการเล่น
 let gameHistory = [];
 let currentHistoryPage = 1;
@@ -10312,13 +10398,19 @@ function loginPlayer() {
         return;
     }
 
-    // ป้องกันการใช้ชื่อ 'admin' 
-if (playerName.toLowerCase() === 'admin') {
-    alert('ไม่สามารถใช้ชื่อ "admin" ได้ กรุณาเลือกชื่ออื่น');
-    return;
-}
+    // ตรวจสอบว่าเป็นการเข้าสู่โหมดแอดมินหรือไม่
+    if (playerName.toLowerCase() === 'admin') {
+        showAdminLoginForm();
+        return;
+    }
     
-    // บันทึกชื่อผู้เล่นลงในตัวแปร
+    // ป้องกันการใช้ชื่อ admin
+    if (playerName.toLowerCase().includes('admin')) {
+        alert('ไม่สามารถใช้ชื่อที่มีคำว่า "admin" ได้ กรุณาเลือกชื่ออื่น');
+        return;
+    }
+    
+    // ล็อกอินผู้เล่นธรรมดา
     currentPlayer = {
         name: playerName,
         loginTime: new Date().toISOString(),
@@ -10341,7 +10433,7 @@ if (playerName.toLowerCase() === 'admin') {
     if (startScreen) startScreen.classList.remove('hidden');
     if (categorySelectionContainer) categorySelectionContainer.classList.remove('hidden');
     
-    // เพิ่มส่วนแสดงชื่อผู้เล่นเข้าไปในกรอบเกมที่มุมขวาบน (ไม่มีอวตาร์)
+    // เพิ่มส่วนแสดงชื่อผู้เล่นเข้าไปในกรอบเกมที่มุมขวาบน
     const quizContainer = document.querySelector('.container.quiz-player');
     if (quizContainer && !quizContainer.querySelector('.player-info.top-right')) {
         const playerInfo = document.createElement('div');
@@ -10359,6 +10451,146 @@ if (playerName.toLowerCase() === 'admin') {
     updatePlayMainCategorySelect();
     
     console.log("ล็อกอินสำเร็จ:", currentPlayer);
+}
+
+// ฟังก์ชันแสดงฟอร์มล็อกอินแอดมิน
+function showAdminLoginForm() {
+    // ลบฟอร์มเก่า (ถ้ามี)
+    const existingForm = document.getElementById('admin-login-overlay');
+    if (existingForm) {
+        existingForm.remove();
+    }
+    
+    // สร้างฟอร์มล็อกอินแอดมิน
+    const overlay = document.createElement('div');
+    overlay.id = 'admin-login-overlay';
+    overlay.className = 'admin-password-overlay';
+    
+    overlay.innerHTML = `
+        <div class="admin-password-modal">
+            <div class="admin-password-header">
+                <h3>🔐 ล็อกอินแอดมิน</h3>
+                <button class="close-btn" onclick="closeAdminLoginForm()">×</button>
+            </div>
+            <div class="admin-password-body">
+                <div style="margin-bottom: 15px;">
+                    <label for="admin-email-input">อีเมล:</label>
+                    <input type="email" id="admin-email-input" class="admin-password-input" placeholder="admin@yoursite.com">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="admin-password-input">รหัสผ่าน:</label>
+                    <input type="password" id="admin-password-input" class="admin-password-input" placeholder="ใส่รหัสผ่านที่นี่">
+                </div>
+                <div class="admin-password-error" id="admin-login-error" style="display: none;">
+                    ❌ อีเมลหรือรหัสผ่านไม่ถูกต้อง
+                </div>
+            </div>
+            <div class="admin-password-actions">
+                <button class="admin-password-confirm" onclick="submitAdminLogin()">เข้าสู่ระบบ</button>
+                <button class="admin-password-cancel" onclick="closeAdminLoginForm()">ยกเลิก</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    // โฟกัสที่ input อีเมล
+    setTimeout(() => {
+        const emailInput = document.getElementById('admin-email-input');
+        if (emailInput) {
+            emailInput.focus();
+            
+            // รองรับการกด Enter
+            emailInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('admin-password-input').focus();
+                }
+            });
+            
+            document.getElementById('admin-password-input').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    submitAdminLogin();
+                }
+            });
+        }
+    }, 100);
+    
+    // ป้องกัน scroll
+    document.body.style.overflow = 'hidden';
+}
+
+// ฟังก์ชันปิดฟอร์มล็อกอินแอดมิน
+function closeAdminLoginForm() {
+    const overlay = document.getElementById('admin-login-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+    document.body.style.overflow = '';
+    
+    // ล้างค่าในช่องชื่อผู้เล่น
+    const playerNameInput = document.getElementById('player-name');
+    if (playerNameInput) {
+        playerNameInput.value = '';
+    }
+}
+
+// ฟังก์ชันส่งข้อมูลล็อกอินแอดมิน
+async function submitAdminLogin() {
+    const emailInput = document.getElementById('admin-email-input');
+    const passwordInput = document.getElementById('admin-password-input');
+    const errorDiv = document.getElementById('admin-login-error');
+    
+    const email = emailInput.value.trim();
+    const password = passwordInput.value.trim();
+    
+    if (!email || !password) {
+        alert('กรุณากรอกอีเมลและรหัสผ่าน');
+        return;
+    }
+    
+    // แสดง loading
+    const confirmBtn = document.querySelector('.admin-password-confirm');
+    const originalText = confirmBtn.textContent;
+    confirmBtn.textContent = 'กำลังตรวจสอบ...';
+    confirmBtn.disabled = true;
+    
+    // ลองล็อกอิน
+    const success = await loginAdmin(email, password);
+    
+    if (success) {
+        // ล็อกอินสำเร็จ
+        closeAdminLoginForm();
+        
+        // ซ่อนหน้าล็อกอินหลัก
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) loginScreen.classList.add('hidden');
+        
+        alert('ยินดีต้อนรับสู่ระบบแอดมิน! 👑');
+        
+    } else {
+        // ล็อกอินไม่สำเร็จ
+        errorDiv.style.display = 'block';
+        passwordInput.value = '';
+        passwordInput.focus();
+        
+        // เขย่า modal
+        const modal = document.querySelector('.admin-password-modal');
+        if (modal) {
+            modal.classList.add('shake');
+            setTimeout(() => {
+                modal.classList.remove('shake');
+            }, 500);
+        }
+        
+        // ซ่อนข้อผิดพลาดหลัง 3 วินาที
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 3000);
+    }
+    
+    // คืนค่าปุ่ม
+    confirmBtn.textContent = originalText;
+    confirmBtn.disabled = false;
 }
 
 // ฟังก์ชันสุ่มไอคอนน่ารักๆ สำหรับผู้เล่น
