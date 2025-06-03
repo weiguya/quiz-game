@@ -5301,11 +5301,6 @@ let currentGameQuestions = [];
 // ตัวแปรสำหรับเก็บข้อมูลผู้เล่น
 let currentPlayer = null;
 
-// ระบบ Admin Mode
-let isAdminMode = false;
-let adminKeyBuffer = '';
-const ADMIN_PASSWORD = 'Foei007338';
-
 // ตัวแปรระบบสำหรับประวัติการเล่น
 let gameHistory = [];
 let currentHistoryPage = 1;
@@ -10317,18 +10312,11 @@ function loginPlayer() {
         return;
     }
 
-    // ตรวจสอบว่าเป็นการเข้าสู่โหมดแอดมินหรือไม่
-    if (playerName.toLowerCase() === 'admin') {
-        playerNameInput.value = ''; // ล้างชื่อ
-        showAdminPasswordPrompt();
-        return;
-    }
-
-    // ป้องกันการใส่รหัสผ่านเป็นชื่อผู้เล่น
-    if (playerName.includes(ADMIN_PASSWORD)) {
-        alert('ไม่สามารถใช้ชื่อนี้ได้ กรุณาเลือกชื่ออื่น');
-        return;
-    }
+    // ป้องกันการใช้ชื่อ 'admin' 
+if (playerName.toLowerCase() === 'admin') {
+    alert('ไม่สามารถใช้ชื่อ "admin" ได้ กรุณาเลือกชื่ออื่น');
+    return;
+}
     
     // บันทึกชื่อผู้เล่นลงในตัวแปร
     currentPlayer = {
@@ -12505,135 +12493,6 @@ function initAdminSystem() {
 // ฟังก์ชันจัดการการกดปุ่มคีย์บอร์ด (ไม่ใช้แล้ว แต่เก็บไว้เผื่ออนาคต)
 function handleAdminKeyInput(event) {
     // ไม่ใช้ F10 แล้ว เปลี่ยนเป็นใช้การกรอกชื่อผู้เล่น
-}
-
-// ฟังก์ชันแสดงป็อปอัพใส่รหัสผ่าน
-function showAdminPasswordPrompt() {
-    // ตรวจสอบว่าอยู่ในโหมดแอดมินอยู่แล้วหรือไม่
-    if (isAdminMode) {
-        showAdminNotification('🔑 อยู่ในโหมดแอดมินอยู่แล้ว');
-        return;
-    }
-    
-    // สร้างป็อปอัพ
-    const overlay = document.createElement('div');
-    overlay.id = 'admin-password-overlay';
-    overlay.className = 'admin-password-overlay';
-    
-    overlay.innerHTML = `
-        <div class="admin-password-modal">
-            <div class="admin-password-header">
-                <h3>🔐 เข้าสู่โหมดแอดมิน</h3>
-                <button class="close-btn" onclick="closeAdminPasswordPrompt()">×</button>
-            </div>
-            <div class="admin-password-body">
-                <label for="admin-password-input">กรุณาใส่รหัสผ่าน:</label>
-                <input type="password" id="admin-password-input" class="admin-password-input" placeholder="ใส่รหัสผ่านที่นี่">
-                <div class="admin-password-error" id="admin-password-error" style="display: none;">
-                    ❌ รหัสผ่านไม่ถูกต้อง
-                </div>
-            </div>
-            <div class="admin-password-actions">
-                <button class="admin-password-confirm" onclick="verifyAdminPassword()">ยืนยัน</button>
-                <button class="admin-password-cancel" onclick="closeAdminPasswordPrompt()">ยกเลิก</button>
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(overlay);
-    
-    // โฟกัสที่ input
-    setTimeout(() => {
-        const input = document.getElementById('admin-password-input');
-        if (input) {
-            input.focus();
-            
-            // รองรับการกด Enter
-            input.addEventListener('keyup', function(e) {
-                if (e.key === 'Enter') {
-                    verifyAdminPassword();
-                }
-            });
-        }
-    }, 100);
-    
-    // ป้องกัน scroll
-    document.body.style.overflow = 'hidden';
-}
-
-// ฟังก์ชันปิดป็อปอัพรหัสผ่าน
-function closeAdminPasswordPrompt() {
-    const overlay = document.getElementById('admin-password-overlay');
-    if (overlay) {
-        overlay.remove();
-    }
-    document.body.style.overflow = '';
-}
-
-// ฟังก์ชันตรวจสอบรหัสผ่าน
-function verifyAdminPassword() {
-    const input = document.getElementById('admin-password-input');
-    const errorDiv = document.getElementById('admin-password-error');
-    
-    if (!input) return;
-    
-    const password = input.value.trim();
-    
-    if (password === ADMIN_PASSWORD) {
-        // รหัสผ่านถูกต้อง
-        closeAdminPasswordPrompt();
-        activateAdminModeWithAutoLogin();
-    } else {
-        // รหัสผ่านผิด
-        input.value = '';
-        input.focus();
-        errorDiv.style.display = 'block';
-        
-        // เขย่า modal
-        const modal = document.querySelector('.admin-password-modal');
-        if (modal) {
-            modal.classList.add('shake');
-            setTimeout(() => {
-                modal.classList.remove('shake');
-            }, 500);
-        }
-        
-        // ซ่อนข้อผิดพลาดหลัง 3 วินาที
-        setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 3000);
-    }
-}
-
-async function activateAdminModeWithAutoLogin() {
-    isAdminMode = true;
-    console.log("เข้าสู่โหมดแอดมิน");
-    
-    // ตั้งชื่อผู้เล่นแอดมินอัตโนมัติ
-    currentPlayer = {
-        name: "Admin",
-        loginTime: new Date().toISOString(),
-        avatar: "👑",
-        isAdmin: true
-    };
-    
-    // โหลดประวัติการเล่นทั้งหมดสำหรับ Admin
-    await loadGameHistory();
-    
-    // แสดงแท็บแอดมิน
-    updateAdminTabs();
-    
-    // เพิ่ม Admin UI (ลบการแสดงข้อความแจ้งเตือนออก)
-    addAdminUI();
-    
-    // อัพเดตการแสดงผลหน้าล็อกอิน
-    updateLoginDisplay();
-    
-    // ไปที่แท็บเล่นเกมก่อน
-    const playTab = document.getElementById('play-tab');
-    if (playTab && !playTab.classList.contains('active')) {
-        playTab.click();
-    }
 }
 
 // ฟังก์ชันเปิดโหมดแอดมิน
