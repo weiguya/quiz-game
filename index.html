@@ -7453,9 +7453,10 @@ function updatePlayerInfoInGame() {
 // ฟังก์ชันโหลดหมวดหมู่จาก Database
 async function loadCategories() {
   try {
+    // โหลดข้อมูลหมวดหมู่พร้อม is_locked
     const { data, error } = await supabaseClient
       .from('categories')
-      .select('*')
+      .select('*')  // เปลี่ยนจาก select('*') เพื่อให้แน่ใจว่าได้ is_locked มาด้วย
       .order('level', { ascending: true })
       .order('name', { ascending: true });
     
@@ -7466,6 +7467,7 @@ async function loadCategories() {
     }
     
     // แปลงข้อมูลจาก Database เป็นรูปแบบ nested object เดิม
+    // เพิ่มการเก็บข้อมูล is_locked สำหรับหมวดหมู่ย่อย 2
     categories = {};
     
     data.forEach(item => {
@@ -7483,7 +7485,7 @@ async function loadCategories() {
           categories[item.parent_name][item.name] = [];
         }
       } else if (item.level === 3) {
-        // หมวดหมู่ย่อย 2
+        // หมวดหมู่ย่อย 2 - เพิ่มการเก็บข้อมูล is_locked
         const parts = item.parent_name.split(' > ');
         const mainCategory = parts[0];
         const sub1Category = parts[1];
@@ -7494,11 +7496,17 @@ async function loadCategories() {
         if (!categories[mainCategory][sub1Category]) {
           categories[mainCategory][sub1Category] = [];
         }
-        categories[mainCategory][sub1Category].push(item.name);
+        
+        // เปลี่ยนจากการเก็บแค่ string เป็น object ที่มี name และ is_locked
+        categories[mainCategory][sub1Category].push({
+          name: item.name,
+          is_locked: item.is_locked || false  // default เป็น false ถ้าเป็น null
+        });
       }
     });
     
     console.log('โหลดหมวดหมู่สำเร็จ:', Object.keys(categories).length, 'หมวดหมู่หลัก');
+    console.log('ข้อมูลหมวดหมู่พร้อม is_locked:', categories);
     
   } catch (error) {
     console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
