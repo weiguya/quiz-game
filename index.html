@@ -7919,6 +7919,13 @@ function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
             const lockIcon = subCategory2Item.is_locked ? ' 🔒' : '';
             option.textContent = `${subCategory2Item.name}${lockIcon}`;
             
+            // ตรวจสอบสิทธิ์การเข้าถึง - ถ้าล็อกและไม่ใช่ admin ให้ disable
+            if (subCategory2Item.is_locked && !canPlayerAccessCategory(mainCategory, subCategory1, subCategory2Item.name)) {
+                option.disabled = true;
+                option.style.color = '#999999';
+                option.style.backgroundColor = '#f5f5f5';
+            }
+            
             selectElement.appendChild(option);
         }
         selectElement.disabled = false;
@@ -9340,6 +9347,16 @@ function startQuiz() {
     // ตรวจสอบว่ามีคำถามหรือไม่
     if (!Array.isArray(currentGameQuestions) || currentGameQuestions.length === 0) {
         alert('ยังไม่มีคำถามในหมวดหมู่ที่เลือก กรุณาเลือกหมวดหมู่อื่น');
+        return;
+    }
+    
+    // ตรวจสอบสิทธิ์การเข้าถึงหมวดหมู่ที่เลือก
+    const mainCategory = document.getElementById('play-main-category').value;
+    const subCategory1 = document.getElementById('play-sub-category1').value;
+    const subCategory2 = document.getElementById('play-sub-category2').value;
+    
+    if (!canPlayerAccessCategory(mainCategory, subCategory1, subCategory2)) {
+        alert('ไม่สามารถเข้าเล่นหมวดหมู่นี้ได้ หมวดหมู่นี้เป็นเนื้อหาพิเศษ');
         return;
     }
     
@@ -12885,6 +12902,17 @@ function initAdminSystem() {
     updateAdminTabs();
     
     console.log("ระบบแอดมินพร้อมใช้งานแล้ว");
+}
+
+// ฟังก์ชันตรวจสอบสิทธิ์การเข้าถึงหมวดหมู่
+function canPlayerAccessCategory(mainCategory, subCategory1, subCategory2) {
+    // Admin เข้าได้ทุกหมวดหมู่
+    if (isAdminMode && adminProfile) {
+        return true;
+    }
+    
+    // ตรวจสอบว่าหมวดหมู่ย่อย 2 ถูกล็อกหรือไม่
+    return !isCategoryLocked(mainCategory, subCategory1, subCategory2);
 }
 
 // ฟังก์ชันจัดการการกดปุ่มคีย์บอร์ด (ไม่ใช้แล้ว แต่เก็บไว้เผื่ออนาคต)
