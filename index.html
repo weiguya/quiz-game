@@ -7902,7 +7902,7 @@ function updateSubCategory1Select(selectElement, mainCategory) {
     }
 }
 
-// อัพเดทหมวดหมู่ย่อย 2 เมื่อเลือกหมวดหมู่ย่อย 1
+// ฟังก์ชันอัพเดทหมวดหมู่ย่อย 2 เมื่อเลือกหมวดหมู่ย่อย 1
 function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
     selectElement.innerHTML = '<option value="" disabled selected>-- เลือกหมวดหมู่ย่อย 2 --</option>';
     
@@ -7910,10 +7910,15 @@ function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
         categories[mainCategory] && 
         categories[mainCategory][subCategory1]) {
         
-        for (const subCategory2 of categories[mainCategory][subCategory1]) {
+        // วนลูปหมวดหมู่ย่อย 2 ที่เป็น object แบบใหม่
+        for (const subCategory2Item of categories[mainCategory][subCategory1]) {
             const option = document.createElement('option');
-            option.value = subCategory2;
-            option.textContent = subCategory2;
+            option.value = subCategory2Item.name;
+            
+            // แสดงไอคอนล็อกถ้าหมวดหมู่ถูกล็อก
+            const lockIcon = subCategory2Item.is_locked ? ' 🔒' : '';
+            option.textContent = `${subCategory2Item.name}${lockIcon}`;
+            
             selectElement.appendChild(option);
         }
         selectElement.disabled = false;
@@ -7921,6 +7926,24 @@ function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
         selectElement.disabled = true;
     }
 }
+
+// ฟังก์ชันสำหรับตรวจสอบว่าหมวดหมู่ถูกล็อกหรือไม่
+function isCategoryLocked(mainCategory, subCategory1, subCategory2) {
+    try {
+        if (!categories[mainCategory] || !categories[mainCategory][subCategory1]) {
+            return false;
+        }
+        
+        const subCategory2List = categories[mainCategory][subCategory1];
+        const categoryItem = subCategory2List.find(item => item.name === subCategory2);
+        
+        return categoryItem ? categoryItem.is_locked : false;
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการตรวจสอบการล็อก:', error);
+        return false;
+    }
+}
+
 // ฟังก์ชันจัดการ Event Listeners
 function setupCategoryEventListeners() {
     // แท็บจัดการหมวดหมู่
