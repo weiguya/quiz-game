@@ -5471,11 +5471,11 @@ function displayGameHistory() {
     }
     
     // แสดงจำนวนรายการประวัติการเล่นที่กรองแล้ว
-const totalHistoryCount = document.getElementById('total-history-count');
-if (totalHistoryCount) {
-    // แสดงจำนวนรายการที่ผ่านการกรองแล้ว - เพิ่มช่องว่าง
-    totalHistoryCount.textContent = ` ${filteredHistory.length}`;
-}
+    const totalHistoryCount = document.getElementById('total-history-count');
+    if (totalHistoryCount) {
+        // แสดงจำนวนรายการที่ผ่านการกรองแล้ว - เพิ่มช่องว่าง
+        totalHistoryCount.textContent = ` ${filteredHistory.length}`;
+    }
     
     // ถ้าไม่มีประวัติ
     if (filteredHistory.length === 0) {
@@ -5525,7 +5525,7 @@ if (totalHistoryCount) {
                         <th>คะแนน</th>
                         <th>หมวดหมู่</th>
                         <th>วันที่และเวลา</th>
-                        <th>การจัดการ</th>
+                        ${isAdminMode ? '<th>การจัดการ</th>' : ''}
                     </tr>
                 </thead>
                 <tbody>
@@ -5535,9 +5535,9 @@ if (totalHistoryCount) {
     currentPageItems.forEach((entry, index) => {
         try {
             // แปลงเวลาให้เป็นรูปแบบที่อ่านง่าย (24 ชั่วโมง)
-                       const dateTimeFormatted = formatDateTime24Hour(entry.playedAt);
-                                              const formattedDate = dateTimeFormatted.date;
-                                              const formattedTime = dateTimeFormatted.time;
+            const dateTimeFormatted = formatDateTime24Hour(entry.playedAt);
+            const formattedDate = dateTimeFormatted.date;
+            const formattedTime = dateTimeFormatted.time;
             
             // แยกชื่อหมวดหมู่และทำให้ดูดีขึ้น
             let categoryHTML = '<div class="category-path">';
@@ -5575,23 +5575,29 @@ if (totalHistoryCount) {
                 </div>
             `;
             
+            // สร้าง HTML สำหรับคอลัมน์การจัดการ (เฉพาะแอดมิน)
+            const managementHTML = isAdminMode ? `
+                <td class="action-cell">
+                    <button class="delete-history-btn small-btn" onclick="confirmDeleteHistory('${entry.id}')">ลบ</button>
+                </td>
+            ` : '';
+            
             historyHTML += `
-                    <tr data-id="${entry.id}" class="history-row clickable-row" onclick="showGameDetails('${entry.id}')">
+                <tr data-id="${entry.id}" class="history-row clickable-row" onclick="showGameDetails('${entry.id}')">
                     <td>${itemNumber}</td>
                     <td><div class="player-name" title="${entry.playerName || 'ไม่ระบุชื่อ'}">${entry.playerName || 'ไม่ระบุชื่อ'}</div></td>
                     <td>${scoreHTML}</td>
                     <td>${categoryHTML}</td>
                     <td>${dateTimeHTML}</td>
-                    <td class="action-cell">
-                        <button class="delete-history-btn small-btn" onclick="confirmDeleteHistory('${entry.id}')">ลบ</button>
-                    </td>
+                    ${managementHTML}
                 </tr>
             `;
         } catch (error) {
             console.error("เกิดข้อผิดพลาดในการแสดงประวัติรายการที่", index, error);
+            const managementHTML = isAdminMode ? '<td>เกิดข้อผิดพลาด</td>' : '';
             historyHTML += `
                 <tr>
-                    <td colspan="6">เกิดข้อผิดพลาดในการแสดงประวัติรายการนี้</td>
+                    <td colspan="${isAdminMode ? 6 : 5}">เกิดข้อผิดพลาดในการแสดงประวัติรายการนี้</td>
                 </tr>
             `;
         }
@@ -5616,7 +5622,7 @@ if (totalHistoryCount) {
     if (paginationElement) paginationElement.style.display = 'flex';
     if (perPageElement) perPageElement.style.display = 'flex';
     
-    console.log("แสดงประวัติการเล่นเรียบร้อยแล้ว:", currentPageItems.length, "รายการ");
+    console.log("แสดงประวัติการเล่นเรียบร้อยแล้ว:", currentPageItems.length, "รายการ", isAdminMode ? "(โหมดแอดมิน)" : "(โหมดผู้เล่น)");
     return true;
 }
 
