@@ -5328,7 +5328,7 @@ async function checkIsAdmin(userId) {
     }
 }
 
-// ฟังก์ชันล็อกอินแอดมิน
+// ฟังก์ชันล็อกอินแอดมิน - แก้ไขใหม่
 async function loginAdmin(email, password) {
     try {
         // ล็อกอินด้วย Supabase Auth
@@ -5350,7 +5350,7 @@ async function loginAdmin(email, password) {
             throw new Error('คุณไม่มีสิทธิ์เข้าใช้งานระบบแอดมิน');
         }
         
-        // เป็นแอดมิน
+        // เป็นแอดมิน - กำหนดค่าตัวแปรระบบ
         currentUser = data.user;
         adminProfile = adminData;
         isAdminMode = true;
@@ -7284,7 +7284,7 @@ function setInitialTabState() {
     }
 }
 
-// แทนที่ฟังก์ชัน setupTabNavigation ทั้งหมด
+// ฟังก์ชันสลับแท็บ - แก้ไขให้รองรับแอดมินแบบสมบูรณ์
 function setupTabNavigation() {
     const createTab = document.getElementById('create-tab');
     const playTab = document.getElementById('play-tab');
@@ -7331,7 +7331,7 @@ function setupTabNavigation() {
         document.body.className = 'active-tab-create';
     });
 
-    // สลับไปที่แท็บเล่นเกม
+    // สลับไปที่แท็บเล่นเกม - แก้ไขให้รองรับแอดมินสมบูรณ์
     playTab.addEventListener('click', function() {
         console.log("กำลังสลับไปที่แท็บเล่นเกม");
         
@@ -7348,8 +7348,45 @@ function setupTabNavigation() {
         // เพิ่มคลาสเพื่อระบุแท็บที่กำลังแสดง
         document.body.className = 'active-tab-play';
         
-        // อัพเดตการแสดงผลหน้าต่างๆ ในหน้าเล่นเกม
-        updatePlayScreenVisibility();
+        // ตรวจสอบโหมดแอดมิน
+        if (isAdminMode && adminProfile) {
+            console.log("อยู่ในโหมดแอดมิน - ข้ามหน้าล็อกอิน");
+            
+            // ซ่อนหน้าล็อกอิน
+            if (loginScreen) loginScreen.classList.add('hidden');
+            
+            // ตั้งค่าผู้เล่นเป็นแอดมิน (ถ้ายังไม่มี)
+            if (!currentPlayer) {
+                currentPlayer = {
+                    name: adminProfile.name || 'Admin',
+                    loginTime: new Date().toISOString(),
+                    avatar: '👑'
+                };
+                console.log("ตั้งค่า currentPlayer เป็นแอดมิน:", currentPlayer);
+            }
+            
+            // แสดงหน้าเล่นเกมและเลือกหมวดหมู่
+            const startScreen = document.getElementById('start-screen');
+            const categorySelectionContainer = document.getElementById('category-selection-container');
+            const quizScreen = document.getElementById('quiz-screen');
+            const resultScreen = document.getElementById('result-screen');
+            
+            // ซ่อนหน้าเกมและผลลัพธ์
+            if (quizScreen) quizScreen.classList.add('hidden');
+            if (resultScreen) resultScreen.classList.add('hidden');
+            
+            // แสดงหน้าเริ่มเล่นและเลือกหมวดหมู่
+            if (startScreen) startScreen.classList.remove('hidden');
+            if (categorySelectionContainer) categorySelectionContainer.classList.remove('hidden');
+            
+            // อัพเดต UI แสดงชื่อผู้เล่น
+            updatePlayerInfoInGame();
+            
+        } else {
+            console.log("โหมดผู้เล่นธรรมดา - ใช้ระบบเดิม");
+            // ถ้าไม่ใช่แอดมิน ใช้ระบบเดิม
+            updatePlayScreenVisibility();
+        }
         
         // อัพเดตตัวเลือกหมวดหมู่ในหน้าเล่นเกม
         updatePlayMainCategorySelect();
@@ -7387,6 +7424,30 @@ function setupTabNavigation() {
     
     console.log("ตั้งค่า Event Listeners สำหรับแท็บเรียบร้อยแล้ว");
     return true;
+}
+
+// ฟังก์ชันอัพเดต UI แสดงชื่อผู้เล่นในเกม - เพิ่มใหม่
+function updatePlayerInfoInGame() {
+    if (!isAdminMode || !currentPlayer) return;
+    
+    const quizContainer = document.querySelector('.container.quiz-player');
+    if (!quizContainer) return;
+    
+    // ลบข้อมูลผู้เล่นเก่า (ถ้ามี)
+    const existingPlayerInfo = quizContainer.querySelector('.player-info.top-right');
+    if (existingPlayerInfo) {
+        existingPlayerInfo.remove();
+    }
+    
+    // เพิ่มข้อมูลผู้เล่นใหม่
+    const playerInfo = document.createElement('div');
+    playerInfo.className = 'player-info top-right';
+    playerInfo.innerHTML = `
+        <div class="player-name">👑 ${currentPlayer.name}</div>
+    `;
+    quizContainer.appendChild(playerInfo);
+    
+    console.log("อัพเดต UI แสดงชื่อผู้เล่นแอดมิน:", currentPlayer.name);
 }
 
 // ฟังก์ชันโหลดหมวดหมู่จาก Database
@@ -12713,8 +12774,35 @@ function closeGameDetailsModal() {
     document.body.style.overflow = '';
 }
 
+// ฟังก์ชันเริ่มต้นระบบแอดมิน - แก้ไขใหม่
 function initAdminSystem() {
     console.log("กำลังเริ่มต้นระบบแอดมิน...");
+    
+    // ตรวจสอบสถานะ authentication เมื่อเริ่มต้น
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        console.log("Auth state changed:", event, session?.user?.email);
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+            // ตรวจสอบว่าเป็นแอดมินหรือไม่
+            checkIsAdmin(session.user.id).then(adminData => {
+                if (adminData) {
+                    console.log("ตรวจพบแอดมินที่ล็อกอินอยู่:", adminData);
+                    currentUser = session.user;
+                    adminProfile = adminData;
+                    isAdminMode = true;
+                    activateAdminMode();
+                }
+            });
+        } else if (event === 'SIGNED_OUT') {
+            if (isAdminMode) {
+                console.log("แอดมินออกจากระบบ");
+                currentUser = null;
+                adminProfile = null;
+                isAdminMode = false;
+                deactivateAdminMode();
+            }
+        }
+    });
     
     // ซ่อนแท็บแอดมินเป็นค่าเริ่มต้น
     updateAdminTabs();
@@ -12727,47 +12815,59 @@ function handleAdminKeyInput(event) {
     // ไม่ใช้ F10 แล้ว เปลี่ยนเป็นใช้การกรอกชื่อผู้เล่น
 }
 
-// ฟังก์ชันเปิดโหมดแอดมิน
+// ฟังก์ชันเปิดโหมดแอดมิน - แก้ไขใหม่
 function activateAdminMode() {
-    if (isAdminMode) return; // ถ้าเปิดอยู่แล้วไม่ต้องทำอะไร
-    
-    isAdminMode = true;
-    console.log("เข้าสู่โหมดแอดมิน");
+    console.log("กำลังเปิดโหมดแอดมิน...");
     
     // แสดงแท็บแอดมิน
     updateAdminTabs();
     
+    // เพิ่ม Admin UI
+    addAdminUI();
+    
     // แสดงข้อความแจ้งเตือน
     showAdminNotification('🔑 เข้าสู่โหมดแอดมิน');
     
-    // เพิ่มปุ่มออกจากระบบ
-    addLogoutButton();
+    console.log("เปิดโหมดแอดมินเรียบร้อยแล้ว");
 }
 
+// ฟังก์ชันปิดโหมดแอดมิน - แก้ไขใหม่
 function deactivateAdminMode() {
-    isAdminMode = false;
-    console.log("ออกจากโหมดแอดมิน");
+    console.log("กำลังปิดโหมดแอดมิน...");
     
     // ซ่อนแท็บแอดมิน
     updateAdminTabs();
     
-    // แสดงข้อความแจ้งเตือน
-    showAdminNotification('👋 ออกจากโหมดแอดมิน');
-    
     // ลบ Admin UI
     removeAdminUI();
     
-    // กลับไปแท็บเล่นเกม
+    // แสดงข้อความแจ้งเตือน
+    showAdminNotification('👋 ออกจากโหมดแอดมิน');
+    
+    // รีเซ็ตผู้เล่นปัจจุบัน
+    currentPlayer = null;
+    
+    // กลับไปแท็บเล่นเกมและแสดงหน้าล็อกอิน
     const playTab = document.getElementById('play-tab');
     if (playTab && !playTab.classList.contains('active')) {
         playTab.click();
     }
+    
+    // แสดงหน้าล็อกอินใหม่
+    setTimeout(() => {
+        updateLoginDisplay();
+    }, 100);
+    
+    console.log("ปิดโหมดแอดมินเรียบร้อยแล้ว");
 }
 
-// ฟังก์ชันเพิ่ม Admin UI - เพิ่มใหม่
+// ฟังก์ชันเพิ่ม Admin UI - ตรวจสอบให้แน่ใจว่ามีฟังก์ชัน
 function addAdminUI() {
     // ตรวจสอบว่ามี UI อยู่แล้วหรือไม่
-    if (document.getElementById('admin-ui-container')) return;
+    if (document.getElementById('admin-ui-container')) {
+        console.log("Admin UI มีอยู่แล้ว");
+        return;
+    }
     
     // สร้าง container สำหรับ Admin UI
     const adminContainer = document.createElement('div');
@@ -12783,7 +12883,11 @@ function addAdminUI() {
     const logoutBtn = document.createElement('button');
     logoutBtn.className = 'admin-logout-btn';
     logoutBtn.innerHTML = '🚪 ออกจากระบบ';
-    logoutBtn.onclick = deactivateAdminMode;
+    logoutBtn.onclick = function() {
+        if (confirm('คุณต้องการออกจากระบบแอดมินใช่หรือไม่?')) {
+            logoutAdmin();
+        }
+    };
     
     // รวม elements
     adminContainer.appendChild(adminBadge);
@@ -12791,33 +12895,48 @@ function addAdminUI() {
     
     // เพิ่มเข้าไปในหน้าเว็บ
     document.body.appendChild(adminContainer);
+    
+    console.log("เพิ่ม Admin UI เรียบร้อยแล้ว");
 }
 
-// ฟังก์ชันลบ Admin UI - เพิ่มใหม่
+// ฟังก์ชันลบ Admin UI - ตรวจสอบให้แน่ใจว่ามีฟังก์ชัน
 function removeAdminUI() {
     const adminContainer = document.getElementById('admin-ui-container');
     if (adminContainer) {
         adminContainer.remove();
+        console.log("ลบ Admin UI เรียบร้อยแล้ว");
     }
 }
 
-// ฟังก์ชันอัพเดตการแสดงผลแท็บ
+// ฟังก์ชันอัพเดตการแสดงผลแท็บ - แก้ไขใหม่
 function updateAdminTabs() {
     const historyTab = document.getElementById('history-tab');
     const createTab = document.getElementById('create-tab');
     
     if (isAdminMode) {
         // โหมดแอดมิน: แสดงทุกแท็บ
-        if (historyTab) historyTab.style.display = 'block';
-        if (createTab) createTab.style.display = 'block';
+        if (historyTab) {
+            historyTab.style.display = 'block';
+            console.log("แสดงแท็บประวัติการเล่น");
+        }
+        if (createTab) {
+            createTab.style.display = 'block';
+            console.log("แสดงแท็บตั้งค่า");
+        }
     } else {
         // โหมดผู้เล่น: ซ่อนแท็บแอดมิน
-        if (historyTab) historyTab.style.display = 'none';
-        if (createTab) createTab.style.display = 'none';
+        if (historyTab) {
+            historyTab.style.display = 'none';
+            console.log("ซ่อนแท็บประวัติการเล่น");
+        }
+        if (createTab) {
+            createTab.style.display = 'none';
+            console.log("ซ่อนแท็บตั้งค่า");
+        }
     }
 }
 
-// ฟังก์ชันแสดงข้อความแจ้งเตือน
+// ฟังก์ชันแสดงข้อความแจ้งเตือน - ตรวจสอบให้แน่ใจว่ามีฟังก์ชัน
 function showAdminNotification(message) {
     // ลบการแจ้งเตือนเก่า (ถ้ามี)
     const existingNotification = document.getElementById('admin-notification');
@@ -12828,8 +12947,32 @@ function showAdminNotification(message) {
     // สร้างการแจ้งเตือนใหม่
     const notification = document.createElement('div');
     notification.id = 'admin-notification';
-    notification.className = 'admin-notification';
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(45deg, #4caf50, #81c784);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 16px;
+        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+        z-index: 10001;
+        animation: slideDown 0.3s ease;
+    `;
     notification.textContent = message;
+    
+    // เพิ่ม CSS animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+    `;
+    document.head.appendChild(style);
     
     // เพิ่มเข้าไปในหน้าเว็บ
     document.body.appendChild(notification);
@@ -12837,125 +12980,15 @@ function showAdminNotification(message) {
     // ซ่อนหลังจาก 3 วินาที
     setTimeout(() => {
         if (notification && notification.parentNode) {
-            notification.remove();
+            notification.style.animation = 'slideDown 0.3s ease reverse';
+            setTimeout(() => {
+                notification.remove();
+            }, 300);
         }
     }, 3000);
+    
+    console.log("แสดงการแจ้งเตือน:", message);
 }
-
-// เพิ่ม CSS สำหรับ confirm dialog ที่ปรับปรุงแล้ว
-const enhancedConfirmStyles = document.createElement('style');
-enhancedConfirmStyles.textContent = `
-    .confirm-dialog-overlay {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.6);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-        animation: fadeInOverlay 0.3s ease;
-    }
-    
-    .confirm-dialog {
-        background-color: white;
-        border-radius: 12px;
-        width: 90%;
-        max-width: 500px;
-        max-height: 80vh;
-        overflow-y: auto;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        animation: modalSlideIn 0.3s ease;
-    }
-    
-    .confirm-header {
-        background: linear-gradient(135deg, #f44336, #e57373);
-        color: white;
-        padding: 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-    
-    .confirm-header h3 {
-        margin: 0;
-        font-size: 18px;
-        font-weight: 600;
-    }
-    
-    .confirm-body {
-        padding: 20px;
-        line-height: 1.6;
-    }
-    
-    .confirm-body p {
-        margin: 10px 0;
-    }
-    
-    .confirm-actions {
-        display: flex;
-        gap: 10px;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 0 0 12px 12px;
-    }
-    
-    .confirm-delete-btn {
-        background-color: #f44336;
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        flex: 1;
-        transition: all 0.2s ease;
-    }
-    
-    .confirm-delete-btn:hover:not(:disabled) {
-        background-color: #d32f2f;
-        transform: translateY(-2px);
-    }
-    
-    .confirm-delete-btn:disabled {
-        background-color: #ccc;
-        cursor: not-allowed;
-        transform: none;
-    }
-    
-    .cancel-btn {
-        background-color: #e0e0e0;
-        color: #333;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        flex: 1;
-        transition: all 0.2s ease;
-    }
-    
-    .cancel-btn:hover {
-        background-color: #d5d5d5;
-        transform: translateY(-2px);
-    }
-    
-    @media (max-width: 768px) {
-        .confirm-actions {
-            flex-direction: column;
-        }
-        
-        .confirm-delete-btn, 
-        .cancel-btn {
-            width: 100%;
-            margin-bottom: 8px;
-        }
-    }
-`;
-
-document.head.appendChild(enhancedConfirmStyles);
 
 function formatDateTime24Hour(dateString) {
     // บังคับให้ข้อมูลเป็น UTC โดยเพิ่ม Z ถ้าไม่มี
