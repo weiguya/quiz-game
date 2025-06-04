@@ -11534,29 +11534,39 @@ function renderSubCategories2(mainCategory, subCategory1, container, categoryCou
     // ล้างเนื้อหาเดิม
     container.innerHTML = '';
     
-    // สร้าง HTML สำหรับแต่ละหมวดหมู่ย่อย 2
-    for (const subCategory2 of categories[mainCategory][subCategory1]) {
-        const sub2Key = `${mainCategory}|${subCategory1}|${subCategory2}`;
+    // สร้าง HTML สำหรับแต่ละหมวดหมู่ย่อย 2 (ตอนนี้เป็น object แล้ว)
+    for (const subCategory2Item of categories[mainCategory][subCategory1]) {
+        // subCategory2Item ตอนนี้เป็น {name: "ชื่อ", is_locked: true/false}
+        const subCategory2Name = subCategory2Item.name;
+        const isLocked = subCategory2Item.is_locked || false;
+        
+        const sub2Key = `${mainCategory}|${subCategory1}|${subCategory2Name}`;
         const sub2Count = categoryCount[sub2Key] || 0;
         
         const subCategory2Div = document.createElement('div');
         subCategory2Div.className = 'category-item sub-category-2';
-        subCategory2Div.dataset.category = subCategory2;
+        subCategory2Div.dataset.category = subCategory2Name;
         subCategory2Div.dataset.parent = subCategory1;
         subCategory2Div.dataset.grandparent = mainCategory;
         
+        // แสดงไอคอนล็อกถ้าถูกล็อก
+        const lockIcon = isLocked ? ' 🔒' : ' 🔓';
+        
         subCategory2Div.innerHTML = `
             <div class="category-header">
-                <span class="category-name">${subCategory2}</span>
+                <span class="category-name">${subCategory2Name}${lockIcon}</span>
                 <span class="question-count">(${sub2Count})</span>
                 <div class="category-actions">
-                    <button class="edit-btn small-btn" data-action="edit" data-type="sub2" data-category="${subCategory2}" data-parent="${subCategory1}" data-grandparent="${mainCategory}">แก้ไข</button>
-                    <button class="delete-btn small-btn" data-action="delete" data-type="sub2" data-category="${subCategory2}" data-parent="${subCategory1}" data-grandparent="${mainCategory}">ลบ</button>
+                    <button class="edit-btn small-btn" data-action="edit" data-type="sub2" data-category="${subCategory2Name}" data-parent="${subCategory1}" data-grandparent="${mainCategory}">แก้ไข</button>
+                    <button class="delete-btn small-btn" data-action="delete" data-type="sub2" data-category="${subCategory2Name}" data-parent="${subCategory1}" data-grandparent="${mainCategory}">ลบ</button>
+                    <button class="lock-btn small-btn ${isLocked ? 'locked' : 'unlocked'}" data-action="toggle-lock" data-type="sub2" data-category="${subCategory2Name}" data-parent="${subCategory1}" data-grandparent="${mainCategory}" data-locked="${isLocked}">
+                        ${isLocked ? 'ปลดล็อก' : 'ล็อก'}
+                    </button>
                 </div>
             </div>
         `;
         
-        // เพิ่ม event listeners สำหรับปุ่มแก้ไขและลบ
+        // เพิ่ม event listeners สำหรับปุ่มแก้ไข, ลบ และล็อก
         subCategory2Div.querySelectorAll('button').forEach(button => {
             button.addEventListener('click', function(e) {
                 e.stopPropagation(); // หยุดการกระจายของ event
@@ -11571,6 +11581,9 @@ function renderSubCategories2(mainCategory, subCategory1, container, categoryCou
                     showEditCategoryForm(type, category, grandparent, parent);
                 } else if (action === 'delete') {
                     confirmDeleteCategory(type, category, grandparent, parent);
+                } else if (action === 'toggle-lock') {
+                    const isCurrentlyLocked = this.dataset.locked === 'true';
+                    toggleCategoryLock(grandparent, parent, category, !isCurrentlyLocked);
                 }
             });
         });
@@ -11591,6 +11604,39 @@ function renderSubCategories2(mainCategory, subCategory1, container, categoryCou
     
     container.appendChild(addCategoryButton);
 }
+
+// เพิ่มฟังก์ชันสำหรับการเปิด/ปิดล็อกหมวดหมู่
+async function toggleCategoryLock(mainCategory, subCategory1, subCategory2, shouldLock) {
+    try {
+        console.log(`${shouldLock ? 'ล็อก' : 'ปลดล็อก'}หมวดหมู่:`, mainCategory, '>', subCategory1, '>', subCategory2);
+        
+        // อัพเดตใน Database
+        const { error } = await supabaseClient
+            .from('categories')
+            .update({ is_locked: shouldLock })
+            .eq('name', subCategory2)
+            .eq('level', 3)
+            .eq('parent_name', `${mainCategory} > ${subCategory1}`);
+        
+        if (error) {
+            throw new Error('เกิดข้อผิดพลาด: ' + error.message);
+        }
+        
+        // โหลดข้อมูลใหม่
+        await loadCategories();
+        
+        // อัพเดตการแสดงผล
+        renderCategoryTree();
+        updateCategoryUI();
+        
+        console.log(`${shouldLock ? 'ล็อก' : 'ปลดล็อก'}หมวดหมู่เรียบร้อยแล้ว`);
+        
+    } catch (error) {
+        console.error("เกิดข้อผิดพลาดในการเปลี่ยนสถานะล็อก:", error);
+        alert("เกิดข้อผิดพลาด: " + error.message);
+    }
+}
+
 // ฟังก์ชัน showAddCategoryForm ที่ปรับปรุงใหม่
 function showAddCategoryForm(type, parent = null, grandparent = null) {
     // หยุดการกระจายของ event
