@@ -7252,6 +7252,9 @@ async function initializeApp() {
     
     // เริ่มต้นระบบแอดมิน
     initAdminSystem();
+    
+    // เริ่มระบบตรวจสอบสถานะ Admin
+    startAdminStatusMonitor();
 
     console.log("เริ่มต้นแอปพลิเคชันเรียบร้อยแล้ว");
 }
@@ -7392,7 +7395,7 @@ function setupTabNavigation() {
         updatePlayMainCategorySelect();
     });
     
-    // สลับไปที่แท็บประวัติการเล่น
+    // สลับไปที่แท็บประวัติการเล่น - ปรับใหม่
     historyTab.addEventListener('click', function() {
         console.log("กำลังสลับไปที่แท็บประวัติการเล่น");
         
@@ -7412,12 +7415,27 @@ function setupTabNavigation() {
         // เพิ่มคลาสเพื่อระบุแท็บที่กำลังแสดง
         document.body.className = 'active-tab-history';
         
-        // อัพเดตการแสดงประวัติการเล่น
-        if (typeof displayGameHistory === 'function') {
-            try {
-                displayGameHistory();
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น:", error);
+        // อัพเดตหัวข้อของหน้าประวัติ
+        updateHistoryPageHeader();
+        
+        // แสดงประวัติตาม User Type
+        if (isAdminMode) {
+            // แอดมิน: ใช้ระบบเดิม (ดูได้ทั้งหมด + มีตัวกรอง)
+            if (typeof displayGameHistory === 'function') {
+                try {
+                    displayGameHistory();
+                } catch (error) {
+                    console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Admin):", error);
+                }
+            }
+        } else {
+            // ผู้เล่นธรรมดา: ใช้ระบบใหม่ (ดูเฉพาะของตัวเอง)
+            if (typeof displayPlayerHistory === 'function') {
+                try {
+                    displayPlayerHistory();
+                } catch (error) {
+                    console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Player):", error);
+                }
             }
         }
     });
@@ -10357,8 +10375,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 function initPlayerSystem() {
     console.log("กำลังเริ่มต้นระบบผู้เล่น...");
     
-    // กำหนดค่าเริ่มต้นให้ currentPlayer
+    // กำหนดค่าเริ่มต้นให้ currentPlayer (ต้องเป็น null)
     currentPlayer = null;
+    
+    // ตรวจสอบให้แน่ใจว่าไม่ได้อยู่ในโหมดแอดมิน (ยกเว้นกรณีล็อกอินแอดมินจริงๆ)
+    if (!adminProfile) {
+        isAdminMode = false;
+        console.log("รีเซ็ตโหมดแอดมิน: isAdminMode =", isAdminMode);
+    }
     
     // โหลดชื่อผู้เล่นจาก localStorage (ถ้ามี) แต่ไม่ล็อกอินอัตโนมัติ
     const savedPlayerName = localStorage.getItem('quiz-player-name');
@@ -10394,7 +10418,10 @@ function initPlayerSystem() {
     // สำคัญมาก: ตั้งค่าการแสดงผลของหน้า login และหน้าอื่นๆ
     updateLoginDisplay();
     
-    console.log("ระบบผู้เล่นพร้อมใช้งานแล้ว");
+    // อัพเดตแท็บให้ถูกต้องตาม User Type
+    updateAdminTabs();
+    
+    console.log("ระบบผู้เล่นพร้อมใช้งานแล้ว - isAdminMode:", isAdminMode);
 }
 
 function updateLoginDisplay() {
@@ -10519,11 +10546,17 @@ function loginPlayer() {
         return;
     }
     
+    // *** สำคัญ: บังคับให้เป็นผู้เล่นธรรมดา ***
+    isAdminMode = false;
+    currentUser = null;
+    adminProfile = null;
+    
     // ล็อกอินผู้เล่นธรรมดา
     currentPlayer = {
         name: playerName,
         loginTime: new Date().toISOString(),
-        avatar: getPlayerInitials(playerName)
+        avatar: getPlayerInitials(playerName),
+        isGuest: true // เพิ่มการระบุว่าเป็น Guest
     };
     
     // บันทึกชื่อผู้เล่นลงใน localStorage ถ้าเลือก "จำชื่อของฉัน"
@@ -10556,10 +10589,15 @@ function loginPlayer() {
     // อัพเดตการแสดงผลหน้าต่างๆ
     updateLoginDisplay();
     
+    // อัพเดตแท็บให้เป็นผู้เล่นธรรมดา
+    updateAdminTabs();
+    
     // อัพเดตตัวเลือกหมวดหมู่ในหน้าเล่นเกม
     updatePlayMainCategorySelect();
     
-    console.log("ล็อกอินสำเร็จ:", currentPlayer);
+    // Debug log
+    console.log("ล็อกอินสำเร็จ (ผู้เล่นธรรมดา):", currentPlayer);
+    console.log("isAdminMode:", isAdminMode, "adminProfile:", adminProfile);
 }
 
 // ฟังก์ชันแสดงฟอร์มล็อกอินแอดมิน
@@ -13007,32 +13045,206 @@ function removeAdminUI() {
     }
 }
 
-// ฟังก์ชันอัพเดตการแสดงผลแท็บ - แก้ไขใหม่
+// วางแทนฟังก์ชัน updateAdminTabs() เดิม
 function updateAdminTabs() {
     const historyTab = document.getElementById('history-tab');
     const createTab = document.getElementById('create-tab');
     
     if (isAdminMode) {
-        // โหมดแอดมิน: แสดงทุกแท็บ
+        // โหมดแอดมิน: แสดงทุกแท็บ (เล่นเกม + ประวัติ + ตั้งค่า)
         if (historyTab) {
             historyTab.style.display = 'block';
-            console.log("แสดงแท็บประวัติการเล่น");
+            historyTab.textContent = 'ประวัติการเล่น (Admin)';
+            console.log("แสดงแท็บประวัติการเล่น (Admin)");
         }
         if (createTab) {
             createTab.style.display = 'block';
             console.log("แสดงแท็บตั้งค่า");
         }
     } else {
-        // โหมดผู้เล่น: ซ่อนแท็บแอดมิน
+        // โหมดผู้เล่นทั่วไป: แสดงแท็บเล่นเกม + ประวัติ (ซ่อนเฉพาะตั้งค่า)
         if (historyTab) {
-            historyTab.style.display = 'none';
-            console.log("ซ่อนแท็บประวัติการเล่น");
+            historyTab.style.display = 'block';
+            historyTab.textContent = 'ประวัติการเล่น';
+            console.log("แสดงแท็บประวัติการเล่น (Player)");
         }
         if (createTab) {
             createTab.style.display = 'none';
             console.log("ซ่อนแท็บตั้งค่า");
         }
     }
+}
+
+// ฟังก์ชันกรองประวัติตามผู้เล่น
+function getPlayerHistory() {
+    if (!currentPlayer) {
+        return [];
+    }
+    
+    if (isAdminMode) {
+        // แอดมินเห็นประวัติทั้งหมด
+        return gameHistory;
+    } else {
+        // ผู้เล่นธรรมดาเห็นเฉพาะของตัวเอง
+        return gameHistory.filter(entry => 
+            entry.playerName === currentPlayer.name
+        );
+    }
+}
+
+// ฟังก์ชันแสดงประวัติสำหรับผู้เล่น (แยกจาก Admin)
+function displayPlayerHistory() {
+    console.log("กำลังแสดงประวัติการเล่นสำหรับผู้เล่น...");
+    
+    const historyContainer = document.getElementById('history-container');
+    
+    if (!historyContainer) {
+        console.error("ไม่พบ element 'history-container'");
+        return false;
+    }
+    
+    // ดึงประวัติที่กรองแล้ว
+    const playerHistoryData = getPlayerHistory();
+    
+    // แสดงจำนวนรายการประวัติที่กรองแล้ว
+    const totalHistoryCount = document.getElementById('total-history-count');
+    if (totalHistoryCount) {
+        totalHistoryCount.textContent = ` ${playerHistoryData.length}`;
+    }
+    
+    // ซ่อนฟีเจอร์แอดมิน
+    toggleHistoryAdminFeatures();
+    
+    // ถ้าไม่มีประวัติ
+    if (playerHistoryData.length === 0) {
+        historyContainer.innerHTML = `
+            <div class="empty-state">
+                <p>ยังไม่มีประวัติการเล่น</p>
+                <p>เริ่มเล่นเกมเพื่อบันทึกประวัติ!</p>
+            </div>
+        `;
+        
+        // ซ่อนส่วนเพจเนชั่น
+        const paginationElement = document.getElementById('history-pagination');
+        const perPageElement = document.getElementById('history-items-per-page');
+        
+        if (paginationElement) paginationElement.style.display = 'none';
+        if (perPageElement) perPageElement.style.display = 'none';
+        
+        return true;
+    }
+    
+    // ใช้ filteredHistory สำหรับระบบ pagination เดิม
+    filteredHistory = [...playerHistoryData];
+    currentHistoryPage = 1;
+    
+    // เรียกใช้ฟังก์ชันแสดงผลเดิม
+    displayGameHistory();
+    
+    console.log("แสดงประวัติการเล่นเรียบร้อยแล้ว:", playerHistoryData.length, "รายการ");
+    return true;
+}
+
+// ฟังก์ชันปรับส่วนหัวของหน้าประวัติตาม User Type
+function updateHistoryPageHeader() {
+    const historySection = document.querySelector('.history-section .section-header .section-title');
+    
+    if (historySection) {
+        if (isAdminMode) {
+            historySection.textContent = 'ประวัติการเล่น (ทั้งหมด)';
+        } else {
+            const playerName = currentPlayer ? currentPlayer.name : 'ผู้เล่น';
+            historySection.textContent = `ประวัติการเล่นของ ${playerName}`;
+        }
+    }
+}
+
+// ฟังก์ชันซ่อน/แสดงฟีเจอร์แอดมินในหน้าประวัติ
+function toggleHistoryAdminFeatures() {
+    // ซ่อนส่วนตัวกรองถ้าเป็นผู้เล่นธรรมดา
+    const filterSection = document.querySelector('.history-filter-section');
+    if (filterSection) {
+        if (isAdminMode) {
+            filterSection.style.display = 'block';
+        } else {
+            filterSection.style.display = 'none';
+        }
+    }
+    
+    // ซ่อนปุ่มลบประวัติทั้งหมดถ้าเป็นผู้เล่นธรรมดา
+    const clearAllBtn = document.getElementById('clear-all-history');
+    if (clearAllBtn) {
+        if (isAdminMode) {
+            clearAllBtn.style.display = 'inline-block';
+        } else {
+            clearAllBtn.style.display = 'none';
+        }
+    }
+    
+    // ซ่อนปุ่มลบรายการถ้าเป็นผู้เล่นธรรมดา
+    const deleteButtons = document.querySelectorAll('.delete-history-btn');
+    deleteButtons.forEach(btn => {
+        if (isAdminMode) {
+            btn.style.display = 'inline-block';
+        } else {
+            btn.style.display = 'none';
+        }
+    });
+    
+    // ปรับข้อความจำนวนรายการ
+    const itemsPerPageContainer = document.getElementById('history-items-per-page');
+    if (itemsPerPageContainer) {
+        if (isAdminMode) {
+            itemsPerPageContainer.style.display = 'flex';
+        } else {
+            // ผู้เล่นธรรมดาใช้ค่าเริ่มต้น 10 รายการ และซ่อนตัวเลือก
+            historyItemsPerPage = 10;
+            itemsPerPageContainer.style.display = 'none';
+        }
+    }
+}
+
+// ฟังก์ชัน Debug สถานะ Admin (ใช้ชั่วคราวเพื่อตรวจสอบปัญหา)
+function debugAdminStatus() {
+    console.log("=== Debug Admin Status ===");
+    console.log("isAdminMode:", isAdminMode);
+    console.log("adminProfile:", adminProfile);
+    console.log("currentUser:", currentUser);
+    console.log("currentPlayer:", currentPlayer);
+    console.log("========================");
+}
+
+// ฟังก์ชันบังคับรีเซ็ตสถานะผู้เล่นธรรมดา
+function forcePlayerMode() {
+    if (!adminProfile) { // เฉพาะกรณีที่ไม่ใช่แอดมินจริง
+        isAdminMode = false;
+        currentUser = null;
+        
+        // อัพเดตแท็บ
+        updateAdminTabs();
+        
+        // ลบ Admin UI (ถ้ามี)
+        removeAdminUI();
+        
+        console.log("บังคับรีเซ็ตเป็นโหมดผู้เล่นธรรมดา");
+    }
+}
+
+// ฟังก์ชันตรวจสอบสถานะ Admin ตลอดเวลา (เรียกทุก 5 วินาที)
+function startAdminStatusMonitor() {
+    setInterval(() => {
+        // ถ้าไม่มี adminProfile แต่ isAdminMode เป็น true = ผิดปกติ
+        if (isAdminMode && !adminProfile) {
+            console.warn("⚠️ ตรวจพบสถานะผิดปกติ: isAdminMode=true แต่ไม่มี adminProfile");
+            forcePlayerMode();
+        }
+        
+        // ถ้ามี currentPlayer แต่ไม่ใช่แอดมิน แต่ isAdminMode เป็น true = ผิดปกติ
+        if (currentPlayer && !adminProfile && isAdminMode) {
+            console.warn("⚠️ ตรวจพบสถานะผิดปกติ: ผู้เล่นธรรมดาถูกตั้งเป็น Admin");
+            forcePlayerMode();
+        }
+    }, 5000); // ตรวจสอบทุก 5 วินาที
 }
 
 // ฟังก์ชันแสดงข้อความแจ้งเตือน - ตรวจสอบให้แน่ใจว่ามีฟังก์ชัน
