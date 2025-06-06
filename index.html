@@ -5308,6 +5308,13 @@ let adminProfile = null;
 
 // ฟังก์ชันตรวจสอบว่าเป็นแอดมินหรือไม่
 async function checkIsAdmin(userId) {
+    // *** การป้องกันใหม่: ถ้ามีผู้เล่นธรรมดาอยู่แล้ว ไม่ตรวจสอบ admin ***
+    if (currentPlayer && !isAdminMode) {
+        console.log("🔒 มีผู้เล่นธรรมดาอยู่แล้ว - ไม่ตรวจสอบ admin");
+        console.log("Current player:", currentPlayer.name, "isAdminMode:", isAdminMode);
+        return null;
+    }
+    
     try {
         const { data, error } = await supabaseClient
             .from('admin_users')
@@ -10524,7 +10531,7 @@ function updatePlayScreenVisibility() {
     }
 }
 
-function loginPlayer() {
+async function loginPlayer() {
     const playerNameInput = document.getElementById('player-name');
     const rememberPlayer = document.getElementById('remember-player');
     
@@ -10552,6 +10559,18 @@ function loginPlayer() {
         return;
     }
     
+    try {
+        // *** การป้องกันใหม่: Clear session admin ก่อนล็อกอินผู้เล่นธรรมดา ***
+        console.log("🔄 กำลัง clear admin session ก่อนล็อกอินผู้เล่น...");
+        await supabaseClient.auth.signOut();
+        console.log("✅ Clear admin session สำเร็จ");
+    } catch (error) {
+        console.log("ℹ️ ไม่มี admin session ที่ต้อง clear:", error.message);
+    }
+    
+    // รอให้ signOut เสร็จสิ้นก่อนดำเนินการต่อ
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
     // *** สำคัญ: บังคับให้เป็นผู้เล่นธรรมดา ***
     isAdminMode = false;
     currentUser = null;
@@ -10564,6 +10583,9 @@ function loginPlayer() {
         avatar: getPlayerInitials(playerName),
         isGuest: true // เพิ่มการระบุว่าเป็น Guest
     };
+    
+    console.log("🎮 ล็อกอินผู้เล่นธรรมดา:", playerName);
+    console.log("🔒 isAdminMode:", isAdminMode, "adminProfile:", adminProfile);
     
     // บันทึกชื่อผู้เล่นลงใน localStorage ถ้าเลือก "จำชื่อของฉัน"
     if (rememberPlayer && rememberPlayer.checked) {
@@ -10600,10 +10622,6 @@ function loginPlayer() {
     
     // อัพเดตตัวเลือกหมวดหมู่ในหน้าเล่นเกม
     updatePlayMainCategorySelect();
-    
-    // Debug log
-    console.log("ล็อกอินสำเร็จ (ผู้เล่นธรรมดา):", currentPlayer);
-    console.log("isAdminMode:", isAdminMode, "adminProfile:", adminProfile);
 }
 
 // ฟังก์ชันแสดงฟอร์มล็อกอินแอดมิน
@@ -12921,6 +12939,13 @@ function initAdminSystem() {
         console.log("Auth state changed:", event, session?.user?.email);
         
         if (event === 'SIGNED_IN' && session?.user) {
+            // *** การป้องกันใหม่: ถ้ามีผู้เล่นธรรมดาอยู่แล้ว ไม่ให้เปลี่ยนเป็น admin อัตโนมัติ ***
+            if (currentPlayer && !isAdminMode) {
+                console.warn("🔒 มีผู้เล่นธรรมดาอยู่แล้ว - ไม่เปลี่ยนเป็น admin อัตโนมัติ");
+                console.warn("Current player:", currentPlayer.name, "isAdminMode:", isAdminMode);
+                return;
+            }
+            
             // ตรวจสอบว่าเป็นแอดมินหรือไม่
             checkIsAdmin(session.user.id).then(adminData => {
                 if (adminData) {
@@ -13236,7 +13261,7 @@ function forcePlayerMode() {
     }
 }
 
-// ฟังก์ชันตรวจสอบสถานะ Admin ตลอดเวลา (เรียกทุก 5 วินาที)
+// ฟังก์ชันตรวจสอบสถานะ Admin ตลอดเวลา (เรียกทุก 3 วินาที)
 function startAdminStatusMonitor() {
     setInterval(() => {
         // ถ้าไม่มี adminProfile แต่ isAdminMode เป็น true = ผิดปกติ
@@ -13250,7 +13275,31 @@ function startAdminStatusMonitor() {
             console.warn("⚠️ ตรวจพบสถานะผิดปกติ: ผู้เล่นธรรมดาถูกตั้งเป็น Admin");
             forcePlayerMode();
         }
-    }, 5000); // ตรวจสอบทุก 5 วินาที
+        
+        // *** เพิ่มการป้องกันใหม่: บังคับล็อกเอาท์ admin session เมื่อมีผู้เล่น ***
+        if (currentPlayer && !isAdminMode) {
+            forceAdminLogoutForPlayer();
+        }
+    }, 3000); // ตรวจสอบทุก 3 วินาที (ลดจาก 5 วินาที)
+}
+
+// ฟังก์ชันบังคับล็อกเอาท์ admin เมื่อมีผู้เล่นธรรมดา
+async function forceAdminLogoutForPlayer() {
+    if (currentPlayer && !isAdminMode) {
+        try {
+            console.log("🔄 บังคับล็อกเอาท์ admin session เพื่อรักษาสถานะผู้เล่น");
+            await supabaseClient.auth.signOut();
+            
+            // ตรวจสอบให้แน่ใจว่าไม่เป็น admin
+            isAdminMode = false;
+            currentUser = null;
+            adminProfile = null;
+            
+            console.log("✅ ล็อกเอาท์ admin session สำเร็จ");
+        } catch (error) {
+            console.log("ℹ️ ไม่มี admin session ที่ต้องล็อกเอาท์");
+        }
+    }
 }
 
 // ฟังก์ชันแสดงข้อความแจ้งเตือน - ตรวจสอบให้แน่ใจว่ามีฟังก์ชัน
