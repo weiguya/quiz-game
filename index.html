@@ -5455,7 +5455,24 @@ function formatDate(date) {
 
 // แก้ไขฟังก์ชัน displayGameHistory()
 function displayGameHistory() {
-    console.log("กำลังแสดงประวัติการเล่น...");
+    console.log("=== displayGameHistory Debug ===");
+    console.log("1. กำลังแสดงประวัติการเล่น...");
+    console.log("2. isAdminMode:", isAdminMode);
+    console.log("3. adminProfile:", !!adminProfile);
+    console.log("4. gameHistory.length:", gameHistory.length);
+    console.log("5. filteredHistory.length:", filteredHistory.length);
+    
+    // แสดงรายชื่อผู้เล่นทั้งหมด
+    if (gameHistory.length > 0) {
+        const allPlayers = [...new Set(gameHistory.map(h => h.playerName))];
+        console.log("6. ผู้เล่นทั้งหมดในระบบ:", allPlayers);
+    }
+    
+    if (filteredHistory.length > 0) {
+        const filteredPlayers = [...new Set(filteredHistory.map(h => h.playerName))];
+        console.log("7. ผู้เล่นใน filteredHistory:", filteredPlayers);
+    }
+    console.log("================================");
     
     const historyContainer = document.getElementById('history-container');
     
@@ -5473,7 +5490,6 @@ function displayGameHistory() {
     // แสดงจำนวนรายการประวัติการเล่นที่กรองแล้ว
     const totalHistoryCount = document.getElementById('total-history-count');
     if (totalHistoryCount) {
-        // แสดงจำนวนรายการที่ผ่านการกรองแล้ว - เพิ่มช่องว่าง
         totalHistoryCount.textContent = ` ${filteredHistory.length}`;
     }
     
@@ -8545,8 +8561,10 @@ async function loadQuestions() {
   }
 }
 
-// ฟังก์ชันโหลดประวัติการเล่นจาก Database
+// แทนที่ฟังก์ชัน loadGameHistory() เดิมทั้งหมด
 async function loadGameHistory() {
+    console.log("กำลังโหลดประวัติการเล่นจาก Database...");
+    
     try {
         const { data, error } = await supabaseClient
             .from('game_history')
@@ -8573,12 +8591,106 @@ async function loadGameHistory() {
         }));
 
         filteredHistory = [...gameHistory];
+        
         console.log('โหลดประวัติการเล่นสำเร็จ:', gameHistory.length, 'รายการ');
+        
+        // Debug ข้อมูลที่โหลดได้
+        if (gameHistory.length > 0) {
+            const playerNames = [...new Set(gameHistory.map(item => item.playerName))];
+            console.log('ผู้เล่นทั้งหมดในประวัติ:', playerNames);
+            console.log('ตัวอย่างข้อมูล:', gameHistory[0]);
+        }
 
     } catch (error) {
         console.error('เกิดข้อผิดพลาดที่ไม่คาดคิด:', error);
         gameHistory = [];
         filteredHistory = [];
+    }
+}
+
+// ฟังก์ชันใหม่: ตรวจสอบข้อมูลประวัติ
+async function debugGameHistory() {
+    console.log("=== Debug Game History ===");
+    console.log("1. isAdminMode:", isAdminMode);
+    console.log("2. adminProfile:", adminProfile);
+    console.log("3. currentPlayer:", currentPlayer);
+    console.log("4. gameHistory length:", gameHistory.length);
+    console.log("5. filteredHistory length:", filteredHistory.length);
+    
+    // ตรวจสอบข้อมูลใน Database
+    try {
+        const { data, error } = await supabaseClient
+            .from('game_history')
+            .select('*')
+            .order('played_at', { ascending: false });
+        
+        console.log("6. Database history count:", data ? data.length : 0);
+        console.log("7. Database error:", error);
+        
+        if (data && data.length > 0) {
+            console.log("8. Sample database record:", data[0]);
+            
+            // แสดงรายชื่อผู้เล่นทั้งหมด
+            const playerNames = [...new Set(data.map(item => item.player_name))];
+            console.log("9. All player names in DB:", playerNames);
+        }
+        
+        // ตรวจสอบ localStorage
+        const localHistory = localStorage.getItem('quiz-game-history');
+        if (localHistory) {
+            const parsed = JSON.parse(localHistory);
+            console.log("10. localStorage history count:", parsed.length);
+        } else {
+            console.log("10. No localStorage history");
+        }
+        
+    } catch (dbError) {
+        console.error("Database check error:", dbError);
+    }
+    
+    console.log("========================");
+}
+
+// ฟังก์ชันใหม่: ทดสอบการสร้างประวัติ
+async function createTestHistory() {
+    if (!isAdminMode) {
+        console.log("ต้องเป็นแอดมินถึงจะสร้างประวัติทดสอบได้");
+        return;
+    }
+    
+    const testData = {
+        player_name: 'ผู้เล่นทดสอบ',
+        score: 8,
+        total_questions: 10,
+        percentage: 80,
+        category: JSON.stringify({
+            main: 'ความรู้ทั่วไป',
+            sub1: 'วิทยาศาสตร์',
+            sub2: 'ฟิสิกส์'
+        }),
+        game_data: JSON.stringify({
+            questions: [],
+            userAnswers: {},
+            randomOrder: []
+        })
+    };
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('game_history')
+            .insert([testData])
+            .select();
+        
+        if (error) {
+            console.error('เกิดข้อผิดพลาดในการสร้างประวัติทดสอบ:', error);
+        } else {
+            console.log('สร้างประวัติทดสอบสำเร็จ:', data);
+            // โหลดประวัติใหม่
+            await loadGameHistory();
+            displayGameHistory();
+        }
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาด:', error);
     }
 }
 
@@ -13081,12 +13193,14 @@ function removeAdminUI() {
     }
 }
 
-// วางแทนฟังก์ชัน updateAdminTabs() เดิม
+// แทนที่ฟังก์ชัน updateAdminTabs() เดิมทั้งหมด
 function updateAdminTabs() {
     const historyTab = document.getElementById('history-tab');
     const createTab = document.getElementById('create-tab');
     
-    if (isAdminMode) {
+    console.log("Updating admin tabs - isAdminMode:", isAdminMode, "adminProfile:", !!adminProfile);
+    
+    if (isAdminMode && adminProfile) {
         // โหมดแอดมิน: แสดงทุกแท็บ (เล่นเกม + ประวัติ + ตั้งค่า)
         if (historyTab) {
             historyTab.style.display = 'block';
