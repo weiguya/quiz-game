@@ -4867,11 +4867,484 @@ button.delete:hover {
     display: none;
 }
 
+/* Welcome Screen Styles */
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.welcome-container {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+  animation: slideIn 0.6s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-header h1 {
+  font-size: 2.5rem;
+  color: #1976d2;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.welcome-header p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.welcome-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.option-card {
+  background: linear-gradient(145deg, #ffffff, #f0f7ff);
+  border: 2px solid #e3f2fd;
+  border-radius: 16px;
+  padding: 30px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.option-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(25, 118, 210, 0.2);
+  border-color: #1976d2;
+}
+
+.option-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: left 0.5s;
+}
+
+.option-card:hover::before {
+  left: 100%;
+}
+
+.option-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.option-card h3 {
+  color: #1976d2;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.option-card p {
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.option-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #4caf50;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.guest-card .option-badge {
+  background: #ff9800;
+}
+
+.login-card .option-badge {
+  background: #4caf50;
+}
+
+.register-card .option-badge {
+  background: #2196f3;
+}
+
+.welcome-footer {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  padding: 20px;
+}
+
+.modal-container {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  color: #1976d2;
+  font-size: 1.3rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  font-family: 'Prompt', sans-serif;
+}
+
+.form-input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  outline: none;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.note {
+  font-size: 14px;
+  color: #ff9800;
+  margin-top: 8px;
+  text-align: center;
+  font-style: italic;
+}
+
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #1976d2, #42a5f5);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #1565c0, #1976d2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .welcome-container {
+    padding: 30px 20px;
+  }
+  
+  .welcome-options {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .option-card {
+    padding: 25px 15px;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .btn-primary, .btn-secondary {
+    width: 100%;
+  }
+}
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
+<!-- เพิ่มในส่วน HTML หลัง <body> และก่อน <div class="nav-tabs"> -->
+
+<!-- หน้าต้อนรับใหม่ -->
+<div id="welcome-screen" class="welcome-overlay">
+  <div class="welcome-container">
+    <!-- Header -->
+    <div class="welcome-header">
+      <h1>🎯 Quiz Game</h1>
+      <p>ทดสอบความรู้ของคุณด้วยคำถามที่หลากหลาย</p>
+    </div>
+
+    <!-- Options Cards -->
+    <div class="welcome-options">
+      <!-- Option 1: Guest -->
+      <div class="option-card guest-card" onclick="selectWelcomeOption('guest')">
+        <div class="option-icon">👤</div>
+        <h3>เล่นแบบ Guest</h3>
+        <p>เริ่มเล่นทันที<br>ไม่ต้องสมัครสมาชิก</p>
+        <div class="option-badge">เร็วที่สุด</div>
+      </div>
+
+      <!-- Option 2: Login -->
+      <div class="option-card login-card" onclick="selectWelcomeOption('login')">
+        <div class="option-icon">🔑</div>
+        <h3>เข้าสู่ระบบ</h3>
+        <p>เข้าใช้บัญชีที่มีอยู่<br>เก็บประวัติการเล่น</p>
+        <div class="option-badge">แนะนำ</div>
+      </div>
+
+      <!-- Option 3: Register -->
+      <div class="option-card register-card" onclick="selectWelcomeOption('register')">
+        <div class="option-icon">📝</div>
+        <h3>สร้างบัญชี</h3>
+        <p>สมัครสมาชิกใหม่<br>รับสิทธิพิเศษ</p>
+        <div class="option-badge">ฟรี</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="welcome-footer">
+      <p>เลือกวิธีการเข้าใช้งานที่เหมาะกับคุณ</p>
+    </div>
+  </div>
+</div>
+
+<!-- Guest Name Form -->
+<div id="guest-name-form" class="modal-overlay hidden">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>👤 เล่นแบบ Guest</h3>
+      <button class="close-btn" onclick="closeGuestForm()">×</button>
+    </div>
+    <div class="modal-body">
+      <label for="guest-name-input">ชื่อผู้เล่น</label>
+      <input type="text" id="guest-name-input" class="form-input" placeholder="กรอกชื่อของคุณ" maxlength="20">
+      <p class="note">ประวัติการเล่นจะหายหลังจากปิดเบราว์เซอร์</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="startGuestMode()">เริ่มเล่น</button>
+      <button class="btn-secondary" onclick="closeGuestForm()">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Login Form -->
+<div id="user-login-form" class="modal-overlay hidden">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>🔑 เข้าสู่ระบบ</h3>
+      <button class="close-btn" onclick="closeLoginForm()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="login-email">อีเมล</label>
+        <input type="email" id="login-email" class="form-input" placeholder="กรอกอีเมลของคุณ">
+      </div>
+      <div class="form-group">
+        <label for="login-password">รหัสผ่าน</label>
+        <input type="password" id="login-password" class="form-input" placeholder="กรอกรหัสผ่าน">
+      </div>
+      <div class="form-group">
+        <label class="checkbox-container">
+          <input type="checkbox" id="remember-login">
+          <span class="checkmark"></span>
+          จำการเข้าสู่ระบบ
+        </label>
+      </div>
+      <div id="login-error" class="error-message hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="performUserLogin()">เข้าสู่ระบบ</button>
+      <button class="btn-secondary" onclick="closeLoginForm()">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- User Register Form -->
+<div id="user-register-form" class="modal-overlay hidden">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>📝 สร้างบัญชีใหม่</h3>
+      <button class="close-btn" onclick="closeRegisterForm()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="register-name">ชื่อผู้ใช้</label>
+        <input type="text" id="register-name" class="form-input" placeholder="ชื่อที่จะแสดงในเกม" maxlength="20">
+      </div>
+      <div class="form-group">
+        <label for="register-email">อีเมล</label>
+        <input type="email" id="register-email" class="form-input" placeholder="อีเมลสำหรับเข้าสู่ระบบ">
+      </div>
+      <div class="form-group">
+        <label for="register-password">รหัสผ่าน</label>
+        <input type="password" id="register-password" class="form-input" placeholder="รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)" minlength="6">
+      </div>
+      <div class="form-group">
+        <label for="register-confirm-password">ยืนยันรหัสผ่าน</label>
+        <input type="password" id="register-confirm-password" class="form-input" placeholder="กรอกรหัสผ่านอีกครั้ง">
+      </div>
+      <div class="form-group">
+        <label class="checkbox-container">
+          <input type="checkbox" id="accept-terms">
+          <span class="checkmark"></span>
+          ยอมรับเงื่อนไขการใช้งาน
+        </label>
+      </div>
+      <div id="register-error" class="error-message hidden"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-primary" onclick="performUserRegister()">สร้างบัญชี</button>
+      <button class="btn-secondary" onclick="closeRegisterForm()">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
 <div class="nav-tabs">
 <div class="nav-tab active" id="play-tab">เล่นเกม</div>
 <div class="nav-tab" id="history-tab">ประวัติการเล่น</div>
@@ -7237,7 +7710,6 @@ async function initializeApp() {
     // 1. โหลดข้อมูลจาก Database และ localStorage
     await loadCategories();
     await loadQuestions();
-    await loadGameHistory(); 
     
     // 2. ตั้งค่า event listeners สำหรับแท็บ
     setupTabNavigation();
@@ -9867,7 +10339,7 @@ function showResult() {
         const category = firstQuestion ? firstQuestion.category : null;
         
         // บันทึกประวัติ
-        addGameHistoryEntry(currentPlayer, correctCount, currentGameQuestions.length, category, percentage);
+        saveUserGameHistory(currentPlayer, correctCount, currentGameQuestions.length, category, percentage);
     }
     
     // อัพเดตการแสดงผลหน้าต่างๆ
@@ -10456,8 +10928,9 @@ document.addEventListener('DOMContentLoaded', async function() {
 function initPlayerSystem() {
     console.log("กำลังเริ่มต้นระบบผู้เล่น...");
     
-    // กำหนดค่าเริ่มต้นให้ currentPlayer (ต้องเป็น null)
+    // กำหนดค่าเริ่มต้น
     currentPlayer = null;
+    userMode = null;
     
     // ตรวจสอบให้แน่ใจว่าไม่ได้อยู่ในโหมดแอดมิน (ยกเว้นกรณีล็อกอินแอดมินจริงๆ)
     if (!adminProfile) {
@@ -10465,44 +10938,84 @@ function initPlayerSystem() {
         console.log("รีเซ็ตโหมดแอดมิน: isAdminMode =", isAdminMode);
     }
     
-    // โหลดชื่อผู้เล่นจาก localStorage (ถ้ามี) แต่ไม่ล็อกอินอัตโนมัติ
-    const savedPlayerName = localStorage.getItem('quiz-player-name');
-    
-    // เพิ่ม event listeners
-    const playerNameInput = document.getElementById('player-name');
-    const loginButton = document.getElementById('login-button');
-    
-    if (playerNameInput && loginButton) {
-        // ตรวจสอบการพิมพ์ชื่อผู้เล่น
-        playerNameInput.addEventListener('input', function() {
-            // ปุ่มล็อกอินจะใช้งานได้เมื่อมีการกรอกชื่อ
-            loginButton.disabled = this.value.trim() === '';
-        });
-        
-        // กรอกชื่อผู้เล่นที่บันทึกไว้ (ถ้ามี)
-        if (savedPlayerName) {
-            playerNameInput.value = savedPlayerName;
-            loginButton.disabled = false;
+    // ตรวจสอบสถานะการล็อกอินจาก Supabase
+    supabaseClient.auth.getSession().then(({ data: { session } }) => {
+        if (session && session.user) {
+            // มีผู้ใช้ล็อกอินอยู่แล้ว
+            console.log("พบ session ที่ล็อกอินอยู่:", session.user.email);
+            
+            // ตรวจสอบว่าเป็นแอดมินหรือไม่
+            checkIsAdmin(session.user.id).then(adminData => {
+                if (adminData) {
+                    // เป็นแอดมิน
+                    userMode = 'admin';
+                    isAdminMode = true;
+                    adminProfile = adminData;
+                    currentUser = session.user;
+                    currentPlayer = {
+                        name: adminData.name || 'Admin',
+                        mode: 'admin',
+                        userId: session.user.id,
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    activateAdminMode();
+                    hideWelcomeScreenAndStart();
+                } else {
+                    // เป็นผู้ใช้ทั่วไป
+                    userMode = 'user';
+                    currentUser = session.user;
+                    currentPlayer = {
+                        name: session.user.user_metadata?.display_name || session.user.email.split('@')[0],
+                        mode: 'user',
+                        userId: session.user.id,
+                        loginTime: new Date().toISOString()
+                    };
+                    
+                    hideWelcomeScreenAndStart();
+                }
+            });
+        } else {
+            // ไม่มีผู้ใช้ล็อกอิน แสดงหน้าต้อนรับ
+            showWelcomeScreen();
         }
-        
-        // เหตุการณ์เมื่อคลิกปุ่มล็อกอิน
-        loginButton.addEventListener('click', loginPlayer);
-        
-        // รองรับการกด Enter ในช่องกรอกชื่อ
-        playerNameInput.addEventListener('keyup', function(event) {
-            if (event.key === 'Enter' && this.value.trim() !== '') {
-                loginPlayer();
-            }
-        });
-    }
-    
-    // สำคัญมาก: ตั้งค่าการแสดงผลของหน้า login และหน้าอื่นๆ
-    updateLoginDisplay();
+    });
     
     // อัพเดตแท็บให้ถูกต้องตาม User Type
     updateAdminTabs();
     
-    console.log("ระบบผู้เล่นพร้อมใช้งานแล้ว - isAdminMode:", isAdminMode);
+    console.log("ระบบผู้เล่นพร้อมใช้งานแล้ว");
+}
+
+// ฟังก์ชันแสดงหน้าต้อนรับ
+function showWelcomeScreen() {
+    const welcomeScreen = document.getElementById('welcome-screen');
+    if (welcomeScreen) {
+        welcomeScreen.classList.remove('hidden');
+        welcomeScreen.style.opacity = '1';
+    }
+}
+
+// ฟังก์ชันซ่อนหน้าต้อนรับและเริ่มเกม
+function hideWelcomeScreenAndStart() {
+    hideWelcomeScreen();
+    
+    // ซ่อนหน้า login เดิม
+    const oldLoginScreen = document.getElementById('login-screen');
+    if (oldLoginScreen) {
+        oldLoginScreen.classList.add('hidden');
+    }
+    
+    // แสดงหน้าเลือกหมวดหมู่
+    const startScreen = document.getElementById('start-screen');
+    const categorySelection = document.getElementById('category-selection-container');
+    
+    if (startScreen) startScreen.classList.remove('hidden');
+    if (categorySelection) categorySelection.classList.remove('hidden');
+    
+    // อัพเดต UI
+    updateUIForUserMode();
+    updatePlayMainCategorySelect();
 }
 
 function updateLoginDisplay() {
@@ -13159,27 +13672,23 @@ function updateAdminTabs() {
     const historyTab = document.getElementById('history-tab');
     const createTab = document.getElementById('create-tab');
     
-    if (isAdminMode) {
-        // โหมดแอดมิน: แสดงทุกแท็บ (เล่นเกม + ประวัติ + ตั้งค่า)
+    if (userMode === 'admin' || isAdminMode) {
+        // โหมดแอดมิน: แสดงทุกแท็บ
         if (historyTab) {
             historyTab.style.display = 'block';
             historyTab.textContent = 'ประวัติการเล่น (Admin)';
-            console.log("แสดงแท็บประวัติการเล่น (Admin)");
         }
         if (createTab) {
             createTab.style.display = 'block';
-            console.log("แสดงแท็บตั้งค่า");
         }
     } else {
-        // โหมดผู้เล่นทั่วไป: แสดงแท็บเล่นเกม + ประวัติ (ซ่อนเฉพาะตั้งค่า)
+        // โหมดผู้เล่นทั่วไป: ซ่อนแท็บตั้งค่า
         if (historyTab) {
             historyTab.style.display = 'block';
             historyTab.textContent = 'ประวัติการเล่น';
-            console.log("แสดงแท็บประวัติการเล่น (Player)");
         }
         if (createTab) {
             createTab.style.display = 'none';
-            console.log("ซ่อนแท็บตั้งค่า");
         }
     }
 }
@@ -13520,6 +14029,428 @@ function formatDateTime24Hour(dateString) {
         full: `${day}/${month}/${year} ${hours}:${minutes}`
     };
 }
+
+// ตัวแปรสำหรับเก็บสถานะผู้ใช้
+let userMode = null; // 'guest', 'user', 'admin'
+
+// ฟังก์ชันเลือกตัวเลือกในหน้าต้อนรับ
+function selectWelcomeOption(option) {
+  console.log('เลือกตัวเลือก:', option);
+  
+  switch(option) {
+    case 'guest':
+      showGuestForm();
+      break;
+    case 'login':
+      showLoginForm();
+      break;
+    case 'register':
+      showRegisterForm();
+      break;
+  }
+}
+
+// แสดงฟอร์มชื่อผู้เล่น Guest
+function showGuestForm() {
+  document.getElementById('guest-name-form').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('guest-name-input').focus();
+  }, 100);
+}
+
+// ปิดฟอร์ม Guest
+function closeGuestForm() {
+  document.getElementById('guest-name-form').classList.add('hidden');
+  document.getElementById('guest-name-input').value = '';
+}
+
+// เริ่มโหมด Guest
+function startGuestMode() {
+  const guestName = document.getElementById('guest-name-input').value.trim();
+  
+  if (!guestName) {
+    alert('กรุณากรอกชื่อผู้เล่น');
+    return;
+  }
+  
+  // ตั้งค่าโหมด Guest
+  userMode = 'guest';
+  currentPlayer = {
+    name: guestName,
+    mode: 'guest',
+    loginTime: new Date().toISOString()
+  };
+  
+  console.log('เริ่มโหมด Guest:', currentPlayer);
+  
+  // ซ่อนหน้าต้อนรับ
+  hideWelcomeScreen();
+  
+  // ไปยังหน้าเลือกหมวดหมู่
+  startGameAfterLogin();
+}
+
+// แสดงฟอร์มเข้าสู่ระบบ
+function showLoginForm() {
+  document.getElementById('user-login-form').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('login-email').focus();
+  }, 100);
+}
+
+// ปิดฟอร์มเข้าสู่ระบบ
+function closeLoginForm() {
+  document.getElementById('user-login-form').classList.add('hidden');
+  clearLoginForm();
+}
+
+// ล้างฟอร์มเข้าสู่ระบบ
+function clearLoginForm() {
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  document.getElementById('login-error').classList.add('hidden');
+}
+
+// ดำเนินการเข้าสู่ระบบ
+async function performUserLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value.trim();
+  const errorDiv = document.getElementById('login-error');
+  
+  // ตรวจสอบข้อมูล
+  if (!email || !password) {
+    showError('login-error', 'กรุณากรอกอีเมลและรหัสผ่าน');
+    return;
+  }
+  
+  try {
+    // เข้าสู่ระบบผ่าน Supabase
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email: email,
+      password: password
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log('เข้าสู่ระบบสำเร็จ:', data.user);
+    
+    // ตรวจสอบว่าเป็นแอดมินหรือไม่
+    const adminData = await checkIsAdmin(data.user.id);
+    
+    if (adminData) {
+      // โหมดแอดมิน
+      userMode = 'admin';
+      isAdminMode = true;
+      adminProfile = adminData;
+      currentUser = data.user;
+      currentPlayer = {
+        name: adminData.name || 'Admin',
+        mode: 'admin',
+        userId: data.user.id,
+        loginTime: new Date().toISOString()
+      };
+      
+      activateAdminMode();
+    } else {
+      // โหมดผู้ใช้ทั่วไป
+      userMode = 'user';
+      currentUser = data.user;
+      currentPlayer = {
+        name: data.user.user_metadata?.display_name || data.user.email.split('@')[0],
+        mode: 'user',
+        userId: data.user.id,
+        loginTime: new Date().toISOString()
+      };
+    }
+    
+    // ซ่อนหน้าต้อนรับ
+    hideWelcomeScreen();
+    
+    // ไปยังหน้าเลือกหมวดหมู่
+    startGameAfterLogin();
+    
+  } catch (error) {
+    console.error('เข้าสู่ระบบไม่สำเร็จ:', error);
+    showError('login-error', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+  }
+}
+
+// แสดงฟอร์มสมัครสมาชิก
+function showRegisterForm() {
+  document.getElementById('user-register-form').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('register-name').focus();
+  }, 100);
+}
+
+// ปิดฟอร์มสมัครสมาชิก
+function closeRegisterForm() {
+  document.getElementById('user-register-form').classList.add('hidden');
+  clearRegisterForm();
+}
+
+// ล้างฟอร์มสมัครสมาชิก
+function clearRegisterForm() {
+  document.getElementById('register-name').value = '';
+  document.getElementById('register-email').value = '';
+  document.getElementById('register-password').value = '';
+  document.getElementById('register-confirm-password').value = '';
+  document.getElementById('accept-terms').checked = false;
+  document.getElementById('register-error').classList.add('hidden');
+}
+
+// ดำเนินการสมัครสมาชิก
+async function performUserRegister() {
+  const name = document.getElementById('register-name').value.trim();
+  const email = document.getElementById('register-email').value.trim();
+  const password = document.getElementById('register-password').value.trim();
+  const confirmPassword = document.getElementById('register-confirm-password').value.trim();
+  const acceptTerms = document.getElementById('accept-terms').checked;
+  
+  // ตรวจสอบข้อมูล
+  if (!name || !email || !password || !confirmPassword) {
+    showError('register-error', 'กรุณากรอกข้อมูลให้ครบทุกช่อง');
+    return;
+  }
+  
+  if (password !== confirmPassword) {
+    showError('register-error', 'รหัสผ่านไม่ตรงกัน');
+    return;
+  }
+  
+  if (password.length < 6) {
+    showError('register-error', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+    return;
+  }
+  
+  if (!acceptTerms) {
+    showError('register-error', 'กรุณายอมรับเงื่อนไขการใช้งาน');
+    return;
+  }
+  
+  try {
+    // สมัครสมาชิกผ่าน Supabase
+    const { data, error } = await supabaseClient.auth.signUp({
+      email: email,
+      password: password,
+      options: {
+        data: {
+          display_name: name
+        }
+      }
+    });
+    
+    if (error) {
+      throw error;
+    }
+    
+    console.log('สมัครสมาชิกสำเร็จ:', data.user);
+    
+    // ตั้งค่าผู้ใช้
+    userMode = 'user';
+    currentUser = data.user;
+    currentPlayer = {
+      name: name,
+      mode: 'user',
+      userId: data.user.id,
+      loginTime: new Date().toISOString()
+    };
+    
+    alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ');
+    
+    // ซ่อนหน้าต้อนรับ
+    hideWelcomeScreen();
+    
+    // ไปยังหน้าเลือกหมวดหมู่
+    startGameAfterLogin();
+    
+  } catch (error) {
+    console.error('สมัครสมาชิกไม่สำเร็จ:', error);
+    let errorMessage = 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+    
+    if (error.message.includes('already registered')) {
+      errorMessage = 'อีเมลนี้ถูกใช้งานแล้ว';
+    }
+    
+    showError('register-error', errorMessage);
+  }
+}
+
+// แสดงข้อผิดพลาด
+function showError(elementId, message) {
+  const errorDiv = document.getElementById(elementId);
+  errorDiv.textContent = message;
+  errorDiv.classList.remove('hidden');
+}
+
+// ซ่อนหน้าต้อนรับ
+function hideWelcomeScreen() {
+  const welcomeScreen = document.getElementById('welcome-screen');
+  if (welcomeScreen) {
+    welcomeScreen.style.opacity = '0';
+    setTimeout(() => {
+      welcomeScreen.classList.add('hidden');
+    }, 300);
+  }
+}
+
+// เริ่มเกมหลังจากเข้าสู่ระบบ
+function startGameAfterLogin() {
+  // ซ่อนหน้า login เดิม
+  const oldLoginScreen = document.getElementById('login-screen');
+  if (oldLoginScreen) {
+    oldLoginScreen.classList.add('hidden');
+  }
+  
+  // แสดงหน้าเลือกหมวดหมู่
+  const startScreen = document.getElementById('start-screen');
+  const categorySelection = document.getElementById('category-selection-container');
+  
+  if (startScreen) startScreen.classList.remove('hidden');
+  if (categorySelection) categorySelection.classList.remove('hidden');
+  
+  // อัพเดต UI ตามโหมด
+  updateUIForUserMode();
+  
+  console.log('เริ่มเกมในโหมด:', userMode);
+}
+
+// อัพเดต UI ตามโหมดผู้ใช้
+function updateUIForUserMode() {
+  // อัพเดตแท็บ
+  updateAdminTabs();
+  
+  // เพิ่มข้อมูลผู้เล่นที่มุมขวาบน
+  const quizContainer = document.querySelector('.container.quiz-player');
+  if (quizContainer && currentPlayer) {
+    // ลบข้อมูลเก่า
+    const existingInfo = quizContainer.querySelector('.player-info.top-right');
+    if (existingInfo) existingInfo.remove();
+    
+    // เพิ่มข้อมูลใหม่
+    const playerInfo = document.createElement('div');
+    playerInfo.className = 'player-info top-right';
+    
+    let modeIcon = '';
+    switch(userMode) {
+      case 'guest': modeIcon = '👤'; break;
+      case 'user': modeIcon = '🔑'; break;
+      case 'admin': modeIcon = '👑'; break;
+    }
+    
+    playerInfo.innerHTML = `
+      <div class="player-name">${modeIcon} ${currentPlayer.name}</div>
+    `;
+    quizContainer.appendChild(playerInfo);
+  }
+}
+
+// Event Listeners สำหรับ Enter key
+document.addEventListener('DOMContentLoaded', function() {
+  // Guest name input
+  const guestInput = document.getElementById('guest-name-input');
+  if (guestInput) {
+    guestInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        startGuestMode();
+      }
+    });
+  }
+  
+  // Login form
+  const loginPassword = document.getElementById('login-password');
+  if (loginPassword) {
+    loginPassword.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        performUserLogin();
+      }
+    });
+  }
+  
+  // Register form
+  const registerConfirmPassword = document.getElementById('register-confirm-password');
+  if (registerConfirmPassword) {
+    registerConfirmPassword.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        performUserRegister();
+      }
+    });
+  }
+});
+
+// ฟังก์ชันตรวจสอบและโหลดประวัติการเล่นตามโหมด
+async function loadUserGameHistory() {
+    if (userMode === 'guest') {
+        // Guest: ใช้ประวัติในหน่วยความจำเท่านั้น
+        gameHistory = [];
+        filteredHistory = [];
+        console.log("โหมด Guest: เริ่มต้นประวัติเปล่า");
+    } else if (userMode === 'user' || userMode === 'admin') {
+        // User/Admin: โหลดจาก Database
+        await loadGameHistory();
+        console.log("โหลดประวัติจาก Database:", gameHistory.length, "รายการ");
+    }
+}
+
+// ฟังก์ชันบันทึกประวัติการเล่นตามโหมด
+async function saveUserGameHistory(player, score, totalQuestions, category, percentage) {
+    if (userMode === 'guest') {
+        // Guest: เก็บในหน่วยความจำเท่านั้น
+        const historyEntry = {
+            id: Date.now().toString(),
+            playerName: player.name,
+            score: score,
+            totalQuestions: totalQuestions,
+            percentage: percentage,
+            category: category,
+            playedAt: new Date().toISOString(),
+            gameData: {
+                questions: [...currentGameQuestions],
+                userAnswers: {...userAnswers},
+                randomOrder: [...randomQuestionOrder],
+                choiceOrder: {...choiceOrderMap}
+            }
+        };
+        
+        gameHistory.unshift(historyEntry);
+        filteredHistory = [...gameHistory];
+        
+        console.log("Guest: บันทึกประวัติในหน่วยความจำ");
+        return true;
+    } else {
+        // User/Admin: บันทึกลง Database
+        return await addGameHistoryEntry(player, score, totalQuestions, category, percentage);
+    }
+}
+
+// ฟังก์ชันออกจากระบบ
+async function logout() {
+    if (userMode === 'user' || userMode === 'admin') {
+        // ออกจาก Supabase Auth
+        await supabaseClient.auth.signOut();
+    }
+    
+    // รีเซ็ตตัวแปรทั้งหมด
+    currentPlayer = null;
+    currentUser = null;
+    userMode = null;
+    isAdminMode = false;
+    adminProfile = null;
+    
+    // ล้างประวัติ
+    gameHistory = [];
+    filteredHistory = [];
+    
+    // รีเซ็ต UI
+    removeAdminUI();
+    updateAdminTabs();
+    
+    // กลับไปหน้าต้อนรับ
+    location.reload();
+}
+
 </script>
 </body>
 </html>
