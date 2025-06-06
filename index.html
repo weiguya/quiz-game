@@ -7020,32 +7020,42 @@ function updateHistorySub1Category(mainCategory) {
     sub1Select.disabled = false;
 }
 
-// ฟังก์ชันอัพเดตตัวเลือกหมวดหมู่ย่อย 2
-function updateHistorySub2Category(mainCategory, sub1Category) {
-    const sub2Select = document.getElementById('filter-history-sub2-category');
-    if (!sub2Select) return;
+// ฟังก์ชันอัพเดตตัวเลือกหมวดหมู่ย่อย 2 สำหรับตัวกรองประวัติ
+function updateHistorySub2Category(mainCategory, subCategory1) {
+    const sub2CategorySelect = document.getElementById('filter-history-sub2-category');
+    if (!sub2CategorySelect) return;
     
     // ล้างตัวเลือกเดิม
-    sub2Select.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 2</option>';
+    sub2CategorySelect.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 2</option>';
     
     // ถ้าไม่ได้เลือกหมวดหมู่หลักหรือหมวดหมู่ย่อย 1 ให้ปิดการใช้งาน
-    if (!mainCategory || !sub1Category) {
-        sub2Select.disabled = true;
+    if (!mainCategory || !subCategory1) {
+        sub2CategorySelect.disabled = true;
         return;
     }
     
     // เพิ่มหมวดหมู่ย่อย 2 จากโครงสร้างหมวดหมู่ที่มีอยู่
-    if (categories[mainCategory] && categories[mainCategory][sub1Category]) {
-        for (const sub2 of categories[mainCategory][sub1Category]) {
+    if (categories[mainCategory] && categories[mainCategory][subCategory1]) {
+        for (const subCategory2Item of categories[mainCategory][subCategory1]) {
             const option = document.createElement('option');
-            option.value = sub2;
-            option.textContent = sub2;
-            sub2Select.appendChild(option);
+            
+            // ตรวจสอบว่าเป็น object หรือ string
+            if (typeof subCategory2Item === 'object' && subCategory2Item.name) {
+                // กรณีที่เป็น object ใหม่
+                option.value = subCategory2Item.name;
+                option.textContent = subCategory2Item.name;
+            } else {
+                // กรณีที่เป็น string เก่า (backward compatibility)
+                option.value = subCategory2Item;
+                option.textContent = subCategory2Item;
+            }
+            
+            sub2CategorySelect.appendChild(option);
         }
     }
     
     // เปิดใช้งานตัวเลือก
-    sub2Select.disabled = false;
+    sub2CategorySelect.disabled = false;
 }
 
 // ฟังก์ชันตั้งค่า Event Listeners สำหรับตัวเลือกหมวดหมู่
@@ -7902,7 +7912,16 @@ function setupChoiceRadioButtons() {
 
 // อัพเดทหมวดหมู่ย่อย 1 เมื่อเลือกหมวดหมู่หลัก
 function updateSubCategory1Select(selectElement, mainCategory) {
-    selectElement.innerHTML = '<option value="" disabled selected>-- เลือกหมวดหมู่ย่อย 1 --</option>';
+    selectElement.innerHTML = '';
+    
+    // เพิ่ม placeholder ที่ซ่อนจากรายการ
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = "";
+    placeholderOption.textContent = "เลือกหมวดหมู่ย่อย 1";
+    placeholderOption.disabled = true;
+    placeholderOption.selected = true;
+    placeholderOption.style.display = "none"; // ซ่อนจากรายการ dropdown
+    selectElement.appendChild(placeholderOption);
     
     if (mainCategory && categories[mainCategory]) {
         for (const subCategory1 in categories[mainCategory]) {
@@ -7919,7 +7938,16 @@ function updateSubCategory1Select(selectElement, mainCategory) {
 
 // ฟังก์ชันอัพเดทหมวดหมู่ย่อย 2 เมื่อเลือกหมวดหมู่ย่อย 1
 function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
-    selectElement.innerHTML = '<option value="" disabled selected>-- เลือกหมวดหมู่ย่อย 2 --</option>';
+    selectElement.innerHTML = '';
+    
+    // เพิ่ม placeholder ที่ซ่อนจากรายการ
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = "";
+    placeholderOption.textContent = "เลือกหมวดหมู่ย่อย 2";
+    placeholderOption.disabled = true;
+    placeholderOption.selected = true;
+    placeholderOption.style.display = "none"; // ซ่อนจากรายการ dropdown
+    selectElement.appendChild(placeholderOption);
     
     if (mainCategory && subCategory1 && 
         categories[mainCategory] && 
@@ -7928,17 +7956,26 @@ function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
         // วนลูปหมวดหมู่ย่อย 2 ที่เป็น object แบบใหม่
         for (const subCategory2Item of categories[mainCategory][subCategory1]) {
             const option = document.createElement('option');
-            option.value = subCategory2Item.name;
             
-            // แสดงไอคอนล็อกถ้าหมวดหมู่ถูกล็อก
-            const lockIcon = subCategory2Item.is_locked ? ' 🔒' : '';
-            option.textContent = `${subCategory2Item.name}${lockIcon}`;
-            
-            // ตรวจสอบสิทธิ์การเข้าถึง - ถ้าล็อกและไม่ใช่ admin ให้ disable
-            if (subCategory2Item.is_locked && !canPlayerAccessCategory(mainCategory, subCategory1, subCategory2Item.name)) {
-                option.disabled = true;
-                option.style.color = '#999999';
-                option.style.backgroundColor = '#f5f5f5';
+            // ตรวจสอบว่าเป็น object หรือ string
+            if (typeof subCategory2Item === 'object' && subCategory2Item.name) {
+                // กรณีที่เป็น object ใหม่
+                option.value = subCategory2Item.name;
+                
+                // แสดงไอคอนล็อกถ้าหมวดหมู่ถูกล็อก
+                const lockIcon = subCategory2Item.is_locked ? ' 🔒' : '';
+                option.textContent = `${subCategory2Item.name}${lockIcon}`;
+                
+                // ตรวจสอบสิทธิ์การเข้าถึง - ถ้าล็อกและไม่ใช่ admin ให้ disable
+                if (subCategory2Item.is_locked && !canPlayerAccessCategory(mainCategory, subCategory1, subCategory2Item.name)) {
+                    option.disabled = true;
+                    option.style.color = '#999999';
+                    option.style.backgroundColor = '#f5f5f5';
+                }
+            } else {
+                // กรณีที่เป็น string เก่า (backward compatibility)
+                option.value = subCategory2Item;
+                option.textContent = subCategory2Item;
             }
             
             selectElement.appendChild(option);
@@ -7957,9 +7994,23 @@ function isCategoryLocked(mainCategory, subCategory1, subCategory2) {
         }
         
         const subCategory2List = categories[mainCategory][subCategory1];
-        const categoryItem = subCategory2List.find(item => item.name === subCategory2);
         
-        return categoryItem ? categoryItem.is_locked : false;
+        // หาหมวดหมู่ย่อย 2 ที่ตรงกัน
+        for (const subCategory2Item of subCategory2List) {
+            if (typeof subCategory2Item === 'object' && subCategory2Item.name) {
+                // กรณีที่เป็น object ใหม่
+                if (subCategory2Item.name === subCategory2) {
+                    return subCategory2Item.is_locked || false;
+                }
+            } else {
+                // กรณีที่เป็น string เก่า (ไม่มีการล็อก)
+                if (subCategory2Item === subCategory2) {
+                    return false;
+                }
+            }
+        }
+        
+        return false;
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการตรวจสอบการล็อก:', error);
         return false;
@@ -10201,16 +10252,17 @@ function updatePlayMainCategorySelect() {
         return;
     }
     
-    // เก็บตัวเลือกแรกไว้
-    const firstOption = document.createElement('option');
-    firstOption.value = "";
-    firstOption.textContent = "เลือกหมวดหมู่หลัก";
-    firstOption.disabled = true;
-    firstOption.selected = true;
-    
     // ล้างตัวเลือกเดิม
     playMainCategory.innerHTML = '';
-    playMainCategory.appendChild(firstOption);
+    
+    // เพิ่มตัวเลือกเริ่มต้น (placeholder) - ซ่อนจากรายการ
+    const placeholderOption = document.createElement('option');
+    placeholderOption.value = "";
+    placeholderOption.textContent = "เลือกหมวดหมู่หลัก";
+    placeholderOption.disabled = true;
+    placeholderOption.selected = true;
+    placeholderOption.style.display = "none"; // ซ่อนจากรายการ dropdown
+    playMainCategory.appendChild(placeholderOption);
     
     // เพิ่มหมวดหมู่หลักที่มีอยู่
     for (const mainCategory in categories) {
@@ -10225,12 +10277,26 @@ function updatePlayMainCategorySelect() {
     const playSubCategory2 = document.getElementById('play-sub-category2');
     
     if (playSubCategory1) {
-        playSubCategory1.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 1</option>';
+        playSubCategory1.innerHTML = '';
+        const placeholder1 = document.createElement('option');
+        placeholder1.value = "";
+        placeholder1.textContent = "เลือกหมวดหมู่ย่อย 1";
+        placeholder1.disabled = true;
+        placeholder1.selected = true;
+        placeholder1.style.display = "none"; // ซ่อนจากรายการ dropdown
+        playSubCategory1.appendChild(placeholder1);
         playSubCategory1.disabled = true;
     }
     
     if (playSubCategory2) {
-        playSubCategory2.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 2</option>';
+        playSubCategory2.innerHTML = '';
+        const placeholder2 = document.createElement('option');
+        placeholder2.value = "";
+        placeholder2.textContent = "เลือกหมวดหมู่ย่อย 2";
+        placeholder2.disabled = true;
+        placeholder2.selected = true;
+        placeholder2.style.display = "none"; // ซ่อนจากรายการ dropdown
+        playSubCategory2.appendChild(placeholder2);
         playSubCategory2.disabled = true;
     }
     
@@ -11248,10 +11314,20 @@ function updateFilterSubCategory2(mainCategory, subCategory1) {
         
         // เพิ่มหมวดหมู่ย่อย 2 ที่มีอยู่
         if (categories[mainCategory] && categories[mainCategory][subCategory1]) {
-            for (const subCategory2 of categories[mainCategory][subCategory1]) {
+            for (const subCategory2Item of categories[mainCategory][subCategory1]) {
                 const option = document.createElement('option');
-                option.value = subCategory2;
-                option.textContent = subCategory2;
+                
+                // ตรวจสอบว่าเป็น object หรือ string
+                if (typeof subCategory2Item === 'object' && subCategory2Item.name) {
+                    // กรณีที่เป็น object ใหม่
+                    option.value = subCategory2Item.name;
+                    option.textContent = subCategory2Item.name;
+                } else {
+                    // กรณีที่เป็น string เก่า (backward compatibility)
+                    option.value = subCategory2Item;
+                    option.textContent = subCategory2Item;
+                }
+                
                 filterSubCategory2.appendChild(option);
             }
         }
