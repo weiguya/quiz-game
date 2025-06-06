@@ -5794,11 +5794,11 @@ function updateHistoryCategoryFilter() {
     }
 }
 
-// ฟังก์ชันเริ่มต้นระบบประวัติการเล่น
+// ฟังก์ชันเริ่มต้นระบบประวัติการเล่น - แก้ไขไม่ให้โหลดซ้ำ
 function initHistorySystem() {
     console.log("กำลังเริ่มต้นระบบประวัติการเล่น...");
     
-    // สร้างตัวแปรเริ่มต้นถ้ายังไม่มี
+    // ตรวจสอบตัวแปรเริ่มต้น
     if (typeof currentHistoryPage !== 'number' || isNaN(currentHistoryPage)) {
         currentHistoryPage = 1;
     }
@@ -5807,25 +5807,19 @@ function initHistorySystem() {
         historyItemsPerPage = 10;
     }
     
-    // โหลดประวัติการเล่น
-    try {
-        const savedHistory = localStorage.getItem('quiz-game-history');
-        if (savedHistory) {
-            gameHistory = JSON.parse(savedHistory);
-            console.log("โหลดประวัติการเล่นสำเร็จ:", gameHistory.length, "รายการ");
-        } else {
-            gameHistory = [];
-            console.log("ไม่พบประวัติการเล่น สร้างอาเรย์ใหม่");
-            localStorage.setItem('quiz-game-history', JSON.stringify(gameHistory));
-        }
-    } catch (error) {
-        console.error("เกิดข้อผิดพลาดในการโหลดประวัติการเล่น:", error);
+    // **แก้ไขสำคัญ: ไม่โหลดประวัติซ้ำ เพราะโหลดไว้แล้วใน initializeApp()**
+    // ใช้ข้อมูลที่โหลดไว้แล้ว
+    if (!Array.isArray(gameHistory)) {
+        console.warn("gameHistory ไม่ใช่ array หรือยังไม่โหลด กำลังสร้างใหม่");
         gameHistory = [];
-        localStorage.setItem('quiz-game-history', JSON.stringify(gameHistory));
     }
     
-    // กำหนดค่าเริ่มต้นให้กับ filteredHistory
-    filteredHistory = [...gameHistory];
+    if (!Array.isArray(filteredHistory)) {
+        console.log("สร้าง filteredHistory จาก gameHistory ที่มีอยู่");
+        filteredHistory = [...gameHistory];
+    }
+    
+    console.log("ใช้ประวัติที่โหลดไว้แล้ว:", gameHistory.length, "รายการ");
     
     // ตรวจสอบและปรับปรุงส่วนตัวกรองในหน้าประวัติ
     updateHistoryFilterSection();
@@ -5850,10 +5844,10 @@ function initHistorySystem() {
         displayGameHistory();
         
         // ตั้งค่าเริ่มต้นจำนวนรายการทั้งหมด
-const totalHistoryCount = document.getElementById('total-history-count');
-if (totalHistoryCount) {
-    totalHistoryCount.textContent = ` ${filteredHistory.length}`;
-}
+        const totalHistoryCount = document.getElementById('total-history-count');
+        if (totalHistoryCount) {
+            totalHistoryCount.textContent = ` ${filteredHistory.length}`;
+        }
         
         console.log("แสดงประวัติการเล่นครั้งแรกเรียบร้อยแล้ว");
     } catch (error) {
@@ -13184,9 +13178,13 @@ function updateHistoryPageHeader() {
     }
 }
 
-// ฟังก์ชันแสดงประวัติสำหรับแอดมิน - ใหม่
+// ฟังก์ชันแสดงประวัติสำหรับแอดมิน - พร้อม debug
 function displayAdminHistory() {
     console.log("กำลังแสดงประวัติการเล่นสำหรับแอดมิน (ทั้งหมด)...");
+    
+    // **Debug ข้อมูล**
+    console.log("Debug gameHistory:", gameHistory.length, "รายการ");
+    console.log("Debug gameHistory sample:", gameHistory.slice(0, 2));
     
     const historyContainer = document.getElementById('history-container');
     
@@ -13198,11 +13196,18 @@ function displayAdminHistory() {
     // แสดงฟีเจอร์แอดมิน (ตัวกรอง, ปุ่มลบ)
     toggleHistoryAdminFeatures();
     
+    // **แก้ไขสำคัญ: ตรวจสอบข้อมูลก่อนใช้**
+    if (!Array.isArray(gameHistory)) {
+        console.error("gameHistory ไม่ใช่ array:", typeof gameHistory);
+        gameHistory = [];
+    }
+    
     // ใช้ข้อมูลประวัติทั้งหมดสำหรับแอดมิน
     filteredHistory = [...gameHistory];
     currentHistoryPage = 1;
     
     console.log("Admin กำลังดูประวัติทั้งหมด:", filteredHistory.length, "รายการ");
+    console.log("filteredHistory sample:", filteredHistory.slice(0, 2));
     
     // แสดงจำนวนรายการประวัติทั้งหมด
     const totalHistoryCount = document.getElementById('total-history-count');
