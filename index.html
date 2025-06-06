@@ -6276,19 +6276,18 @@ function initHistorySystem() {
         historyItemsPerPage = 10;
     }
     
-    // **แก้ไขสำคัญ: ไม่โหลดประวัติซ้ำ เพราะโหลดไว้แล้วใน initializeApp()**
-    // ใช้ข้อมูลที่โหลดไว้แล้ว
+    // ใช้ข้อมูลที่โหลดมาจาก Database ใน initializeApp()
     if (!Array.isArray(gameHistory)) {
         console.warn("gameHistory ไม่ใช่ array หรือยังไม่โหลด กำลังสร้างใหม่");
         gameHistory = [];
     }
     
     if (!Array.isArray(filteredHistory)) {
-        console.log("สร้าง filteredHistory จาก gameHistory ที่มีอยู่");
+        console.log("สร้าง filteredHistory จาก gameHistory ที่โหลดแล้ว");
         filteredHistory = [...gameHistory];
     }
     
-    console.log("ใช้ประวัติที่โหลดไว้แล้ว:", gameHistory.length, "รายการ");
+    console.log("ใช้ประวัติที่โหลดแล้ว:", gameHistory.length, "รายการ");
     
     // ตรวจสอบและปรับปรุงส่วนตัวกรองในหน้าประวัติ
     updateHistoryFilterSection();
@@ -7706,6 +7705,7 @@ async function initializeApp() {
     // 1. โหลดข้อมูลจาก Database และ localStorage
     await loadCategories();
     await loadQuestions();
+    await loadGameHistory(); // เพิ่มบรรทัดนี้เพื่อโหลดประวัติการเล่น
     
     // 2. ตั้งค่า event listeners สำหรับแท็บ
     setupTabNavigation();
