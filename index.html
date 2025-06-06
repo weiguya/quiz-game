@@ -7300,7 +7300,7 @@ function setInitialTabState() {
     }
 }
 
-// แทนที่ฟังก์ชัน setupTabNavigation() ทั้งหมด
+// ฟังก์ชันสลับแท็บ - แก้ไขให้รองรับแอดมินแบบสมบูรณ์
 function setupTabNavigation() {
     const createTab = document.getElementById('create-tab');
     const playTab = document.getElementById('play-tab');
@@ -7408,7 +7408,7 @@ function setupTabNavigation() {
         updatePlayMainCategorySelect();
     });
     
-    // สลับไปที่แท็บประวัติการเล่น - แก้ไขใหม่
+    // สลับไปที่แท็บประวัติการเล่น - ปรับใหม่
     historyTab.addEventListener('click', function() {
         console.log("กำลังสลับไปที่แท็บประวัติการเล่น");
         
@@ -7431,90 +7431,27 @@ function setupTabNavigation() {
         // อัพเดตหัวข้อของหน้าประวัติ
         updateHistoryPageHeader();
         
-        // *** แก้ไขส่วนนี้ - ใช้ระบบเดิมสำหรับทุกคน ***
-        console.log("แสดงประวัติการเล่น - โหมด:", isAdminMode ? "Admin" : "Player");
-        
-        // ใช้ระบบเดิม displayGameHistory() สำหรับทุกคน
+        // แสดงประวัติตาม User Type
         if (isAdminMode) {
-            console.log("แอดมิน: แสดงประวัติทั้งหมด");
-            // แอดมิน: แสดงประวัติทั้งหมด
-            filteredHistory = [...gameHistory];
-            currentHistoryPage = 1;
+            // แอดมิน: ใช้ระบบเดิม (ดูได้ทั้งหมด + มีตัวกรอง)
+            if (typeof displayGameHistory === 'function') {
+                try {
+                    displayGameHistory();
+                } catch (error) {
+                    console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Admin):", error);
+                }
+            }
         } else {
-            console.log("ผู้เล่นธรรมดา: แสดงเฉพาะประวัติตัวเอง");
-            // ผู้เล่นธรรมดา: กรองเฉพาะของตัวเอง
-            filteredHistory = gameHistory.filter(entry => 
-                currentPlayer && entry.playerName === currentPlayer.name
-            );
-            currentHistoryPage = 1;
-        }
-        
-        // ใช้ฟังก์ชันเดียวกันสำหรับทุกคน
-        if (typeof displayGameHistory === 'function') {
-            try {
-                displayGameHistory();
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น:", error);
+            // ผู้เล่นธรรมดา: ใช้ระบบใหม่ (ดูเฉพาะของตัวเอง)
+            if (typeof displayPlayerHistory === 'function') {
+                try {
+                    displayPlayerHistory();
+                } catch (error) {
+                    console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Player):", error);
+                }
             }
         }
-        
-        // ซ่อน/แสดงฟีเจอร์แอดมิน
-        toggleHistoryAdminFeatures();
     });
-    
-    console.log("ตั้งค่า Event Listeners สำหรับแท็บเรียบร้อยแล้ว");
-    return true;
-}
-    
-    // สลับไปที่แท็บประวัติการเล่น - ปรับใหม่
-historyTab.addEventListener('click', function() {
-    console.log("กำลังสลับไปที่แท็บประวัติการเล่น");
-    
-    // เปลี่ยนคลาส active ของแท็บ
-    createTab.classList.remove('active');
-    playTab.classList.remove('active');
-    historyTab.classList.add('active');
-    
-    // เปลี่ยนคลาส active ของเนื้อหา
-    createContent.classList.remove('active');
-    playContent.classList.remove('active');
-    historyContent.classList.add('active');
-    
-    // ซ่อนหน้าล็อกอินเมื่อสลับไปแท็บประวัติการเล่น
-    if (loginScreen) loginScreen.classList.add('hidden');
-    
-    // เพิ่มคลาสเพื่อระบุแท็บที่กำลังแสดง
-    document.body.className = 'active-tab-history';
-    
-    // อัพเดตหัวข้อของหน้าประวัติ
-    updateHistoryPageHeader();
-    
-    // *** แก้ไขส่วนนี้ - แสดงประวัติตาม User Type ***
-    if (isAdminMode) {
-        console.log("แอดมิน: แสดงประวัติทั้งหมด");
-        // แอดมิน: ตั้งค่า filteredHistory ให้แสดงทั้งหมด และใช้ระบบเดิม
-        filteredHistory = [...gameHistory]; // ← เพิ่มบรรทัดนี้
-        currentHistoryPage = 1;
-        
-        if (typeof displayGameHistory === 'function') {
-            try {
-                displayGameHistory();
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Admin):", error);
-            }
-        }
-    } else {
-        console.log("ผู้เล่นธรรมดา: แสดงเฉพาะประวัติตัวเอง");
-        // ผู้เล่นธรรมดา: ใช้ระบบใหม่ (ดูเฉพาะของตัวเอง)
-        if (typeof displayPlayerHistory === 'function') {
-            try {
-                displayPlayerHistory();
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Player):", error);
-            }
-        }
-    }
-});
     
     console.log("ตั้งค่า Event Listeners สำหรับแท็บเรียบร้อยแล้ว");
     return true;
@@ -13148,7 +13085,7 @@ function updateAdminTabs() {
         // โหมดแอดมิน: แสดงทุกแท็บ (เล่นเกม + ประวัติ + ตั้งค่า)
         if (historyTab) {
             historyTab.style.display = 'block';
-            historyTab.textContent = 'ประวัติการเล่น'; // ลบ (Admin) ออก
+            historyTab.textContent = 'ประวัติการเล่น (Admin)';
             console.log("แสดงแท็บประวัติการเล่น (Admin)");
         }
         if (createTab) {
@@ -13239,64 +13176,23 @@ function displayPlayerHistory() {
     return true;
 }
 
-// แทนที่ฟังก์ชัน updateHistoryPageHeader() ทั้งหมด
+// ฟังก์ชันปรับส่วนหัวของหน้าประวัติตาม User Type
 function updateHistoryPageHeader() {
     const historySection = document.querySelector('.history-section .section-header .section-title');
     
     if (historySection) {
-        // ใช้ชื่อเดียวกันสำหรับทุกคน
-        historySection.textContent = 'ประวัติการเล่น';
-        
         if (isAdminMode) {
-            // รีเซ็ตตัวกรองสำหรับแอดมิน
-            resetHistoryFiltersForAdmin();
+            historySection.textContent = 'ประวัติการเล่น (ทั้งหมด)';
+        } else {
+            const playerName = currentPlayer ? currentPlayer.name : 'ผู้เล่น';
+            historySection.textContent = `ประวัติการเล่นของ ${playerName}`;
         }
     }
 }
 
-// ฟังก์ชันรีเซ็ตตัวกรองประวัติสำหรับแอดมิน
-function resetHistoryFiltersForAdmin() {
-    if (!isAdminMode) return;
-    
-    try {
-        // รีเซ็ตตัวกรองทั้งหมด
-        const filterDateFrom = document.getElementById('filter-date-from');
-        const filterDateTo = document.getElementById('filter-date-to');
-        const filterPlayerName = document.getElementById('filter-player-name');
-        const filterMainCategory = document.getElementById('filter-history-main-category');
-        const filterSub1Category = document.getElementById('filter-history-sub1-category');
-        const filterSub2Category = document.getElementById('filter-history-sub2-category');
-        
-        if (filterDateFrom) filterDateFrom.value = '';
-        if (filterDateTo) filterDateTo.value = '';
-        if (filterPlayerName) filterPlayerName.value = '';
-        if (filterMainCategory) filterMainCategory.value = '';
-        if (filterSub1Category) {
-            filterSub1Category.value = '';
-            filterSub1Category.disabled = true;
-        }
-        if (filterSub2Category) {
-            filterSub2Category.value = '';
-            filterSub2Category.disabled = true;
-        }
-        
-        // ตั้งค่า filteredHistory ให้แสดงทั้งหมด
-        filteredHistory = [...gameHistory];
-        currentHistoryPage = 1;
-        
-        console.log("รีเซ็ตตัวกรองประวัติสำหรับแอดมิน - แสดงทั้งหมด:", filteredHistory.length, "รายการ");
-        
-    } catch (error) {
-        console.error("เกิดข้อผิดพลาดในการรีเซ็ตตัวกรอง:", error);
-        // ถ้าเกิดข้อผิดพลาด ก็ให้แสดงทั้งหมดอยู่ดี
-        filteredHistory = [...gameHistory];
-        currentHistoryPage = 1;
-    }
-}
-
-// แทนที่ฟังก์ชัน toggleHistoryAdminFeatures() ทั้งหมด
+// ฟังก์ชันซ่อน/แสดงฟีเจอร์แอดมินในหน้าประวัติ
 function toggleHistoryAdminFeatures() {
-    // แสดง/ซ่อนส่วนตัวกรองตาม User Type
+    // ซ่อนส่วนตัวกรองถ้าเป็นผู้เล่นธรรมดา
     const filterSection = document.querySelector('.history-filter-section');
     if (filterSection) {
         if (isAdminMode) {
@@ -13306,7 +13202,7 @@ function toggleHistoryAdminFeatures() {
         }
     }
     
-    // แสดง/ซ่อนปุ่มลบประวัติทั้งหมดตาม User Type
+    // ซ่อนปุ่มลบประวัติทั้งหมดถ้าเป็นผู้เล่นธรรมดา
     const clearAllBtn = document.getElementById('clear-all-history');
     if (clearAllBtn) {
         if (isAdminMode) {
@@ -13316,7 +13212,7 @@ function toggleHistoryAdminFeatures() {
         }
     }
     
-    // แสดง/ซ่อนปุ่มลบรายการตาม User Type
+    // ซ่อนปุ่มลบรายการถ้าเป็นผู้เล่นธรรมดา
     const deleteButtons = document.querySelectorAll('.delete-history-btn');
     deleteButtons.forEach(btn => {
         if (isAdminMode) {
@@ -13326,15 +13222,15 @@ function toggleHistoryAdminFeatures() {
         }
     });
     
-    // แสดง/ซ่อนตัวเลือกจำนวนรายการต่อหน้า
+    // ปรับข้อความจำนวนรายการ
     const itemsPerPageContainer = document.getElementById('history-items-per-page');
     if (itemsPerPageContainer) {
         if (isAdminMode) {
             itemsPerPageContainer.style.display = 'flex';
         } else {
-            // ผู้เล่นธรรมดาใช้ค่าเริ่มต้น 10 รายการ และแสดงตัวเลือก
+            // ผู้เล่นธรรมดาใช้ค่าเริ่มต้น 10 รายการ และซ่อนตัวเลือก
             historyItemsPerPage = 10;
-            itemsPerPageContainer.style.display = 'flex';
+            itemsPerPageContainer.style.display = 'none';
         }
     }
 }
