@@ -5045,9 +5045,10 @@ button.delete:hover {
 }
 
 .modal-header h3 {
-  color: #1976d2;
+  color: #ffffff;
   font-size: 1.3rem;
-  font-weight: 600;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .close-btn {
@@ -5248,9 +5249,9 @@ button.delete:hover {
     </div>
 
     <!-- Footer -->
-    <div class="welcome-footer">
-      <p>เลือกวิธีการเข้าใช้งานที่เหมาะกับคุณ</p>
-    </div>
+<div class="welcome-footer">
+  <p>เลือกวิธีการเข้าใช้งานที่เหมาะกับคุณ</p>
+</div>
   </div>
 </div>
 
@@ -5852,13 +5853,8 @@ async function loginAdmin(email, password) {
 // ฟังก์ชันออกจากระบบแอดมิน
 async function logoutAdmin() {
     try {
-        await supabaseClient.auth.signOut();
-        
-        currentUser = null;
-        adminProfile = null;
-        isAdminMode = false;
-        
-        deactivateAdminMode();
+        // ใช้ฟังก์ชันล็อกเอาท์ทั้งหมด
+        await forceLogoutAllSessions();
         
         console.log('ออกจากระบบแอดมินแล้ว');
         
@@ -10938,48 +10934,9 @@ function initPlayerSystem() {
         console.log("รีเซ็ตโหมดแอดมิน: isAdminMode =", isAdminMode);
     }
     
-    // ตรวจสอบสถานะการล็อกอินจาก Supabase
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-        if (session && session.user) {
-            // มีผู้ใช้ล็อกอินอยู่แล้ว
-            console.log("พบ session ที่ล็อกอินอยู่:", session.user.email);
-            
-            // ตรวจสอบว่าเป็นแอดมินหรือไม่
-            checkIsAdmin(session.user.id).then(adminData => {
-                if (adminData) {
-                    // เป็นแอดมิน
-                    userMode = 'admin';
-                    isAdminMode = true;
-                    adminProfile = adminData;
-                    currentUser = session.user;
-                    currentPlayer = {
-                        name: adminData.name || 'Admin',
-                        mode: 'admin',
-                        userId: session.user.id,
-                        loginTime: new Date().toISOString()
-                    };
-                    
-                    activateAdminMode();
-                    hideWelcomeScreenAndStart();
-                } else {
-                    // เป็นผู้ใช้ทั่วไป
-                    userMode = 'user';
-                    currentUser = session.user;
-                    currentPlayer = {
-                        name: session.user.user_metadata?.display_name || session.user.email.split('@')[0],
-                        mode: 'user',
-                        userId: session.user.id,
-                        loginTime: new Date().toISOString()
-                    };
-                    
-                    hideWelcomeScreenAndStart();
-                }
-            });
-        } else {
-            // ไม่มีผู้ใช้ล็อกอิน แสดงหน้าต้อนรับ
-            showWelcomeScreen();
-        }
-    });
+    // *** แก้ไขสำคัญ: ไม่ตรวจสอบ session ทันที แต่แสดงหน้าต้อนรับก่อน ***
+    console.log("แสดงหน้าต้อนรับสำหรับผู้ใช้ใหม่");
+    showWelcomeScreen();
     
     // อัพเดตแท็บให้ถูกต้องตาม User Type
     updateAdminTabs();
@@ -13525,38 +13482,8 @@ function closeGameDetailsModal() {
 function initAdminSystem() {
     console.log("กำลังเริ่มต้นระบบแอดมิน...");
     
-    // ตรวจสอบสถานะ authentication เมื่อเริ่มต้น
-    supabaseClient.auth.onAuthStateChange((event, session) => {
-        console.log("Auth state changed:", event, session?.user?.email);
-        
-        if (event === 'SIGNED_IN' && session?.user) {
-            // *** การป้องกันใหม่: ถ้ามีผู้เล่นธรรมดาอยู่แล้ว ไม่ให้เปลี่ยนเป็น admin อัตโนมัติ ***
-            if (currentPlayer && !isAdminMode) {
-                console.warn("🔒 มีผู้เล่นธรรมดาอยู่แล้ว - ไม่เปลี่ยนเป็น admin อัตโนมัติ");
-                console.warn("Current player:", currentPlayer.name, "isAdminMode:", isAdminMode);
-                return;
-            }
-            
-            // ตรวจสอบว่าเป็นแอดมินหรือไม่
-            checkIsAdmin(session.user.id).then(adminData => {
-                if (adminData) {
-                    console.log("ตรวจพบแอดมินที่ล็อกอินอยู่:", adminData);
-                    currentUser = session.user;
-                    adminProfile = adminData;
-                    isAdminMode = true;
-                    activateAdminMode();
-                }
-            });
-        } else if (event === 'SIGNED_OUT') {
-            if (isAdminMode) {
-                console.log("แอดมินออกจากระบบ");
-                currentUser = null;
-                adminProfile = null;
-                isAdminMode = false;
-                deactivateAdminMode();
-            }
-        }
-    });
+    // *** แก้ไขสำคัญ: ไม่ตั้ง Auth State Listener ที่จะทำงานทันที ***
+    // แทนที่จะเป็นการตรวจสอบอัตโนมัติ เปลี่ยนเป็นตรวจสอบเฉพาะเมื่อต้องการ
     
     // ซ่อนแท็บแอดมินเป็นค่าเริ่มต้น
     updateAdminTabs();
@@ -14083,6 +14010,9 @@ function startGuestMode() {
   
   console.log('เริ่มโหมด Guest:', currentPlayer);
   
+  // ปิด Modal ก่อน
+  closeGuestForm();
+  
   // ซ่อนหน้าต้อนรับ
   hideWelcomeScreen();
   
@@ -14091,11 +14021,21 @@ function startGuestMode() {
 }
 
 // แสดงฟอร์มเข้าสู่ระบบ
-function showLoginForm() {
-  document.getElementById('user-login-form').classList.remove('hidden');
-  setTimeout(() => {
-    document.getElementById('login-email').focus();
-  }, 100);
+async function showLoginForm() {
+    // *** เพิ่มการตรวจสอบ session ที่มีอยู่ก่อน ***
+    const hasExistingSession = await checkExistingSession();
+    
+    if (hasExistingSession) {
+        // มี session อยู่แล้ว ไม่ต้องแสดงฟอร์ม
+        console.log("ใช้ session ที่มีอยู่แล้ว");
+        return;
+    }
+    
+    // ไม่มี session หรือ session หมดอายุ แสดงฟอร์มล็อกอิน
+    document.getElementById('user-login-form').classList.remove('hidden');
+    setTimeout(() => {
+        document.getElementById('login-email').focus();
+    }, 100);
 }
 
 // ปิดฟอร์มเข้าสู่ระบบ
@@ -14165,6 +14105,9 @@ async function performUserLogin() {
       };
     }
     
+    // ปิด Modal ก่อน
+    closeLoginForm();
+    
     // ซ่อนหน้าต้อนรับ
     hideWelcomeScreen();
     
@@ -14175,6 +14118,57 @@ async function performUserLogin() {
     console.error('เข้าสู่ระบบไม่สำเร็จ:', error);
     showError('login-error', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
   }
+}
+
+// ฟังก์ชันตรวจสอบ session ที่มีอยู่ (เรียกเฉพาะเมื่อผู้ใช้เลือก Login)
+async function checkExistingSession() {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        
+        if (session && session.user) {
+            console.log("พบ session ที่ล็อกอินอยู่:", session.user.email);
+            
+            // ตรวจสอบว่าเป็นแอดมินหรือไม่
+            const adminData = await checkIsAdmin(session.user.id);
+            
+            if (adminData) {
+                // เป็นแอดมิน
+                userMode = 'admin';
+                isAdminMode = true;
+                adminProfile = adminData;
+                currentUser = session.user;
+                currentPlayer = {
+                    name: adminData.name || 'Admin',
+                    mode: 'admin',
+                    userId: session.user.id,
+                    loginTime: new Date().toISOString()
+                };
+                
+                activateAdminMode();
+                hideWelcomeScreenAndStart();
+                return true;
+            } else {
+                // เป็นผู้ใช้ทั่วไป
+                userMode = 'user';
+                currentUser = session.user;
+                currentPlayer = {
+                    name: session.user.user_metadata?.display_name || session.user.email.split('@')[0],
+                    mode: 'user',
+                    userId: session.user.id,
+                    loginTime: new Date().toISOString()
+                };
+                
+                hideWelcomeScreenAndStart();
+                return true;
+            }
+        }
+        
+        return false; // ไม่มี session
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการตรวจสอบ session:', error);
+        return false;
+    }
 }
 
 // แสดงฟอร์มสมัครสมาชิก
@@ -14259,6 +14253,9 @@ async function performUserRegister() {
     };
     
     alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ');
+    
+    // ปิด Modal ก่อน
+    closeRegisterForm();
     
     // ซ่อนหน้าต้อนรับ
     hideWelcomeScreen();
@@ -14449,6 +14446,42 @@ async function logout() {
     
     // กลับไปหน้าต้อนรับ
     location.reload();
+}
+
+// ฟังก์ชันบังคับล็อกเอาท์ session ทั้งหมด
+async function forceLogoutAllSessions() {
+    try {
+        console.log("กำลังล็อกเอาท์ session ทั้งหมด...");
+        
+        // ล็อกเอาท์จาก Supabase
+        await supabaseClient.auth.signOut();
+        
+        // รีเซ็ตตัวแปรทั้งหมด
+        currentPlayer = null;
+        currentUser = null;
+        userMode = null;
+        isAdminMode = false;
+        adminProfile = null;
+        
+        // ล้างประวัติ
+        gameHistory = [];
+        filteredHistory = [];
+        
+        // รีเซ็ต UI
+        removeAdminUI();
+        updateAdminTabs();
+        
+        console.log("ล็อกเอาท์ทุก session เรียบร้อยแล้ว");
+        
+        // แสดงหน้าต้อนรับใหม่
+        showWelcomeScreen();
+        
+        return true;
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการล็อกเอาท์:', error);
+        return false;
+    }
 }
 
 </script>
