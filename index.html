@@ -7914,6 +7914,9 @@ function setupChoiceRadioButtons() {
 function updateSubCategory1Select(selectElement, mainCategory) {
     selectElement.innerHTML = '';
     
+    // นับคำถามในแต่ละหมวดหมู่
+    const categoryCount = countQuestionsInCategory();
+    
     // เพิ่ม placeholder ที่ซ่อนจากรายการ
     const placeholderOption = document.createElement('option');
     placeholderOption.value = "";
@@ -7925,9 +7928,11 @@ function updateSubCategory1Select(selectElement, mainCategory) {
     
     if (mainCategory && categories[mainCategory]) {
         for (const subCategory1 in categories[mainCategory]) {
+            const sub1Key = `${mainCategory}|${subCategory1}`;
+            const questionCount = categoryCount[sub1Key] || 0;
             const option = document.createElement('option');
             option.value = subCategory1;
-            option.textContent = subCategory1;
+            option.textContent = `${subCategory1} (${questionCount})`;
             selectElement.appendChild(option);
         }
         selectElement.disabled = false;
@@ -7939,6 +7944,9 @@ function updateSubCategory1Select(selectElement, mainCategory) {
 // ฟังก์ชันอัพเดทหมวดหมู่ย่อย 2 เมื่อเลือกหมวดหมู่ย่อย 1
 function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
     selectElement.innerHTML = '';
+    
+    // นับคำถามในแต่ละหมวดหมู่
+    const categoryCount = countQuestionsInCategory();
     
     // เพิ่ม placeholder ที่ซ่อนจากรายการ
     const placeholderOption = document.createElement('option');
@@ -7960,22 +7968,28 @@ function updateSubCategory2Select(selectElement, mainCategory, subCategory1) {
             // ตรวจสอบว่าเป็น object หรือ string
             if (typeof subCategory2Item === 'object' && subCategory2Item.name) {
                 // กรณีที่เป็น object ใหม่
-                option.value = subCategory2Item.name;
+                const subCategory2Name = subCategory2Item.name;
+                const sub2Key = `${mainCategory}|${subCategory1}|${subCategory2Name}`;
+                const questionCount = categoryCount[sub2Key] || 0;
+                
+                option.value = subCategory2Name;
                 
                 // แสดงไอคอนล็อกถ้าหมวดหมู่ถูกล็อก
                 const lockIcon = subCategory2Item.is_locked ? ' 🔒' : '';
-                option.textContent = `${subCategory2Item.name}${lockIcon}`;
+                option.textContent = `${subCategory2Name} (${questionCount})${lockIcon}`;
                 
                 // ตรวจสอบสิทธิ์การเข้าถึง - ถ้าล็อกและไม่ใช่ admin ให้ disable
-                if (subCategory2Item.is_locked && !canPlayerAccessCategory(mainCategory, subCategory1, subCategory2Item.name)) {
+                if (subCategory2Item.is_locked && !canPlayerAccessCategory(mainCategory, subCategory1, subCategory2Name)) {
                     option.disabled = true;
                     option.style.color = '#999999';
                     option.style.backgroundColor = '#f5f5f5';
                 }
             } else {
                 // กรณีที่เป็น string เก่า (backward compatibility)
+                const sub2Key = `${mainCategory}|${subCategory1}|${subCategory2Item}`;
+                const questionCount = categoryCount[sub2Key] || 0;
                 option.value = subCategory2Item;
-                option.textContent = subCategory2Item;
+                option.textContent = `${subCategory2Item} (${questionCount})`;
             }
             
             selectElement.appendChild(option);
@@ -10252,6 +10266,9 @@ function updatePlayMainCategorySelect() {
         return;
     }
     
+    // นับคำถามในแต่ละหมวดหมู่
+    const categoryCount = countQuestionsInCategory();
+    
     // ล้างตัวเลือกเดิม
     playMainCategory.innerHTML = '';
     
@@ -10264,11 +10281,12 @@ function updatePlayMainCategorySelect() {
     placeholderOption.style.display = "none"; // ซ่อนจากรายการ dropdown
     playMainCategory.appendChild(placeholderOption);
     
-    // เพิ่มหมวดหมู่หลักที่มีอยู่
+    // เพิ่มหมวดหมู่หลักที่มีอยู่ พร้อมจำนวนคำถาม
     for (const mainCategory in categories) {
+        const questionCount = categoryCount[mainCategory] || 0;
         const option = document.createElement('option');
         option.value = mainCategory;
-        option.textContent = mainCategory;
+        option.textContent = `${mainCategory} (${questionCount})`;
         playMainCategory.appendChild(option);
     }
     
