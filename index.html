@@ -7417,62 +7417,58 @@ function setupTabNavigation() {
         updatePlayMainCategorySelect();
     });
     
-    // สลับไปที่แท็บประวัติการเล่น - ปรับใหม่ให้แสดงประวัติตาม User Type
-    historyTab.addEventListener('click', function() {
-        console.log("กำลังสลับไปที่แท็บประวัติการเล่น - isAdminMode:", isAdminMode);
+    // สลับไปที่แท็บประวัติการเล่น - แก้ไขใหม่
+historyTab.addEventListener('click', function() {
+    console.log("=== คลิกแท็บประวัติการเล่น ===");
+    console.log("isAdminMode:", isAdminMode, "adminProfile:", !!adminProfile);
+    
+    // เปลี่ยนคลาส active ของแท็บ
+    createTab.classList.remove('active');
+    playTab.classList.remove('active');
+    historyTab.classList.add('active');
+    
+    // เปลี่ยนคลาส active ของเนื้อหา
+    createContent.classList.remove('active');
+    playContent.classList.remove('active');
+    historyContent.classList.add('active');
+    
+    // ซ่อนหน้าล็อกอินเมื่อสลับไปแท็บประวัติการเล่น
+    if (loginScreen) loginScreen.classList.add('hidden');
+    
+    // เพิ่มคลาสเพื่อระบุแท็บที่กำลังแสดง
+    document.body.className = 'active-tab-history';
+    
+    // อัพเดตหัวข้อของหน้าประวัติ
+    updateHistoryPageHeader();
+    
+    // *** แก้ไขหลัก: ใช้ displayGameHistory() สำหรับทุกกรณี ***
+    console.log("กำลังแสดงประวัติ - gameHistory.length:", gameHistory.length);
+    
+    // ตั้งค่า filteredHistory ให้เป็นข้อมูลทั้งหมดสำหรับแอดมิน
+    if (isAdminMode && adminProfile) {
+        console.log("โหมดแอดมิน: แสดงประวัติทั้งหมด");
+        filteredHistory = [...gameHistory];
+        currentHistoryPage = 1;
         
-        // เปลี่ยนคลาส active ของแท็บ
-        createTab.classList.remove('active');
-        playTab.classList.remove('active');
-        historyTab.classList.add('active');
+        // แสดงฟีเจอร์แอดมิน
+        toggleHistoryAdminFeatures();
         
-        // เปลี่ยนคลาส active ของเนื้อหา
-        createContent.classList.remove('active');
-        playContent.classList.remove('active');
-        historyContent.classList.add('active');
-        
-        // ซ่อนหน้าล็อกอินเมื่อสลับไปแท็บประวัติการเล่น
-        if (loginScreen) loginScreen.classList.add('hidden');
-        
-        // เพิ่มคลาสเพื่อระบุแท็บที่กำลังแสดง
-        document.body.className = 'active-tab-history';
-        
-        // อัพเดตหัวข้อของหน้าประวัติ
-        updateHistoryPageHeader();
-        
-        // *** แก้ไขตรงนี้: แสดงประวัติตาม User Type อย่างชัดเจน ***
-        if (isAdminMode && adminProfile) {
-            console.log("โหมดแอดมิน: แสดงประวัติทั้งหมด");
-            // แอดมิน: ใช้ระบบเดิม (ดูได้ทั้งหมด + มีตัวกรอง)
-            if (typeof displayGameHistory === 'function') {
-                try {
-                    // ให้แอดมินเห็นประวัติทั้งหมด
-                    filteredHistory = [...gameHistory];
-                    currentHistoryPage = 1;
-                    displayGameHistory();
-                    
-                    // แสดงฟีเจอร์แอดมิน (ตัวกรอง, ปุ่มลบ)
-                    toggleHistoryAdminFeatures();
-                } catch (error) {
-                    console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Admin):", error);
-                }
-            }
-        } else {
-            console.log("โหมดผู้เล่น: แสดงประวัติของตัวเอง");
-            // ผู้เล่นธรรมดา: ใช้ระบบใหม่ (ดูเฉพาะของตัวเอง)
-            if (typeof displayPlayerHistory === 'function') {
-                try {
-                    displayPlayerHistory();
-                } catch (error) {
-                    console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Player):", error);
-                }
+        // แสดงประวัติทั้งหมด
+        displayGameHistory();
+    } else {
+        console.log("โหมดผู้เล่น: แสดงประวัติของตัวเอง");
+        // ใช้ displayPlayerHistory() สำหรับผู้เล่นธรรมดา
+        if (typeof displayPlayerHistory === 'function') {
+            try {
+                displayPlayerHistory();
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการแสดงประวัติการเล่น (Player):", error);
             }
         }
-    });
+    }
     
-    console.log("ตั้งค่า Event Listeners สำหรับแท็บเรียบร้อยแล้ว");
-    return true;
-}
+    console.log("=== เสร็จสิ้นการแสดงแท็บประวัติ ===");
+});
 
 // ฟังก์ชันอัพเดต UI แสดงชื่อผู้เล่นในเกม - เพิ่มใหม่
 function updatePlayerInfoInGame() {
@@ -8649,6 +8645,65 @@ async function debugGameHistory() {
     }
     
     console.log("========================");
+}
+
+// ฟังก์ชันใหม่: ทดสอบการสร้างประวัติ
+async function createTestHistory() {
+    if (!isAdminMode) {
+        console.log("ต้องเป็นแอดมินถึงจะสร้างประวัติทดสอบได้");
+        return;
+    }
+    
+    const testData = {
+        player_name: 'ผู้เล่นทดสอบ',
+        score: 8,
+        total_questions: 10,
+        percentage: 80,
+        category: JSON.stringify({
+            main: 'ความรู้ทั่วไป',
+            sub1: 'วิทยาศาสตร์',
+            sub2: 'ฟิสิกส์'
+        }),
+        game_data: JSON.stringify({
+            questions: [],
+            userAnswers: {},
+            randomOrder: []
+        })
+    };
+    
+    try {
+        const { data, error } = await supabaseClient
+            .from('game_history')
+            .insert([testData])
+            .select();
+        
+        if (error) {
+            console.error('เกิดข้อผิดพลาดในการสร้างประวัติทดสอบ:', error);
+        } else {
+            console.log('สร้างประวัติทดสอบสำเร็จ:', data);
+            // โหลดประวัติใหม่
+            await loadGameHistory();
+            displayGameHistory();
+        }
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาด:', error);
+    }
+}
+
+// ฟังก์ชันใหม่: บังคับไปแท็บประวัติสำหรับแอดมิน
+function goToAdminHistory() {
+    if (isAdminMode && adminProfile) {
+        console.log("บังคับไปแท็บประวัติสำหรับแอดมิน");
+        
+        // คลิกแท็บประวัติ
+        const historyTab = document.getElementById('history-tab');
+        if (historyTab) {
+            historyTab.click();
+        }
+        
+        return true;
+    }
+    return false;
 }
 
 // ฟังก์ชันใหม่: ทดสอบการสร้างประวัติ
@@ -13106,7 +13161,7 @@ function handleAdminKeyInput(event) {
     // ไม่ใช้ F10 แล้ว เปลี่ยนเป็นใช้การกรอกชื่อผู้เล่น
 }
 
-// ฟังก์ชันเปิดโหมดแอดมิน - แก้ไขใหม่
+// แทนที่ฟังก์ชัน activateAdminMode() เดิมทั้งหมด
 function activateAdminMode() {
     console.log("กำลังเปิดโหมดแอดมิน...");
     
@@ -13115,6 +13170,21 @@ function activateAdminMode() {
     
     // เพิ่ม Admin UI
     addAdminUI();
+    
+    // *** แก้ไขใหม่: บังคับไปแท็บประวัติถ้ายังอยู่แท็บเล่นเกม ***
+    const currentActiveTab = document.querySelector('.nav-tab.active');
+    if (currentActiveTab && currentActiveTab.id === 'play-tab') {
+        console.log("แอดมินล็อกอินในแท็บเล่นเกม - เปลี่ยนไปแท็บประวัติ");
+        
+        // ไปยังแท็บประวัติโดยอัตโนมัติ
+        setTimeout(() => {
+            const historyTab = document.getElementById('history-tab');
+            if (historyTab) {
+                historyTab.click();
+                console.log("เปลี่ยนไปแท็บประวัติสำเร็จ");
+            }
+        }, 500);
+    }
         
     console.log("เปิดโหมดแอดมินเรียบร้อยแล้ว");
 }
