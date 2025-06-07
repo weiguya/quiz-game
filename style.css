@@ -1,0 +1,5192 @@
+
+/* ปรับปรุง CSS เพื่อการโหลดที่นุ่มนวลขึ้น */
+body {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+body.loading {
+  opacity: 0;
+}
+
+/* Master Layout System */
+.page-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+}
+
+.content-area {
+  width: 100%;
+  max-width: var(--container-max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+  box-sizing: border-box;
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Layout Utilities */
+.center-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* สีหลักสำหรับธีมใหม่ */
+:root {
+  --primary-color: #1976d2; /* สีน้ำเงินหลัก */
+  --primary-light: #4791db;
+  --primary-dark: #115293;
+  --secondary-color: #f5f5f5;
+  --text-color: #333333;
+  --success-color: #4caf50;
+  --error-color: #f44336;
+  --warning-color: #ff9800;
+  --info-color: #2196f3;
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  --hover-color: #f0f7ff;
+  --white: #ffffff;
+  
+  /* เพิ่มตรงนี้ - รวมใน :root เดียวกัน */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --container-max-width: 800px;
+}
+
+/* Reset Box Model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Prompt', sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+.main-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  width: 100%;
+}
+
+.container {
+  background-color: var(--white);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 10px var(--shadow-color);
+  margin: 0 auto 20px;
+  width: 100%;
+  max-width: 800px;
+  box-sizing: border-box;
+}
+
+h1, h2 {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+h1 {
+  position: relative;
+  padding-bottom: 10px;
+}
+
+h1:after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--primary-light));
+  border-radius: 2px;
+}
+
+.choice-container input[type="text"] {
+  flex-grow: 1;
+  margin-right: 10px;
+}
+
+.choice-container input[type="radio"] {
+  margin-right: 5px;
+  cursor: pointer;
+  accent-color: var(--primary-color);
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 200px;
+  margin-top: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  display: none;
+  box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-right: 10px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 5px var(--shadow-color);
+  font-family: 'Prompt', sans-serif;
+}
+
+button:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(25, 118, 210, 0.2);
+}
+
+button.secondary {
+  background: #e0e0e0;
+  color: #424242;
+}
+
+button.secondary:hover {
+  background: #d5d5d5;
+}
+
+button.delete {
+  background: var(--error-color);
+}
+
+button.delete:hover {
+  background: #d32f2f;
+}
+
+.saved-questions {
+  margin-top: 30px;
+}
+
+.question-image {
+  max-width: 100%;
+  max-height: 200px;
+  margin: 10px 0;
+  border-radius: 4px;
+  box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.choice {
+  margin: 8px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: var(--secondary-color);
+  transition: background-color 0.2s ease;
+}
+
+.choice.correct {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 3px solid var(--success-color);
+}
+
+.actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.nav-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.nav-tab {
+  padding: 12px 24px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-bottom: none;
+  background-color: var(--secondary-color);
+  margin-right: 5px;
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  color: var(--text-color);
+}
+
+.nav-tab:hover {
+  background-color: #e0e0e0;
+}
+
+.nav-tab.active {
+  background-color: var(--white);
+  border-color: var(--border-color);
+  border-bottom-color: var(--white);
+  margin-bottom: -1px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.tab-content {
+  display: none;
+}
+
+.tab-content.active {
+  display: block;
+}
+
+/* สไตล์สำหรับหน้าเล่นเกม */
+.quiz-player {
+  text-align: center;
+}
+
+.quiz-player h1, .quiz-player h2 {
+  color: var(--primary-dark);
+  margin-bottom: 16px;
+}
+
+.quiz-player p {
+  font-size: 16px;
+  color: var(--text-color);
+  margin-bottom: 12px;
+}
+
+.option-btn {
+  display: block;
+  width: 100%;
+  padding: 15px;
+  margin: 12px 0;
+  text-align: left;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text-color);
+  position: relative;
+  overflow: hidden;
+  font-family: 'Prompt', sans-serif;
+  box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+.option-btn:hover {
+  background-color: var(--hover-color);
+  border-color: var(--primary-light);
+  box-shadow: 0 2px 5px rgba(25, 118, 210, 0.1);
+}
+
+.option-btn.selected {
+  background-color: rgba(25, 118, 210, 0.05);
+  border: 2px solid var(--primary-color);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+  transform: translateY(-3px);
+}
+
+.option-btn.selected:after {
+  content: "✓";
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.option-btn span {
+  font-style: italic;
+  font-weight: normal;
+  color: var(--text-color);
+  margin-left: 8px;
+}
+
+.result-correct {
+  color: var(--success-color);
+  font-weight: bold;
+}
+
+.result-incorrect {
+  color: var(--error-color);
+  font-weight: bold;
+}
+
+.quiz-progress {
+    margin: 5px 0 20px;
+    padding: 12px;
+    background-color: rgba(25, 118, 210, 0.05);
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 500;
+    color: var(--primary-dark);
+    box-shadow: 0 2px 5px var(--shadow-color);
+    text-align: center;
+    width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.quiz-result {
+  font-size: 18px;
+  margin-top: 20px;
+  padding: 20px;
+  background-color: var(--white);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  font-weight: 500;
+  color: var(--text-color);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.share-section {
+  margin-top: 20px;
+  padding: 15px;
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 8px;
+  box-shadow: 0 2px 5px var(--shadow-color);
+  transition: all 0.3s ease;
+}
+
+.share-section:hover {
+  box-shadow: 0 5px 15px rgba(25, 118, 210, 0.1);
+}
+
+.share-link {
+  padding: 12px 15px;
+  border: 1px solid var(--border-color);
+  background-color: var(--white);
+  border-radius: 4px;
+  margin: 10px 0;
+  word-break: break-all;
+  box-shadow: inset 0 1px 3px var(--shadow-color);
+}
+
+/* หน้าเล่นเกม */
+#quiz-question {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-dark);
+  line-height: 1.4;
+  margin-bottom: 18px;
+}
+
+#quiz-choices {
+  margin-top: 20px;
+}
+
+#quiz-screen {
+  margin-bottom: 30px;
+}
+
+#question-review .question-card {
+  text-align: left;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 1px 3px var(--shadow-color);
+}
+
+#question-review h3 {
+  font-weight: 600;
+  color: var(--primary-dark);
+  margin-bottom: 12px;
+}
+
+#question-review .choices {
+  margin-top: 15px;
+}
+
+#restart-quiz {
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 16px;
+}
+
+#start-screen p {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+/* การแสดงผลเฉลย */
+.answer-feedback {
+  margin: 15px 0;
+  padding: 12px 15px;
+  border-radius: 4px;
+  font-weight: 500;
+  box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.answer-feedback.correct {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 4px solid var(--success-color);
+  color: #2E7D32;
+}
+
+.answer-feedback.incorrect {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 4px solid var(--error-color);
+  color: #C62828;
+}
+
+.choice-explanation {
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.choice-explanation:hover {
+  transform: translateY(-2px);
+}
+
+.choice-explanation.user-selected {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-left: 3px solid var(--primary-color);
+}
+
+.choice-explanation.correct-answer {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 3px solid var(--success-color);
+}
+
+/* ทบทวนคำถาม */
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    background: #99CCFF;
+    border-left: 5px solid #77AAFF;
+    padding: 15px 20px;
+    border-radius: 4px;
+}
+
+.review-header h3 {
+    color: #333333;
+    font-weight: 600;
+}
+
+.category-summary {
+    background-color: #99CCFF;
+    border-left: 5px solid #77AAFF;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.category-title {
+    font-weight: 600;
+    color: #333333;
+    margin-right: 10px;
+}
+
+.category-path {
+    color: #333333;
+    font-weight: 500;
+}
+
+@media (max-width: 600px) {
+    .category-summary {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .category-title {
+        margin-bottom: 5px;
+    }
+}
+
+.quiz-summary {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+  padding: 20px;
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.quiz-stat {
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.quiz-stat:hover {
+  transform: translateY(-3px);
+}
+
+.quiz-stat-value {
+  font-size: 28px;
+  font-weight: bold;
+  margin: 5px 0;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 14px;
+  color: var(--text-color) !important;
+  font-weight: 600;
+}
+
+.quiz-result span {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary-color);
+}
+
+.result-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 6px 18px var(--shadow-color);
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+}
+
+.result-container:hover {
+  box-shadow: 0 8px 25px rgba(25, 118, 210, 0.15);
+}
+
+.result-header {
+    background: #99CCFF;
+    color: #333333;
+    padding: 25px;
+    text-align: center;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.result-header h2 {
+    margin: 0;
+    font-size: 28px;
+    color: #333333;  /* กำหนดสีตามที่ต้องการ */
+    font-weight: 600;
+}
+
+.result-score-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.result-score {
+  background-color: var(--white);
+  border-radius: 50%;
+  width: 180px;
+  height: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 3px 10px var(--shadow-color);
+  border: 3px solid var(--primary-color);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.result-score:hover {
+  transform: scale(1.05);
+  box-shadow: 0 5px 15px rgba(25, 118, 210, 0.15);
+}
+
+.score-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1;
+}
+
+.score-value {
+  font-size: 54px;
+  margin-right: 2px;
+  color: var(--primary-dark);
+  font-weight: 700;
+}
+
+.score-separator {
+  font-size: 36px;
+  margin: 0 2px;
+  color: var(--text-color);
+}
+
+.score-max {
+  font-size: 36px;
+  color: var(--primary-color);
+}
+
+.score-percent {
+    position: absolute;
+    bottom: -15px;
+    background-color: #99CCFF;
+    color: #333333;
+    font-weight: 600;
+    padding: 6px 18px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+.score-percent:hover {
+  transform: scale(1.05);
+  box-shadow: 0 3px 8px rgba(25, 118, 210, 0.3);
+}
+
+.quiz-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px;
+  background-color: var(--secondary-color);
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stat-item {
+  text-align: center;
+  padding: 0 15px;
+  position: relative;
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-3px);
+}
+
+.stat-item:not(:last-child):after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 20%;
+  height: 60%;
+  width: 1px;
+  background-color: var(--border-color);
+}
+
+.stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 5px;
+}
+
+.correct-value {
+  color: var(--success-color);
+}
+
+.incorrect-value {
+  color: var(--error-color);
+}
+
+.question-review-list {
+  padding: 0 20px 20px;
+}
+
+.question-review-item {
+    background-color: var(--white);
+    border-radius: 8px;
+    box-shadow: 0 3px 8px var(--shadow-color);
+    margin-bottom: 20px;
+    padding: 20px;
+    border-left: 3px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.question-review-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(25, 118, 210, 0.1);
+}
+
+.question-review-item.correct {
+  border-left-color: var(--success-color);
+}
+
+.question-review-item.incorrect {
+  border-left-color: var(--error-color);
+}
+
+.question-status {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.status-correct {
+  background-color: rgba(76, 175, 80, 0.1);
+  color: #2E7D32;
+}
+
+.status-incorrect {
+  background-color: rgba(244, 67, 54, 0.1);
+  color: #C62828;
+}
+
+.question-number {
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-align: center;
+}
+
+.question-text {
+    font-size: 18px;
+    margin-bottom: 15px;
+    line-height: 1.5;
+    color: var(--primary-dark);
+    font-weight: 500;
+    text-align: center;
+}
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.choice-item {
+    padding: 12px 15px;
+    border-radius: 4px;
+    position: relative;
+    background-color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.choice-item:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px var(--shadow-color);
+}
+
+.choice-item.user-selected {
+  background-color: rgba(244, 67, 54, 0.05);
+  border-color: var(--error-color);
+}
+
+.choice-item.correct-answer {
+  background-color: rgba(76, 175, 80, 0.05);
+  border-color: var(--success-color);
+}
+
+.choice-item.user-selected.correct-answer {
+  background-color: rgba(76, 175, 80, 0.05);
+  border-color: var(--success-color);
+}
+
+.choice-marker {
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    margin-right: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    background-color: #e0e0e0;
+    color: var(--text-color);
+    float: left;
+}
+
+.choice-item.user-selected .choice-marker {
+  background-color: var(--error-color);
+  color: var(--white);
+}
+
+.choice-item.correct-answer .choice-marker {
+  background-color: var(--success-color);
+  color: var(--white);
+}
+
+.choice-item.user-selected.correct-answer .choice-marker {
+  background-color: var(--success-color);
+  color: var(--white);
+}
+
+.choice-text {
+    display: block;
+    font-size: 16px;
+    color: var(--text-color);
+    font-weight: 500;
+    text-align: left;
+    margin-left: 35px;
+}
+
+.choice-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 18px;
+    float: right;
+}
+
+.choice-item.correct-answer .choice-icon {
+  color: var(--success-color);
+}
+
+.choice-item.user-selected:not(.correct-answer) .choice-icon {
+  color: var(--error-color);
+}
+
+.correct-icon {
+    color: var(--success-color);
+    font-style: normal;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.incorrect-icon {
+    color: var(--error-color);
+    font-style: normal;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.restart-container {
+  text-align: center;
+  padding: 20px;
+  background-color: var(--secondary-color);
+  border-top: 1px solid var(--border-color);
+  border-radius: 0 0 8px 8px;
+}
+
+#restart-quiz {
+  background: var(--primary-color);
+  color: var(--white);
+  border: none;
+  padding: 12px 30px;
+  border-radius: 30px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
+  transition: all 0.3s ease;
+}
+
+#restart-quiz:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3);
+  transform: scale(1.05);
+  letter-spacing: 1px;
+}
+
+#restart-quiz:active {
+  transform: scale(0.98);
+}
+
+.login-form .form-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #1976d2;
+  font-size: 16px;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.login-input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
+  outline: none;
+}
+
+.login-btn {
+  background: linear-gradient(45deg, #1976d2, #42a5f5);
+  color: white;
+  border: none;
+  padding: 14px 30px;
+  font-size: 18px;
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  width: 100%;
+  margin-top: 30px;
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.login-btn:hover:not([disabled]) {
+  background: linear-gradient(45deg, #115293, #1976d2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(25, 118, 210, 0.4);
+}
+
+.login-btn:active:not([disabled]) {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(25, 118, 210, 0.3);
+}
+
+.login-btn[disabled] {
+  background: linear-gradient(45deg, #ccc, #ddd);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.remember-me label {
+  margin-bottom: 0;
+  display: inline;
+  cursor: pointer;
+}
+
+/* แสดงชื่อผู้เล่นในหน้าเล่นเกม */
+.player-info {
+  background-color: rgba(25, 118, 210, 0.05);
+  border-radius: 8px;
+  padding: 10px 15px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+  border-left: 3px solid #1976d2;
+}
+
+.player-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #1976d2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 600;
+  margin-right: 12px;
+}
+
+.player-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #115293;
+}
+
+.player-result-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.player-result-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #1976d2;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  font-weight: 600;
+  margin-right: 15px;
+}
+
+.player-result-name {
+  font-size: 24px;
+  font-weight: 600;
+  color: white;
+}
+
+/* เพิ่มสไตล์สำหรับแท็บหมวดหมู่ */
+.category-tabs {
+  display: flex;
+  margin-bottom: 15px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.category-tab-content {
+  display: none;
+  padding: 15px;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.category-tab-content.active {
+  display: block;
+}
+
+#categories-tree {
+  margin: 10px 0;
+  padding: 10px;
+  background-color: var(--white);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.category-item {
+  margin: 5px 0;
+  padding: 8px 12px;
+  background-color: var(--secondary-color);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.category-item:hover {
+  background-color: var(--hover-color);
+  transform: translateY(-2px);
+}
+
+.sub-categories {
+  margin-left: 20px;
+}
+/* สไตล์สำหรับส่วนจัดการหมวดหมู่ */
+.category-management-section {
+    background: linear-gradient(145deg, #ffffff, #f0f7ff);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
+    padding: 25px;
+    margin: 0 auto 25px;
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    max-width: 100%;
+    transition: box-shadow 0.3s ease;
+}
+
+.category-management-section:hover {
+    box-shadow: 0 12px 25px rgba(25, 118, 210, 0.15);
+}
+
+.section-title {
+    color: #115293;
+    font-size: 20px;
+    margin-top: 0;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #4791db;
+    font-weight: 600;
+    position: relative;
+}
+
+.category-tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+    background-color: rgba(25, 118, 210, 0.05);
+    border-radius: 8px 8px 0 0;
+    overflow: hidden;
+}
+
+.category-tabs .nav-tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 15px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #555;
+    transition: all 0.3s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.category-tabs .nav-tab:hover {
+    background-color: rgba(25, 118, 210, 0.1);
+    color: #1976d2;
+}
+
+.category-tabs .nav-tab.active {
+    background-color: #ffffff;
+    color: #1976d2;
+    font-weight: 600;
+    border-bottom: 3px solid #1976d2;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.category-tab-content {
+    display: none;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.category-tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.categories-tree {
+    margin: 10px 0;
+    padding: 15px;
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.category-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.category-field {
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.category-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 6px;
+    transition: all 0.2s ease;
+}
+
+.category-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    margin-bottom: 10px;
+}
+
+.category-input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+    outline: none;
+}
+
+.category-btn {
+    background: linear-gradient(45deg, #1976d2, #4791db);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
+    margin-top: 5px;
+    width: auto;
+    display: inline-block;
+}
+
+.category-btn:hover {
+    background: linear-gradient(45deg, #115293, #1976d2);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 12px rgba(25, 118, 210, 0.3);
+}
+
+.category-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(25, 118, 210, 0.2);
+}
+
+/* สไตล์สำหรับแสดงโครงสร้างหมวดหมู่ */
+.category-item {
+    margin: 8px 0;
+    padding: 10px 12px;
+    background-color: rgba(25, 118, 210, 0.05);
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.category-item:hover {
+    background-color: rgba(25, 118, 210, 0.1);
+    border-left-color: #1976d2;
+    transform: translateX(5px);
+}
+
+.sub-categories {
+    margin-left: 20px;
+    padding-left: 10px;
+    border-left: 1px dashed rgba(25, 118, 210, 0.3);
+}
+
+/* รองรับการแสดงผลบนอุปกรณ์มือถือ */
+@media (max-width: 600px) {
+    .category-management-section {
+        padding: 15px;
+    }
+    
+    .category-tabs .nav-tab {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .category-tab-content {
+        padding: 15px;
+    }
+    
+    .category-form {
+        gap: 10px;
+    }
+    
+    .category-field {
+        margin-bottom: 10px;
+    }
+    
+    .category-btn, .delete-btn {
+        width: 100%;
+    }
+}
+/* สไตล์สำหรับส่วนสร้างคำถามใหม่ */
+.question-creation-section {
+    background: linear-gradient(145deg, #ffffff, #f0f7ff);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
+    padding: 25px;
+    margin: 30px auto;
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.question-creation-section:hover {
+    box-shadow: 0 12px 25px rgba(25, 118, 210, 0.15);
+}
+
+.question-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-field {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.form-field > label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 8px;
+}
+
+.hint-text {
+    font-size: 14px;
+    color: #666;
+    font-weight: normal;
+    font-style: italic;
+}
+
+.question-textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    resize: vertical;
+    min-height: 80px;
+    transition: all 0.3s ease;
+    font-family: 'Prompt', sans-serif;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.question-textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+    outline: none;
+}
+
+.image-upload-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.image-input {
+    padding: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.image-preview-container {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.categories-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px;
+}
+
+@media (min-width: 768px) {
+    .categories-container {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.category-field {
+    margin-bottom: 10px;
+}
+
+.category-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 6px;
+}
+
+.category-label {
+    font-weight: 600;
+    color: var(--primary-dark);
+    margin-bottom: 12px;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.category-select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background-color: white;
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    appearance: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.category-select:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+    outline: none;
+}
+
+.category-select:hover:not(:disabled) {
+    border-color: #1976d2;
+    background-color: #f8f9ff;
+}
+
+.category-select:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #1976d2;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.choices-container {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+.choice-container {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    background-color: rgba(25, 118, 210, 0.05);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.choice-container:hover {
+    background-color: rgba(25, 118, 210, 0.1);
+    border-left-color: #1976d2;
+    transform: translateX(5px);
+}
+
+.choice-radio {
+    position: relative;
+    width: 22px;
+    height: 22px;
+    margin-right: 10px;
+}
+
+.choice-radio input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+}
+
+.custom-radio {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 22px;
+    width: 22px;
+    background-color: #fff;
+    border: 2px solid #e0e0e0;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.choice-radio:hover .custom-radio {
+    border-color: #1976d2;
+}
+
+.choice-radio input:checked ~ .custom-radio {
+    background-color: #fff;
+    border-color: #1976d2;
+}
+
+.custom-radio:after {
+    content: "";
+    position: absolute;
+    display: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #1976d2;
+}
+
+.choice-radio input:checked ~ .custom-radio:after {
+    display: block;
+}
+
+.choice-label {
+    font-weight: 600;
+    color: #1976d2;
+    width: 30px;
+    margin-right: 10px;
+}
+
+.choice-input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.choice-input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
+    outline: none;
+}
+
+/* ปรับปรุงสไตล์สำหรับส่วนคำถามที่บันทึกไว้ */
+.saved-questions-section {
+    background: linear-gradient(145deg, #ffffff, #f9fbff);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
+    padding: 25px;
+    margin: 30px auto;
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    transition: box-shadow 0.3s ease;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.question-card {
+    width: calc(100% - 2px); /* หักลบค่าขอบ */
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-top: 5px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+}
+
+.question-card h3 {
+    color: var(--primary-dark);
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 15px;
+    line-height: 1.4;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    word-break: break-word; /* ป้องกันข้อความล้นออกจากกรอบ */
+}
+
+.choice {
+    padding: 10px 12px;
+    border-radius: 8px;
+    background-color: var(--secondary-color);
+    transition: all 0.3s ease;
+    position: relative;
+    border-left: 3px solid transparent;
+    word-break: break-word; /* ป้องกันข้อความล้นออกจากกรอบ */
+    overflow: hidden;
+}
+
+.question-category {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: rgba(25, 118, 210, 0.05);
+    border-radius: 8px;
+    font-size: 14px;
+    color: #666;
+    word-break: break-word; /* ป้องกันข้อความล้นออกจากกรอบ */
+}
+
+.question-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: flex-end;
+    flex-wrap: wrap; /* ทำให้ปุ่มลงมาอยู่ด้านล่างเมื่อไม่มีพื้นที่เพียงพอ */
+}
+
+/* ปรับปรุงความเข้ากันได้กับอุปกรณ์มือถือ */
+@media (max-width: 768px) {
+    .saved-questions-section {
+        padding: 15px;
+    }
+    
+    .question-card {
+        padding: 15px;
+    }
+    
+    .question-actions {
+        justify-content: space-between;
+    }
+    
+    .action-btn {
+        min-width: 80px;
+        font-size: 13px;
+    }
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+    font-size: 16px;
+    background-color: rgba(25, 118, 210, 0.03);
+    border-radius: 12px;
+    border: 2px dashed rgba(25, 118, 210, 0.2);
+}
+
+.empty-state p {
+    margin-bottom: 20px;
+}
+
+/* รองรับการแสดงผลบนมือถือ */
+@media (max-width: 768px) {
+    .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .search-input {
+        width: 100%;
+    }
+    
+    .questions-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .question-actions {
+        flex-direction: column;
+    }
+    
+    .action-btn {
+        width: 100%;
+    }
+}
+
+/* สไตล์สำหรับตัวนับหน้า */
+.pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+    gap: 5px;
+}
+
+.pagination-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: white;
+    border: 2px solid #e0e0e0;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover {
+    background-color: var(--hover-color);
+    border-color: var(--primary-color);
+}
+
+.pagination-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+/* ปรับจาก grid เป็น list สำหรับแสดงข้อมูลเรียงลงมา */
+.questions-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+/* ปรับปรุงการ์ดคำถามให้มีความกว้างเต็มหน้าจอ */
+.question-card {
+    width: 100%;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    padding: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border-top: 5px solid var(--primary-color);
+    display: flex;
+    flex-direction: column;
+}
+/* รูปแบบเฉพาะสำหรับปุ่มที่เลือก - ไม่ใช้ transition */
+.option-btn.selected {
+    background-color: #e3f2fd;
+    border: 2px solid #1976d2;
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(25, 118, 210, 0.1);
+}
+
+/* ลด animation และ transition อื่นๆ ที่อาจทำให้ช้า */
+.option-btn.selected:after {
+    content: "✓";
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: var(--primary-color);
+    font-weight: bold;
+}
+
+/* เพิ่ม CSS สำหรับคำถามที่ไม่ได้ตอบ */
+.status-unanswered {
+    background-color: rgba(245, 124, 0, 0.1);
+    color: #F57C00;
+}
+
+.choice-item.unanswered {
+    background-color: rgba(245, 124, 0, 0.05);
+    border-color: #F57C00;
+}
+
+/* CSS สำหรับแสดงชื่อผู้เล่นที่มุมขวาบนของกรอบเกม (แบบกรอบธรรมดาไม่มีสี) */
+.player-info.top-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: white; /* พื้นหลังสีขาว */
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    border: 1px solid #e0e0e0; /* ขอบบางๆ สีเทาอ่อน */
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* เงาบางๆ */
+}
+
+.player-info.top-right .player-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333333; /* สีข้อความเป็นสีเทาเข้ม ไม่ใช่สีน้ำเงิน */
+}
+
+/* ทำให้ container มี position relative เพื่อให้ absolute positioning ทำงานได้ถูกต้อง */
+.container.quiz-player {
+    position: relative;
+}
+
+/* สไตล์สำหรับประวัติการเล่น */
+.history-filter-section, .history-section {
+    background: linear-gradient(145deg, #ffffff, #f0f7ff);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
+    padding: 25px;
+    margin: 30px auto;
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.history-filter-section:hover, .history-section:hover {
+    box-shadow: 0 12px 25px rgba(25, 118, 210, 0.15);
+}
+
+.filter-form {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 15px;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.filter-field {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 15px;
+    padding: 5px;
+}
+
+.filter-field label {
+    display: block;
+    font-weight: 500;
+    color: #1976d2;
+    margin-bottom: 5px;
+}
+
+.date-input, .filter-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Prompt', sans-serif;
+    transition: all 0.3s ease;
+}
+
+.date-input:focus, .filter-select:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    outline: none;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.items-per-page-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #f0f7ff;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.per-page-select {
+    padding: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    font-family: 'Prompt', sans-serif;
+}
+
+/* สไตล์สำหรับตารางประวัติ */
+.history-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.history-table thead {
+    background-color: #1976d2;
+    color: white;
+}
+
+.history-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 500;
+}
+
+/* Pagination สำหรับประวัติ */
+#history-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.history-page-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Prompt', sans-serif;
+}
+
+.history-page-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.history-page-btn.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+.history-page-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* การแสดงผลบนมือถือ */
+@media (max-width: 768px) {
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-field {
+        width: 100%;
+    }
+    
+    .filter-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .items-per-page-container {
+        margin-top: 10px;
+    }
+    
+    .history-table th, .history-table td {
+        padding: 10px 8px;
+        font-size: 14px;
+    }
+}
+
+/* จัดการการแสดงผลของ login-screen */
+#login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95); /* ปรับความโปร่งใสได้ตามต้องการ */
+    z-index: 9999; /* ค่า z-index สูงเพื่อให้แสดงด้านบนสุด */
+}
+
+#login-screen.hidden {
+    display: none !important; /* บังคับให้ซ่อนโดยไม่สนใจ CSS อื่น */
+}
+
+/* การแสดงผลตามแท็บที่เลือก */
+.active-tab-play #login-screen:not(.hidden) {
+    display: flex !important; /* แสดงเฉพาะในแท็บเล่นเกม */
+}
+
+.active-tab-history #login-screen,
+.active-tab-create #login-screen {
+    display: none !important; /* ซ่อนในแท็บอื่นที่ไม่ใช่แท็บเล่นเกม */
+}
+
+/* ซ่อนองค์ประกอบที่เกี่ยวข้องกับการเล่นเกมในแท็บอื่น */
+.active-tab-history .category-selection-container,
+.active-tab-create .category-selection-container,
+.active-tab-history #start-screen,
+.active-tab-create #start-screen,
+.active-tab-history #quiz-screen,
+.active-tab-create #quiz-screen,
+.active-tab-history #result-screen,
+.active-tab-create #result-screen {
+    display: none !important;
+}
+
+/* เพิ่มต่อท้ายโค้ด CSS ที่มีอยู่แล้วในแท็ก <style> */
+.category-selection-container {
+    background: linear-gradient(145deg, #ffffff, #f0f7ff);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
+    padding: 25px;
+    margin: 0 auto 25px;
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    max-width: 500px; /* จำกัดความกว้างสูงสุด */
+}
+
+.category-selection-header {
+    text-align: center;
+    margin-bottom: 20px; /* ปรับลดขนาดช่องว่าง */
+}
+
+.category-selection-header h3 {
+    color: #1976d2;
+    font-size: 20px; /* ลดขนาดฟอนต์ลง */
+    font-weight: 600;
+    margin-bottom: 8px;
+    position: relative;
+    display: inline-block;
+}
+
+.category-selection-header h3:after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, #1976d2, #4791db);
+    border-radius: 3px;
+}
+
+.category-selection-header p {
+    color: #555;
+    font-size: 15px; /* ลดขนาดฟอนต์ลง */
+    margin-top: 12px;
+}
+
+.category-selection-form {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 15px; /* ลดช่องว่างระหว่างฟิลด์ */
+}
+
+.category-field {
+    margin-bottom: 3px; /* ลดช่องว่าง */
+}
+
+.category-field label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1976d2;
+    margin-bottom: 6px; /* ลดช่องว่าง */
+    transition: all 0.2s ease;
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper select {
+    width: 100%;
+    padding: 10px 14px; /* ลดขนาด padding */
+    border: 2px solid #e0e0e0;
+    border-radius: 10px; /* ลดความโค้ง */
+    background-color: white;
+    font-size: 15px; /* ลดขนาดฟอนต์ */
+    font-weight: 500;
+    color: #333;
+    appearance: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.select-wrapper select:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+    outline: none;
+}
+
+.select-wrapper select:hover:not(:disabled) {
+    border-color: #1976d2;
+    background-color: #f8f9ff;
+}
+
+.select-wrapper select:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.select-arrow {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #1976d2;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.select-wrapper:hover .select-arrow {
+    border-top-color: #115293;
+}
+
+#start-quiz {
+    background: linear-gradient(45deg, #1976d2, #4791db);
+    color: white;
+    border: none;
+    padding: 12px 25px; /* ลดขนาด padding */
+    font-size: 16px; /* ลดขนาดฟอนต์ */
+    font-weight: 600;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 20px auto 0; /* ลดขนาดช่องว่าง */
+    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    letter-spacing: 0.5px;
+}
+
+#start-quiz:hover {
+    background: linear-gradient(45deg, #115293, #1976d2);
+    transform: translateY(-2px); /* ลดการเคลื่อนไหว */
+    box-shadow: 0 6px 15px rgba(25, 118, 210, 0.4);
+}
+
+#start-quiz:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 8px rgba(25, 118, 210, 0.3);
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ปรับสไตล์สำหรับกล่อง login */
+#login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* สไตล์สำหรับหน้าล็อกอิน - ปรับปรุงใหม่ */
+.login-container {
+  max-width: 500px; /* เพิ่มความกว้างสูงสุดขึ้น (เดิม 450px) */
+  width: 90%; /* ทำให้มีความยืดหยุ่น แต่ใช้พื้นที่ส่วนใหญ่ของหน้าจอ */
+  margin: 40px auto;
+  padding: 35px; /* เพิ่มพื้นที่ว่างภายใน (เดิม 30px) */
+  background: linear-gradient(145deg, #ffffff, #f0f7ff);
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(25, 118, 210, 0.15); /* เพิ่มเงาให้เด่นชัดขึ้น */
+  text-align: center;
+  border: 1px solid rgba(25, 118, 210, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-container:hover {
+  box-shadow: 0 15px 30px rgba(25, 118, 210, 0.2); /* เพิ่มเงาเมื่อ hover */
+}
+
+.login-form h2 {
+  color: #1976d2;
+  font-size: 32px; /* เพิ่มขนาดตัวอักษร (เดิม 28px) */
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.login-form p {
+  color: #666;
+  margin-bottom: 30px; /* เพิ่มระยะห่าง (เดิม 25px) */
+  font-size: 18px; /* เพิ่มขนาดตัวอักษร (เดิม 16px) */
+}
+
+.login-form .form-group {
+  margin-bottom: 25px; /* เพิ่มระยะห่าง (เดิม 20px) */
+  text-align: left;
+}
+
+.login-form label {
+  display: block;
+  margin-bottom: 10px; /* เพิ่มระยะห่าง (เดิม 8px) */
+  font-weight: 500;
+  color: #1976d2;
+  font-size: 18px; /* เพิ่มขนาดตัวอักษร (เดิม 16px) */
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px 15px; /* เพิ่มความสูงของช่องกรอก (เดิม 12px 15px) */
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 18px; /* เพิ่มขนาดตัวอักษร (เดิม 16px) */
+  transition: all 0.3s ease;
+  background-color: white;
+}
+
+.login-input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
+  outline: none;
+}
+
+.login-btn {
+  background: linear-gradient(45deg, #1976d2, #42a5f5);
+  color: white;
+  border: none;
+  padding: 16px 30px; /* เพิ่มขนาดปุ่ม (เดิม 14px 30px) */
+  font-size: 20px; /* เพิ่มขนาดตัวอักษร (เดิม 18px) */
+  font-weight: 600;
+  border-radius: 30px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: block;
+  width: 100%;
+  margin-top: 35px; /* เพิ่มระยะห่าง (เดิม 30px) */
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.login-btn:hover:not([disabled]) {
+  background: linear-gradient(45deg, #115293, #1976d2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(25, 118, 210, 0.4);
+}
+
+.login-btn:active:not([disabled]) {
+  transform: translateY(0);
+  box-shadow: 0 3px 8px rgba(25, 118, 210, 0.3);
+}
+
+.login-btn[disabled] {
+  background: linear-gradient(45deg, #ccc, #ddd);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.remember-me {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* เพิ่มระยะห่าง (เดิม 8px) */
+  margin-top: 15px; /* เพิ่มระยะห่าง (เดิม 10px) */
+}
+
+.remember-me input[type="checkbox"] {
+  width: 20px; /* เพิ่มขนาด (เดิม 18px) */
+  height: 20px; /* เพิ่มขนาด (เดิม 18px) */
+  cursor: pointer;
+}
+
+.remember-me label {
+  margin-bottom: 0;
+  display: inline;
+  cursor: pointer;
+  font-size: 16px; /* ปรับขนาดตัวอักษร */
+}
+
+/* ปรับสไตล์สำหรับกรอบ login ที่เป็น overlay */
+#login-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.96); /* ปรับความโปร่งใสเล็กน้อย */
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ปรับแต่งการแสดงผลบนมือถือ */
+@media (max-width: 600px) {
+  .login-container {
+    width: 90%;
+    padding: 25px;
+    margin: 20px auto;
+  }
+  
+  .login-form h2 {
+    font-size: 28px;
+  }
+  
+  .login-form p {
+    font-size: 16px;
+  }
+  
+  .login-btn {
+    padding: 14px 20px;
+    font-size: 18px;
+  }
+}
+
+/* CSS สำหรับปรับปรุงส่วนตัวกรองในหน้าประวัติการเล่น */
+.history-filter-section {
+    background: linear-gradient(145deg, #ffffff, #f0f7ff);
+    border-radius: 16px;
+    box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
+    padding: 25px;
+    margin: 30px auto;
+    border: 1px solid rgba(25, 118, 210, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.history-filter-section:hover {
+    box-shadow: 0 12px 25px rgba(25, 118, 210, 0.15);
+}
+
+.filter-form {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 15px;
+    border: 1px solid #e0e0e0;
+}
+
+.filter-group-title {
+    font-weight: 600;
+    color: #1565c0;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    font-size: 17px;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.filter-date-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed #e0e0e0;
+}
+
+.filter-category-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.filter-field {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 15px;
+    padding: 5px;
+}
+
+.filter-field label {
+    display: block;
+    font-weight: 500;
+    color: #1976d2;
+    margin-bottom: 8px;
+    font-size: 15px;
+}
+
+.date-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Prompt', sans-serif;
+    transition: all 0.3s ease;
+    background-color: white;
+    font-size: 15px;
+}
+
+.date-input:hover {
+    border-color: #bbdefb;
+}
+
+.filter-select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Prompt', sans-serif;
+    transition: all 0.3s ease;
+    background-color: white;
+}
+
+.date-input:focus, .filter-select:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    outline: none;
+}
+
+.filter-select:disabled {
+    background-color: #f5f5f5;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: flex-end;
+}
+
+#apply-history-filter {
+    background: linear-gradient(45deg, #1976d2, #4791db);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+#apply-history-filter:hover {
+    background: linear-gradient(45deg, #115293, #1976d2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(25, 118, 210, 0.25);
+}
+
+#reset-history-filter {
+    background: linear-gradient(45deg, #f5f5f5, #e0e0e0);
+    color: #424242;
+    border: none;
+    padding: 10px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+#reset-history-filter:hover {
+    background: linear-gradient(45deg, #e0e0e0, #d5d5d5);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* การแสดงผลบนมือถือ */
+@media (max-width: 768px) {
+    .filter-row, .filter-date-row, .filter-category-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-field {
+        width: 100%;
+    }
+    
+    .filter-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    #apply-history-filter, #reset-history-filter {
+        width: 100%;
+    }
+}
+
+/* แก้ไขส่วนกรองตามช่วงเวลา */
+.filter-date-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+    padding-bottom: 20px;
+    border-bottom: 1px dashed #e0e0e0;
+    width: 100%; /* กำหนดความกว้างชัดเจน */
+}
+
+.filter-field {
+    flex: 1;
+    min-width: 180px; /* ลดความกว้างขั้นต่ำลงเล็กน้อย */
+    margin-bottom: 15px;
+    padding: 5px;
+    box-sizing: border-box; /* เพิ่มเพื่อให้ padding ไม่ทำให้กล่องใหญ่เกิน */
+}
+
+.date-input {
+    width: 100%;
+    padding: 10px 12px; /* ลดขนาด padding */
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-family: 'Prompt', sans-serif;
+    transition: all 0.3s ease;
+    background-color: white;
+    font-size: 14px; /* ลดขนาดตัวอักษร */
+    box-sizing: border-box; /* เพิ่มเพื่อให้ padding ไม่ทำให้กล่องใหญ่เกิน */
+}
+
+/* ปรับปรุงการแสดงผลบนอุปกรณ์มือถือ */
+@media (max-width: 768px) {
+    .filter-date-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-field {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+}
+
+/* ปรับแต่ง container หลัก */
+.history-filter-section {
+    padding: 20px; /* ลดขนาด padding */
+}
+
+/* ปรับแต่งฟอร์มตัวกรอง */
+.filter-form {
+    padding: 15px; /* ลดขนาด padding */
+}
+
+/* ปรับแต่งส่วนหัวของกลุ่มตัวกรอง */
+.filter-group-title {
+    margin-bottom: 12px; /* ลดขนาดขอบด้านล่าง */
+}
+
+/* ปรับหน้าสรุปผลให้เต็มจอบนมือถือ */
+#result-screen {
+  width: 100%;
+  padding: 20px;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.result-container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px var(--shadow-color);
+  background-color: var(--white);
+  box-sizing: border-box;
+}
+
+@media (min-width: 768px) {
+  /* เมื่อไม่ใช่มือถือ คงความสวยงามไว้ */
+  #result-screen {
+    padding: 20px;
+  }
+  
+  .result-container {
+    max-width: 800px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* ปรับปรุงส่วนหัวของผลลัพธ์ */
+.result-header {
+  padding: 15px;
+  text-align: center;
+}
+
+.result-header h2 {
+  font-size: 22px;
+  margin: 10px 0;
+}
+
+/* ปรับปรุงส่วนแสดงคะแนน */
+.result-score-container {
+  padding: 10px 0;
+}
+
+.result-score {
+  width: 150px;
+  height: 150px;
+}
+
+.score-value {
+  font-size: 42px;
+}
+
+.score-separator,
+.score-max {
+  font-size: 28px;
+}
+
+.score-percent {
+  font-size: 14px;
+  padding: 4px 14px;
+  bottom: -12px;
+}
+
+/* ปรับปรุงส่วนแสดงสถิติ */
+.quiz-stats {
+  flex-wrap: wrap;
+  padding: 10px;
+}
+
+.stat-item {
+  padding: 8px;
+  min-width: 30%;
+}
+
+.stat-item:after {
+  display: none;
+}
+
+.stat-value {
+  font-size: 24px;
+}
+
+.stat-label {
+  font-size: 12px;
+}
+
+/* ปรับปรุงส่วนทบทวนคำถาม */
+.review-header {
+  padding: 12px;
+}
+
+.review-header h3 {
+  font-size: 18px;
+}
+
+.question-review-list {
+  padding: 10px;
+}
+
+.question-review-item {
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.question-text {
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.choice-item {
+  padding: 10px 12px;
+}
+
+.choice-text {
+  font-size: 14px;
+}
+
+/* ปรับขนาดตัวแสดงสถานะ (ถูก/ผิด) */
+.question-status {
+  padding: 2px 8px;
+  font-size: 11px;
+}
+
+/* ปรับปรุงปุ่มเล่นใหม่ */
+.restart-container {
+  padding: 15px;
+}
+
+#restart-quiz {
+  padding: 10px 25px;
+  font-size: 16px;
+  width: 100%;
+  max-width: 250px;
+}
+
+/* สไตล์สำหรับจอขนาดเล็กมาก */
+@media (max-width: 375px) {
+  .result-score {
+    width: 120px;
+    height: 120px;
+  }
+
+  .score-value {
+    font-size: 36px;
+  }
+
+  .score-separator,
+  .score-max {
+    font-size: 24px;
+  }
+
+  .stat-value {
+    font-size: 20px;
+  }
+
+  .question-text {
+    font-size: 15px;
+  }
+  
+  .choice-text {
+    font-size: 13px;
+  }
+}
+
+/* เพิ่มเติม: แก้ปัญหาเลขหน้าในกรณีมีหลายคำถาม */
+.question-number {
+  font-size: 14px;
+}
+
+/* ปรับปรุงการแสดงผลของตัวเลือกคำตอบ */
+.choice-marker {
+  width: 22px;
+  height: 22px;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+/* ปรับการแสดงผลหมวดหมู่ให้เข้ากับหน้าจอเล็ก */
+.category-summary {
+  padding: 10px;
+  margin-bottom: 15px;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.category-title {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+.category-path {
+  font-size: 13px;
+  word-break: break-word;
+}
+
+/* สไตล์เพิ่มเติมสำหรับหน้าจอขนาดกลาง */
+@media (min-width: 480px) and (max-width: 767px) {
+  .result-score {
+    width: 160px;
+    height: 160px;
+  }
+
+  .score-value {
+    font-size: 46px;
+  }
+
+  .score-separator,
+  .score-max {
+    font-size: 32px;
+  }
+  
+  .category-summary {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* ปรับปรุงส่วนหัวของหน้าประวัติ */
+.history-section .section-header,
+.history-filter-section .section-header {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.section-title-container {
+  width: 100%;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.total-history-count {
+  margin-top: 5px;
+}
+
+.items-per-page-container {
+  margin-top: 8px;
+  width: 100%;
+  justify-content: flex-start;
+}
+
+/* ปรับปรุงส่วนตัวกรอง */
+.filter-form {
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.filter-container {
+  gap: 8px;
+}
+
+.filter-group {
+  flex-direction: column;
+  padding: 12px 10px;
+}
+
+.filter-label {
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.date-inputs,
+.category-selects {
+  width: 100%;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-field,
+.date-field,
+.select-field {
+  width: 100%;
+}
+
+.filter-actions-row {
+  margin-top: 15px;
+}
+
+.filter-button {
+  width: 100%;
+  padding: 10px;
+  text-align: center;
+}
+
+/* ปรับขนาดตารางประวัติ */
+.history-table-container {
+  overflow-x: auto;
+  margin-bottom: 15px;
+}
+
+.history-table {
+  min-width: 650px; /* ขั้นต่ำเพื่อให้แสดงข้อมูลได้ครบถ้วน */
+}
+
+/* ปรับขนาดและการแสดงผลของแต่ละคอลัมน์ */
+.history-table th,
+.history-table td {
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+/* แก้ไขความกว้างของแต่ละคอลัมน์ */
+.history-table th:nth-child(1),
+.history-table td:nth-child(1) {
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+}
+
+.history-table th:nth-child(2),
+.history-table td:nth-child(2) {
+  width: 80px;
+  min-width: 80px;
+  max-width: 100px;
+}
+
+.history-table th:nth-child(3),
+.history-table td:nth-child(3) {
+  width: 80px;
+  min-width: 80px;
+}
+
+.history-table th:nth-child(4),
+.history-table td:nth-child(4) {
+  width: 200px;
+  min-width: 200px;
+}
+
+.history-table th:nth-child(5),
+.history-table td:nth-child(5) {
+  width: 90px;
+  min-width: 90px;
+  max-width: 100px;
+}
+
+.history-table th:nth-child(6),
+.history-table td:nth-child(6) {
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+}
+
+/* ปรับปรุงการแสดงผลในแต่ละช่อง */
+.history-table .player-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+}
+
+.history-table .score-display {
+  font-size: 13px;
+  padding: 4px 8px;
+}
+
+.history-table .date-time {
+  font-size: 12px;
+}
+
+.history-table .date-display,
+.history-table .time-display {
+  font-size: 11px;
+}
+
+.delete-history-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+}
+
+/* ปรับปรุงการแสดงผลของหมวดหมู่ */
+.history-table .category-path {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.history-table .category-segment {
+  font-size: 11px;
+  padding: 2px 6px;
+  margin: 1px 0;
+  max-width: 100%;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* ปรับปรุงส่วน pagination */
+#history-pagination {
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 15px 0;
+}
+
+.history-page-btn {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+/* ปรับปรุงส่วนหน้าต่างยืนยันการลบ */
+.confirm-dialog {
+  width: 90%;
+  max-width: 320px;
+}
+
+.confirm-header {
+  padding: 12px 15px;
+}
+
+.confirm-body {
+  padding: 15px;
+}
+
+.confirm-actions {
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 15px;
+}
+
+.confirm-dialog button {
+  width: 100%;
+  padding: 10px;
+  margin: 0;
+}
+
+/* สไตล์สำหรับการแสดงข้อความเมื่อไม่มีข้อมูล */
+.empty-state {
+  padding: 30px 15px;
+  text-align: center;
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+/* ปรับปรุงหน้าประวัติทั้งหมดให้กระชับขึ้น */
+.history-filter-section,
+.history-section {
+  padding: 15px;
+  margin: 15px auto;
+}
+
+.section-title {
+  font-size: 18px;
+}
+
+/* สไตล์สำหรับหน้าจอขนาดต่างๆ */
+@media screen and (min-width: 768px) {
+  /* ขนาดหน้าจอเดสก์ท็อป - กลับไปใช้การจัดวางแบบเดิม */
+  .history-section .section-header,
+  .history-filter-section .section-header {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .section-title-container {
+    width: auto;
+    margin-bottom: 0;
+  }
+  
+  .items-per-page-container {
+    width: auto;
+  }
+  
+  .date-inputs,
+  .category-selects {
+    flex-direction: row;
+  }
+  
+  .filter-group {
+    flex-direction: row;
+  }
+  
+  .filter-label {
+    width: auto;
+    margin-right: 15px;
+    margin-bottom: 0;
+  }
+  
+  .filter-actions-row {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  
+  .filter-button {
+    width: auto;
+  }
+  
+  .history-table .category-path {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .confirm-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  
+  .confirm-dialog button {
+    width: auto;
+  }
+}
+
+/* สไตล์สำหรับอุปกรณ์ขนาดกลาง */
+@media screen and (min-width: 480px) and (max-width: 767px) {
+  .filter-actions-row {
+    flex-direction: row;
+    gap: 10px;
+  }
+  
+  .filter-button {
+    flex: 1;
+  }
+  
+  .history-table-container {
+    margin: 0 -15px; /* ขยายขอบให้กว้างกว่ากรอบหลัก */
+  }
+  
+  .history-table th:nth-child(2),
+  .history-table td:nth-child(2) {
+    width: 100px;
+    min-width: 100px;
+  }
+  
+  .history-table .category-segment {
+    font-size: 12px;
+  }
+}
+
+/* สไตล์สำหรับการแสดงผลในโหมดแนวตั้ง (Portrait) บนมือถือ */
+@media screen and (max-width: 479px) and (orientation: portrait) {
+  /* ปรับปรุงการแสดงผลตาราง */
+  .history-table-container {
+    margin: 0 -15px; /* ขยายขอบให้กว้างกว่ากรอบหลัก */
+    border-radius: 0;
+  }
+  
+  .history-table {
+    border-radius: 0;
+  }
+  
+  /* ซ่อนบางคอลัมน์ที่อาจไม่จำเป็นในหน้าจอขนาดเล็กมาก */
+  .history-table th:nth-child(5),
+  .history-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+/* เรียกคืนการแสดงผลของการค้นหาในตัวกรอง */
+.search-field {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ปรับปรุงปุ่มล้างประวัติทั้งหมด */
+.clear-all-history-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  margin-left: 0;
+  padding: 8px 15px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .clear-all-history-btn {
+    display: inline-block;
+    width: auto;
+    margin-left: auto;
+    margin-top: 0;
+  }
+}
+
+/* ปรับขนาดคอนเทนเนอร์หลัก */
+.category-management-section {
+  padding: 15px;
+  margin: 15px auto;
+  max-width: 100%;
+  border-radius: 12px;
+}
+
+/* ปรับปรุงส่วนหัวของแต่ละส่วน */
+.section-title {
+  font-size: 18px;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+}
+
+/* ปรับขนาดแผนผังต้นไม้หมวดหมู่ */
+.category-tree-container {
+  padding: 8px;
+  max-height: 400px;
+}
+
+/* ปรับปรุงรายการหมวดหมู่ */
+.category-item {
+  margin: 6px 0;
+  border-radius: 6px;
+}
+
+.category-header {
+  padding: 8px 10px;
+  flex-wrap: wrap;
+}
+
+.category-name {
+  flex-grow: 1;
+  font-size: 14px;
+  margin-right: 5px;
+  word-break: break-word;
+}
+
+.category-actions {
+  margin-top: 5px;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+/* ปรับขนาดหมวดหมู่ย่อย */
+.sub-categories {
+  padding-left: 15px;
+}
+
+/* ปรับปรุงสำหรับปุ่มแก้ไข/ลบ */
+.small-btn {
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 3px;
+}
+
+/* ปรับปรุงส่วนปุ่มเพิ่มหมวดหมู่ */
+.add-category-btn {
+  margin: 8px 0;
+  padding-left: 15px;
+}
+
+.add-btn {
+  padding: 6px 10px;
+  font-size: 13px;
+  width: 100%;
+  text-align: center;
+}
+
+/* ปรับปรุงฟอร์มเพิ่ม/แก้ไขหมวดหมู่ */
+#category-form-container {
+  padding: 10px;
+}
+
+.form-body {
+  width: 90%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.form-header {
+  padding: 12px 15px;
+}
+
+.form-header h3 {
+  font-size: 16px;
+}
+
+.form-group label {
+  font-size: 14px;
+}
+
+.form-input {
+  padding: 8px 10px;
+  font-size: 15px;
+}
+
+.form-actions {
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-actions button {
+  width: 100%;
+}
+
+/* ปรับปรุงหน้าต่างยืนยันการลบ */
+#category-confirm-container {
+  padding: 10px;
+}
+
+.confirm-dialog {
+  width: 90%;
+  max-width: 300px;
+}
+
+.confirm-dialog h3 {
+  font-size: 16px;
+}
+
+.confirm-body {
+  padding: 15px;
+  font-size: 14px;
+}
+
+.confirm-actions {
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+}
+
+.confirm-actions button {
+  width: 100%;
+  padding: 8px;
+}
+
+/* ปรับปรุงฟอร์มคำถาม */
+.question-creation-section {
+  padding: 15px;
+  margin: 15px auto;
+}
+
+.form-field {
+  margin-bottom: 15px;
+}
+
+.form-field > label {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+
+/* ปรับขนาดช่องกรอกคำถาม */
+.question-textarea {
+  padding: 10px;
+  font-size: 14px;
+  min-height: 60px;
+}
+
+/* ปรับปรุงส่วนอัพโหลดรูปภาพ */
+.image-upload-container {
+  gap: 8px;
+}
+
+.image-input {
+  padding: 8px;
+  font-size: 13px;
+}
+
+.image-preview {
+  max-height: 150px;
+}
+
+/* ปรับปรุงส่วนเลือกหมวดหมู่ */
+.categories-container {
+  gap: 10px;
+}
+
+.category-label {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+.category-field label {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.category-select {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+/* ปรับปรุงส่วนตัวเลือกคำตอบ */
+.choice-container {
+  padding: 10px;
+  margin-bottom: 8px;
+}
+
+.choice-label {
+  width: 25px;
+  font-size: 14px;
+}
+
+.choice-input {
+  padding: 8px;
+  font-size: 14px;
+}
+
+.choice-radio-input {
+  width: 16px;
+  height: 16px;
+}
+
+/* ปรับปรุงปุ่มในฟอร์ม */
+.form-actions {
+  margin-top: 20px;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.primary-btn, .secondary-btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 15px;
+  text-align: center;
+}
+
+/* ปรับปรุงส่วนแสดงคำถามที่บันทึกไว้ */
+.saved-questions-section {
+  padding: 15px;
+  margin: 15px auto;
+}
+
+/* ปรับส่วนหัว */
+.section-header {
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.question-counter {
+  font-size: 14px;
+}
+
+.search-container {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 8px;
+}
+
+.search-input {
+  width: 100%;
+}
+
+/* ปรับรูปแบบการ์ดคำถาม */
+.question-card {
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.question-card h3 {
+  font-size: 16px;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+}
+
+.question-image {
+  max-height: 150px;
+  margin: 8px 0;
+}
+
+.choice {
+  padding: 8px 10px;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+
+.question-category {
+  margin-top: 12px;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.question-actions {
+  margin-top: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  font-size: 13px;
+  flex: 1;
+  min-width: 70px;
+  text-align: center;
+}
+
+.management-section {
+  padding: 12px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+}
+
+.management-section h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.actions button {
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ปรับแต่งรูปแบบแสดงข้อความเมื่อไม่มีข้อมูล */
+.empty-state {
+  padding: 25px 15px;
+}
+
+.empty-state p {
+  font-size: 14px;
+  margin: 8px 0;
+}
+
+/* สำหรับอุปกรณ์ขนาดกลาง */
+@media (min-width: 480px) and (max-width: 767px) {
+  /* ปรับปรุงรายการหมวดหมู่ */
+  .category-header {
+    flex-wrap: nowrap;
+  }
+  
+  .category-actions {
+    width: auto;
+    margin-top: 0;
+  }
+  
+  /* ปรับปรุงการ์ดคำถาม */
+  .question-actions {
+    justify-content: flex-end;
+  }
+  
+  .action-btn {
+    flex: 0 0 auto;
+  }
+  
+  /* ปรับปรุงการจัดการข้อมูล */
+  .actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+  
+  .actions button {
+    width: auto;
+    flex: 1;
+  }
+}
+
+/* สำหรับเดสก์ท็อป */
+@media (min-width: 768px) {
+  /* ปรับให้คืนค่าเดิมสำหรับเดสก์ท็อป */
+  .section-header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .search-container {
+    width: auto;
+    max-width: 300px;
+    margin-top: 0;
+  }
+  
+  .form-actions {
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+  
+  .primary-btn, .secondary-btn {
+    width: auto;
+  }
+  
+  .form-actions button {
+    width: auto;
+  }
+  
+  .actions {
+    flex-direction: row;
+  }
+  
+  .actions button {
+    width: auto;
+  }
+  
+  /* ปรับปรุงฟอร์มหมวดหมู่ */
+  .form-actions {
+    flex-direction: row;
+  }
+  
+  .form-actions button {
+    width: auto;
+  }
+  
+  .confirm-actions {
+    flex-direction: row;
+  }
+  
+  .confirm-actions button {
+    width: auto;
+  }
+  
+  /* ปรับให้คืนค่าการแสดงหมวดหมู่เดิม */
+  .categories-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  /* ปรับขนาดใน section ต่างๆ */
+  .category-management-section,
+  .question-creation-section,
+  .saved-questions-section {
+    padding: 25px;
+    margin: 30px auto;
+  }
+  
+  .management-section {
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+}
+
+/* สำหรับหน้าจอขนาดเล็กพิเศษ */
+@media (max-width: 359px) {
+  /* ลดขนาดให้เล็กลงอีก */
+  .category-header {
+    padding: 6px 8px;
+  }
+  
+  .category-name, .choice, .question-category {
+    font-size: 12px;
+  }
+  
+  .small-btn {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
+  
+  .form-header h3, .confirm-dialog h3 {
+    font-size: 14px;
+  }
+}
+
+/* Master Responsive System - สำหรับ Layout หลัก */
+@media (max-width: 480px) {
+  .content-area {
+    padding: 0 var(--space-sm);
+  }
+  
+  .unified-container {
+    padding: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+}
+
+@media (min-width: 1200px) {
+  :root {
+    --container-max-width: 900px;
+  }
+}
+
+/* ตัวกรองหมวดหมู่ */
+.category-filter-container {
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+  width: 100%;
+}
+
+.filter-group {
+  width: 100%;
+}
+
+.filter-select {
+  width: 100%;
+  padding: 8px;
+  font-size: 13px;
+}
+
+.filter-btn {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px;
+  font-size: 13px;
+}
+
+@media (min-width: 768px) {
+  .category-filter-container {
+    flex-direction: row;
+    gap: 10px;
+  }
+  
+  .filter-btn {
+    width: auto;
+    margin-top: 0;
+  }
+}
+
+.container.quiz-player {
+  max-width: 100%;
+  width: 100%;
+  padding: 15px;
+  margin: 0;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.quiz-player h1 {
+  font-size: 22px;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.category-selection-container {
+  width: 100%;
+  max-width: 100%;
+  padding: 15px;
+  margin: 0 auto 15px;
+  border-radius: 10px;
+}
+
+.category-selection-header h3 {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.category-selection-header p {
+  font-size: 14px;
+  margin-top: 8px;
+}
+
+.category-selection-form {
+  gap: 10px;
+}
+
+.category-field {
+  margin-bottom: 0;
+}
+
+.category-field label {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.select-wrapper select {
+  padding: 8px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+#start-quiz {
+  width: 100%;
+  margin-top: 15px;
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 25px;
+}
+
+.player-info.top-right {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  z-index: 10;
+  background-color: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.player-info.top-right .player-name {
+  font-size: 12px;
+}
+
+#start-screen {
+  padding: 20px;
+  text-align: center;
+}
+
+#start-screen p {
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+#quiz-screen {
+  width: 100%;
+  padding: 0;
+}
+
+.quiz-progress {
+  font-size: 14px;
+  padding: 8px;
+  margin: 10px auto 15px;
+  width: 95%;
+}
+
+#quiz-question {
+  font-size: 18px;
+  line-height: 1.4;
+  margin-bottom: 15px;
+  padding: 0 5px;
+}
+
+#quiz-image {
+  max-height: 180px;
+  width: auto;
+  max-width: 100%;
+  margin: 0 auto 15px;
+  display: block;
+}
+
+#quiz-choices {
+  margin-top: 15px;
+}
+
+/* ปรับปรุงตัวเลือกคำตอบ */
+.option-btn {
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 15px;
+  border-radius: 8px;
+  text-align: left;
+  line-height: 1.3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  word-break: break-word;
+}
+
+.option-btn:active {
+  transform: scale(0.98);
+}
+
+/* ลดการเคลื่อนไหวที่ไม่จำเป็น */
+.option-btn:hover {
+  transform: none;
+  box-shadow: 0 2px 5px rgba(25, 118, 210, 0.1);
+}
+
+.option-btn.selected {
+  background-color: #e3f2fd;
+  border: 2px solid #1976d2;
+  font-weight: 600;
+  box-shadow: 0 1px 5px rgba(25, 118, 210, 0.2);
+  transform: none;
+}
+
+.option-btn.selected:after {
+  content: "✓";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+  padding: 0 5px;
+}
+
+.navigation-btn {
+  width: 100%;
+  height: 40px;
+  margin: 0;
+  border-radius: 8px;
+  order: 2;
+}
+
+#submit-answer {
+  width: 100%;
+  min-width: 100%;
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 25px;
+  order: 1;
+  margin: 0 0 5px 0;
+}
+
+#prev-question, #next-question {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+
+#prev-question svg, #next-question svg {
+  width: 20px;
+  height: 20px;
+  margin: 0 5px;
+}
+
+#prev-question:not(.hidden) {
+  order: 3;
+}
+
+#next-question:not(.hidden) {
+  order: 4;
+}
+
+#result-screen .result-container {
+  border-radius: 0;
+  margin: 0;
+  padding: 0;
+  box-shadow: none;
+}
+
+.result-header {
+  padding: 15px 10px;
+  text-align: center;
+}
+
+.result-header h2 {
+  font-size: 20px;
+  margin: 0;
+}
+
+/* ส่วนแสดงคะแนน */
+.result-score-container {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.result-score {
+  width: 140px;
+  height: 140px;
+}
+
+.score-value {
+  font-size: 40px;
+}
+
+.score-separator {
+  font-size: 30px;
+}
+
+.score-max {
+  font-size: 30px;
+}
+
+.score-percent {
+  font-size: 14px;
+  padding: 4px 12px;
+  bottom: -10px;
+}
+
+/* สถิติคะแนน */
+.quiz-stats {
+  padding: 10px;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  padding: 8px 5px;
+  width: 33%;
+  box-sizing: border-box;
+}
+
+.stat-item:not(:last-child):after {
+  display: none;
+}
+
+.stat-value {
+  font-size: 24px;
+}
+
+.stat-label {
+  font-size: 12px;
+}
+
+/* ปรับปรุงหัวข้อทบทวนคำถาม */
+.review-header {
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.review-header h3 {
+  font-size: 16px;
+  margin: 0;
+}
+
+/* ปรับปรุงส่วนทบทวนคำถาม */
+.question-review-list {
+  padding: 10px;
+}
+
+.question-review-item {
+  padding: 12px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+}
+
+.question-number {
+  font-size: 14px;
+  margin-bottom: 8px;
+}
+
+.question-text {
+  font-size: 16px;
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.choice-item {
+  padding: 10px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+}
+
+.choice-marker {
+  width: 20px;
+  height: 20px;
+  font-size: 12px;
+  margin-right: 8px;
+}
+
+.choice-text {
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+/* ปรับปรุงปุ่มเล่นอีกครั้ง */
+.restart-container {
+  padding: 15px;
+  text-align: center;
+}
+
+#restart-quiz {
+  width: 100%;
+  max-width: 250px;
+  padding: 12px;
+  font-size: 16px;
+}
+
+.login-container {
+  width: 90%;
+  padding: 20px;
+  margin: 15px auto;
+}
+
+.login-form h2 {
+  font-size: 22px;
+}
+
+.login-form p {
+  font-size: 15px;
+  margin-bottom: 20px;
+}
+
+.login-form .form-group {
+  margin-bottom: 15px;
+}
+
+.login-form label {
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+.login-input {
+  padding: 10px 12px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+.login-btn {
+  padding: 12px;
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+.remember-me {
+  gap: 8px;
+}
+
+.remember-me input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
+.remember-me label {
+  font-size: 14px;
+}
+
+/* สำหรับหน้าจอขนาดเล็กพิเศษ */
+@media (max-width: 359px) {
+  .quiz-player h1 {
+    font-size: 20px;
+  }
+  
+  #quiz-question {
+    font-size: 15px;
+  }
+  
+  .option-btn {
+    padding: 10px;
+    font-size: 14px;
+  }
+  
+  .result-score {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .score-value {
+    font-size: 36px;
+  }
+  
+  .score-separator, .score-max {
+    font-size: 26px;
+  }
+  
+  .navigation-btn {
+    height: 36px;
+  }
+  
+  #submit-answer {
+    padding: 10px;
+    font-size: 15px;
+  }
+}
+
+/* สำหรับอุปกรณ์ขนาดกลาง */
+@media (min-width: 480px) and (max-width: 767px) {
+  .container.quiz-player {
+    padding: 20px;
+  }
+  
+  .quiz-player h1 {
+    font-size: 24px;
+  }
+  
+  #quiz-question {
+    font-size: 20px;
+  }
+  
+  #quiz-image {
+    max-height: 200px;
+  }
+  
+  .option-btn {
+    padding: 12px 15px;
+    font-size: 16px;
+  }
+  
+  .actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  #submit-answer {
+    width: 60%;
+    order: 2;
+    margin: 0;
+  }
+  
+  .navigation-btn {
+    width: 45px;
+    height: 45px;
+  }
+  
+  #prev-question:not(.hidden) {
+    order: 1;
+    margin-right: 5px;
+  }
+  
+  #next-question:not(.hidden) {
+    order: 3;
+    margin-left: 5px;
+  }
+  
+  /* ปรับส่วนแสดงผลคะแนน */
+  .quiz-stats {
+    flex-direction: row;
+  }
+  
+  .stat-item {
+    padding: 10px;
+  }
+}
+
+/* สำหรับเดสก์ท็อป */
+@media (min-width: 768px) {
+  .container.quiz-player {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  .quiz-player h1 {
+    font-size: 28px;
+  }
+  
+  .category-selection-container {
+    max-width: 500px;
+    padding: 25px;
+  }
+  
+  .category-selection-header h3 {
+    font-size: 20px;
+  }
+  
+  .category-selection-header p {
+    font-size: 15px;
+  }
+  
+  #start-quiz {
+    width: auto;
+    padding: 12px 25px;
+  }
+  
+  #quiz-question {
+    font-size: 16px;
+  }
+  
+  #quiz-image {
+    max-height: 250px;
+  }
+  
+  .option-btn {
+    transition: all 0.3s ease;
+  }
+  
+  .option-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(25, 118, 210, 0.15);
+  }
+  
+  .actions {
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  #submit-answer {
+    width: auto;
+    min-width: 200px;
+    order: 2;
+  }
+  
+  .navigation-btn {
+    width: 45px;
+    order: initial;
+  }
+  
+  #prev-question:not(.hidden) {
+    order: 1;
+    margin-right: 10px;
+  }
+  
+  #next-question:not(.hidden) {
+    order: 3;
+    margin-left: 10px;
+  }
+  
+  /* ปรับส่วนแสดงผลคะแนน */
+  #result-screen .result-container {
+    max-width: 800px;
+    margin: 0 auto;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .result-score {
+    width: 180px;
+    height: 180px;
+  }
+  
+  .score-value {
+    font-size: 54px;
+  }
+  
+  .score-separator, .score-max {
+    font-size: 36px;
+  }
+  
+  #restart-quiz:hover {
+    transform: scale(1.05);
+    letter-spacing: 1px;
+  }
+}
+
+@media (max-height: 500px) and (orientation: landscape) {
+  .container.quiz-player {
+    padding: 10px;
+  }
+  
+  .quiz-player h1 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+  
+  /* จัดเรียงตัวเลือกในแนวนอน (2 คอลัมน์) */
+  #quiz-choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .option-btn {
+    margin: 0;
+    padding: 8px 10px;
+    font-size: 14px;
+    height: 100%;
+  }
+  
+  .option-btn.selected:after {
+    right: 8px;
+    font-size: 16px;
+  }
+  
+  /* ทำให้ปุ่มต่างๆ เล็กลง */
+  .actions {
+    flex-direction: row;
+    margin-top: 10px;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  #submit-answer {
+    padding: 8px 15px;
+    font-size: 14px;
+    margin: 0 5px;
+    min-width: 150px;
+  }
+  
+  .navigation-btn {
+    height: 36px;
+    width: 36px;
+  }
+  
+  /* ปรับส่วนหัวการเล่นเกม */
+  .quiz-progress {
+    padding: 5px;
+    margin: 5px auto 10px;
+    font-size: 12px;
+  }
+  
+  #quiz-question {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+  
+  #quiz-image {
+    max-height: 120px;
+    margin-bottom: 10px;
+  }
+  
+  /* ปรับส่วนล็อกอิน */
+  .login-container {
+    padding: 15px;
+    margin: 10px auto;
+  }
+  
+  .login-form h2 {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+  
+  .login-form p {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  
+  .login-form .form-group {
+    margin-bottom: 10px;
+  }
+  
+  .login-input {
+    padding: 8px 10px;
+  }
+  
+  .login-btn {
+    padding: 10px;
+    margin-top: 15px;
+  }
+}
+
+/* CSS สำหรับรายละเอียดการเล่นเกม */
+.clickable-row {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.clickable-row:hover {
+    background-color: #e3f2fd !important;
+    transform: scale(1.01);
+}
+
+.game-details-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.game-details-modal {
+    background-color: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    color: white;
+    padding: 20px;
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.modal-title h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.player-result-header {
+    display: flex;
+    align-items: center;
+}
+
+.player-result-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 600;
+    margin-right: 15px;
+}
+
+.player-result-info {
+    flex: 1;
+}
+
+.player-result-name {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.play-datetime {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.modal-score-section {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.modal-review-section {
+    padding: 20px;
+}
+
+.modal-review-section h3 {
+    color: #1976d2;
+    font-size: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+/* การปรับแต่งสำหรับมือถือ */
+@media (max-width: 768px) {
+    .game-details-modal-overlay {
+        padding: 10px;
+    }
+    
+    .game-details-modal {
+        max-height: 95vh;
+    }
+    
+    .modal-header {
+        padding: 15px;
+    }
+    
+    .modal-title h2 {
+        font-size: 20px;
+    }
+    
+    .player-result-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .player-result-avatar {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    
+    .modal-score-section {
+        padding: 15px;
+    }
+    
+    .modal-review-section {
+        padding: 15px;
+    }
+    
+    .result-score {
+        width: 140px;
+        height: 140px;
+    }
+    
+    .score-value {
+        font-size: 40px;
+    }
+    
+    .score-separator, .score-max {
+        font-size: 28px;
+    }
+}
+
+/* ปรับแต่งสำหรับมือถือ */
+@media (max-width: 768px) {
+    .admin-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        text-align: center;
+    }
+    
+    .admin-logout-btn {
+        top: 10px;
+        left: 10px;
+        font-size: 12px;
+        padding: 8px 12px;
+    }
+}
+
+/* CSS สำหรับป็อปอัพรหัสผ่านแอดมิน */
+.admin-password-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10001;
+    animation: fadeInOverlay 0.3s ease;
+}
+
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.admin-password-modal {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+    overflow: hidden;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.admin-password-modal.shake {
+    animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+}
+
+.admin-password-header {
+    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-password-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.admin-password-header .close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+}
+
+.admin-password-header .close-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.admin-password-body {
+    padding: 20px;
+}
+
+.admin-password-body label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+}
+
+.admin-password-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    font-family: 'Prompt', sans-serif;
+    box-sizing: border-box;
+}
+
+.admin-password-input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
+    outline: none;
+}
+
+.admin-password-error {
+    margin-top: 10px;
+    padding: 8px 12px;
+    background-color: rgba(244, 67, 54, 0.1);
+    color: #f44336;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.admin-password-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    background-color: #f8f9fa;
+}
+
+.admin-password-confirm {
+    background: linear-gradient(45deg, #1976d2, #42a5f5);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    font-family: 'Prompt', sans-serif;
+}
+
+.admin-password-confirm:hover {
+    background: linear-gradient(45deg, #1565c0, #1976d2);
+    transform: translateY(-2px);
+}
+
+.admin-password-cancel {
+    background: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    font-family: 'Prompt', sans-serif;
+}
+
+.admin-password-cancel:hover {
+    background: #d5d5d5;
+    transform: translateY(-2px);
+}
+
+/* การปรับแต่งสำหรับมือถือ */
+@media (max-width: 768px) {
+    .admin-password-actions {
+        flex-direction: column;
+    }
+    
+    .admin-password-confirm,
+    .admin-password-cancel {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+}
+
+/* CSS สำหรับ Admin UI - แทนที่ CSS เก่า */
+.admin-ui-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+}
+
+/* Admin Mode Indicator (แสดงอย่างเดียว) */
+.admin-mode-indicator {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #8b4513;
+    border: 2px solid #daa520;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'Prompt', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 3px 8px rgba(255, 215, 0, 0.3),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    user-select: none;
+    text-align: center;
+}
+
+/* Admin Logout Button (กดได้) */
+.admin-logout-btn {
+    background: linear-gradient(135deg, #f44336, #e57373);
+    color: white;
+    border: 2px solid #d32f2f;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        0 3px 8px rgba(244, 67, 54, 0.3),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+}
+
+.admin-logout-btn:hover {
+    background: linear-gradient(135deg, #d32f2f, #f44336);
+    border-color: #b71c1c;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 
+        0 5px 12px rgba(244, 67, 54, 0.4),
+        0 2px 6px rgba(0, 0, 0, 0.15),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.admin-logout-btn:active {
+    transform: translateY(0) scale(1);
+    box-shadow: 
+        0 2px 6px rgba(244, 67, 54, 0.3),
+        0 1px 3px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ปรับแต่งสำหรับหน้าจอมือถือ - ย้ายลงล่างสุด */
+@media (max-width: 768px) {
+    .admin-ui-container {
+        top: auto;
+        bottom: 5px;
+        right: 10px;
+        gap: 6px;
+    }
+    
+    /* ซ่อน indicator บนมือถือ */
+    .admin-mode-indicator {
+        display: none;
+    }
+    
+    /* ปุ่มออกจากระบบเล็กลงอีก */
+    .admin-logout-btn {
+        padding: 3px 6px;
+        font-size: 9px;
+        border-radius: 8px;
+    }
+}
+
+/* ปิด autocomplete และ suggestions - เพิ่มใน <style> */
+.login-input {
+    -webkit-autofill: none !important;
+    -webkit-autocomplete: off !important;
+    autocomplete: off !important;
+}
+
+.login-input::-webkit-credentials-auto-fill-button {
+    display: none !important;
+}
+
+.login-input::-webkit-contacts-auto-fill-button {
+    display: none !important;
+}
+
+/* ซ่อน dropdown suggestions */
+.login-input::-webkit-list-button {
+    display: none;
+}
+
+.login-input::-webkit-calendar-picker-indicator {
+    display: none;
+}
+
+/* Welcome Screen Styles */
+.welcome-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #a8edea 0%, #74b9ff 50%, #0984e3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.welcome-container {
+  background: white;
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  padding: 40px;
+  max-width: 900px;
+  width: 100%;
+  text-align: center;
+  animation: slideIn 0.6s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-header h1 {
+  font-size: 2.5rem;
+  color: #1976d2;
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+.welcome-header p {
+  font-size: 1.2rem;
+  color: #666;
+  margin-bottom: 40px;
+}
+
+.welcome-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.option-card {
+  background: linear-gradient(145deg, #ffffff, #f0f7ff);
+  border: 2px solid #e3f2fd;
+  border-radius: 16px;
+  padding: 30px 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.option-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(25, 118, 210, 0.2);
+  border-color: #1976d2;
+}
+
+.option-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  transition: left 0.5s;
+}
+
+.option-card:hover::before {
+  left: 100%;
+}
+
+.option-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.option-card h3 {
+  color: #1976d2;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+}
+
+.option-card p {
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 15px;
+}
+
+.option-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  background: #4caf50;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.guest-card .option-badge {
+  background: #ff9800;
+}
+
+.login-card .option-badge {
+  background: #4caf50;
+}
+
+.register-card .option-badge {
+  background: #2196f3;
+}
+
+.welcome-footer {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10001;
+  padding: 20px;
+}
+
+.modal-container {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.modal-header h3 {
+  color: #ffffff;
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f5f5f5;
+  color: #333;
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  font-family: 'Prompt', sans-serif;
+}
+
+.form-input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+  outline: none;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 14px;
+  color: #666;
+}
+
+.checkbox-container input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+}
+
+.note {
+  font-size: 14px;
+  color: #ff9800;
+  margin-top: 8px;
+  text-align: center;
+  font-style: italic;
+}
+
+.error-message {
+  background: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.modal-footer {
+  padding: 20px 24px;
+  border-top: 1px solid #eee;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #1976d2, #42a5f5);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #1565c0, #1976d2);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+}
+
+.btn-secondary {
+  background: #f5f5f5;
+  color: #666;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Prompt', sans-serif;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .welcome-container {
+    padding: 30px 20px;
+  }
+  
+  .welcome-options {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .option-card {
+    padding: 25px 15px;
+  }
+  
+  .modal-footer {
+    flex-direction: column;
+  }
+  
+  .btn-primary, .btn-secondary {
+    width: 100%;
+  }
+}
