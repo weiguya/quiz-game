@@ -5190,3 +5190,662 @@ button.delete:hover {
     width: 100%;
   }
 }
+
+/* ==================================================
+   CSS ที่ถูกย้ายจาก JavaScript มา style.css
+   ================================================== */
+
+/* 1. Admin UI Components */
+.admin-ui-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 9999;
+}
+
+.admin-mode-indicator {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #8b4513;
+    border: 2px solid #daa520;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: 'Prompt', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+    box-shadow: 
+        0 3px 8px rgba(255, 215, 0, 0.3),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    user-select: none;
+    text-align: center;
+}
+
+.admin-logout-btn {
+    background: linear-gradient(135deg, #f44336, #e57373);
+    color: white;
+    border: 2px solid #d32f2f;
+    padding: 10px 16px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        0 3px 8px rgba(244, 67, 54, 0.3),
+        0 1px 4px rgba(0, 0, 0, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+}
+
+/* 2. Category Management Styles */
+.category-tree-container {
+    margin-top: 20px;
+    max-height: 600px;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.category-item {
+    margin: 8px 0;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+.category-header {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.category-header:hover {
+    background-color: #eef5ff;
+}
+
+.toggle-icon {
+    margin-right: 10px;
+    font-size: 12px;
+    color: #1976d2;
+    transition: transform 0.2s ease;
+}
+
+.category-name {
+    flex-grow: 1;
+    font-weight: 500;
+    color: #333;
+}
+
+.question-count {
+    margin-left: 5px;
+    font-size: 14px;
+    color: #666;
+}
+
+.category-actions {
+    display: flex;
+    gap: 5px;
+    margin-left: 10px;
+    z-index: 5;
+}
+
+.small-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    color: #333;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.edit-btn.small-btn {
+    background-color: #1976d2;
+    color: white;
+}
+
+.delete-btn.small-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.lock-btn.small-btn {
+    background-color: #ff9800;
+    color: white;
+}
+
+.lock-btn.small-btn.locked {
+    background-color: #f44336;
+}
+
+.lock-btn.small-btn.unlocked {
+    background-color: #4caf50;
+}
+
+/* 3. History Table Styles */
+.history-table-container {
+    overflow-x: auto;
+    margin-top: 15px;
+    border-radius: 8px;
+}
+
+.history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.history-table thead {
+    background-color: #1976d2;
+    color: white;
+}
+
+.history-table th {
+    padding: 15px 20px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.history-table tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.history-table tbody tr:hover {
+    background-color: #f5f9ff;
+}
+
+.history-table td {
+    padding: 15px 20px;
+    color: #333;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+/* Column widths */
+.history-table th:nth-child(1), 
+.history-table td:nth-child(1) {
+    width: 8%;
+    text-align: center;
+    min-width: 50px;
+    max-width: 60px;
+}
+
+.history-table th:nth-child(2), 
+.history-table td:nth-child(2) {
+    width: 15%;
+    min-width: 100px;
+    max-width: 130px;
+}
+
+.history-table th:nth-child(3), 
+.history-table td:nth-child(3) {
+    width: 15%;
+    text-align: center;
+    min-width: 100px;
+}
+
+.history-table th:nth-child(4), 
+.history-table td:nth-child(4) {
+    width: 40%;
+    min-width: 200px;
+}
+
+.history-table th:nth-child(5), 
+.history-table td:nth-child(5) {
+    width: 12%;
+    white-space: nowrap;
+    min-width: 100px;
+    max-width: 120px;
+}
+
+.history-table th:nth-child(6), 
+.history-table td:nth-child(6) {
+    width: 12%;
+    text-align: center;
+    min-width: 80px;
+    max-width: 100px;
+}
+
+/* 4. Confirmation Dialog Styles */
+.confirm-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.confirm-dialog {
+    background-color: white;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.confirm-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #f44336;
+    color: white;
+}
+
+.confirm-body {
+    padding: 20px;
+}
+
+.confirm-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    padding: 15px 20px;
+    background-color: #f5f5f5;
+}
+
+.confirm-delete-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.cancel-btn {
+    background-color: #e0e0e0;
+    color: #333;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 5. Form Styles */
+#category-form-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #1976d2;
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.form-body {
+    padding: 20px;
+    background-color: white;
+    border-radius: 0 0 10px 10px;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-input:focus {
+    border-color: #1976d2;
+    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    outline: none;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.save-btn {
+    background-color: #1976d2;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* 6. Filter Form Styles */
+.filter-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.filter-row {
+    display: flex;
+    margin-bottom: 2px;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background-color: white;
+    border-radius: 8px;
+    padding: 10px 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.filter-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #485460;
+    margin-right: 15px;
+    min-width: 80px;
+}
+
+.date-inputs {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    gap: 10px;
+}
+
+.date-field {
+    flex: 1;
+}
+
+.date-separator {
+    color: #9aa5b1;
+    font-weight: 500;
+    margin: 0 5px;
+}
+
+.date-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #d0d9e4;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #f8f9fb;
+    transition: all 0.2s ease;
+}
+
+.search-field {
+    position: relative;
+    flex: 1;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 12px;
+    padding-right: 35px;
+    border: 1px solid #d0d9e4;
+    border-radius: 6px;
+    font-size: 14px;
+    background-color: #f8f9fb;
+    transition: all 0.2s ease;
+}
+
+.search-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #9aa5b1;
+    font-size: 14px;
+}
+
+/* 7. Pagination Styles */
+#history-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.history-page-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background-color: #f0f0f0;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Prompt', sans-serif;
+}
+
+.history-page-btn:hover {
+    background-color: #e0e0e0;
+}
+
+.history-page-btn.active {
+    background-color: #1976d2;
+    color: white;
+}
+
+.history-page-btn.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* 8. Game Details Modal */
+.game-details-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.game-details-modal {
+    background-color: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* 9. Score Display Components */
+.score-display {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 15px;
+    background-color: rgba(25, 118, 210, 0.1);
+    color: #1976d2;
+    font-weight: 600;
+}
+
+.player-name {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 0;
+    color: #333;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-path {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.category-segment {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: #f0f7ff;
+    color: #1976d2;
+    font-size: 13px;
+    font-weight: 500;
+    margin-right: 3px;
+}
+
+.date-time {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+}
+
+.date-display {
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.time-display {
+    color: #757575;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+/* 10. Delete Button Styles */
+.delete-history-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 13px;
+}
+
+.clear-all-history-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    margin-left: auto;
+}
+
+/* 11. Responsive Design */
+@media (max-width: 768px) {
+    .category-header {
+        padding: 10px;
+    }
+    
+    .category-actions {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .confirm-dialog {
+        width: 90%;
+        max-width: 400px;
+    }
+    
+    .confirm-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .filter-row {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 12px;
+    }
+    
+    .filter-label {
+        margin-right: 0;
+        margin-bottom: 8px;
+        min-width: auto;
+    }
+    
+    .admin-ui-container {
+        top: auto;
+        bottom: 5px;
+        right: 10px;
+        gap: 6px;
+    }
+    
+    .admin-mode-indicator {
+        display: none;
+    }
+    
+    .admin-logout-btn {
+        padding: 3px 6px;
+        font-size: 9px;
+        border-radius: 8px;
+    }
+}
