@@ -543,16 +543,7 @@ function initHistorySystem() {
     
     // อัพเดตตัวกรองหมวดหมู่จากโครงสร้างหมวดหมู่ที่มีอยู่
     updateHistoryCategoryFilters();
-    
-    // เพิ่มปุ่มลบประวัติทั้งหมดในส่วนหัวของหน้าประวัติ
-    addClearAllHistoryButton();
-    
-    // เพิ่มสไตล์สำหรับตารางประวัติการเล่น
-    addHistoryTableStyles();
-    
-    // เพิ่มสไตล์สำหรับปุ่มลบและหน้าต่างยืนยัน
-    addHistoryDeleteStyles();
-    
+        
     // ตั้งค่า event listeners สำหรับปุ่มต่างๆ
     setupHistoryEventListeners();
     
@@ -909,453 +900,6 @@ async function performClearAllHistory() {
     }
 }
 
-// ฟังก์ชันเพิ่มปุ่มลบประวัติทั้งหมดในส่วนหัวของหน้าประวัติ
-function addClearAllHistoryButton() {
-    const historySection = document.querySelector('.history-section');
-    if (!historySection) return;
-    
-    const sectionHeader = historySection.querySelector('.section-header');
-    if (!sectionHeader) return;
-    
-    // ตรวจสอบว่ามีปุ่มลบทั้งหมดอยู่แล้วหรือไม่
-    if (sectionHeader.querySelector('#clear-all-history')) return;
-    
-    // สร้างปุ่มลบประวัติทั้งหมด
-    const clearAllBtn = document.createElement('button');
-    clearAllBtn.id = 'clear-all-history';
-    clearAllBtn.className = 'delete-btn clear-all-history-btn';
-    clearAllBtn.innerHTML = 'ลบประวัติทั้งหมด';
-    clearAllBtn.addEventListener('click', confirmClearAllHistory);
-    
-    // เพิ่มปุ่มเข้าไปในส่วนหัว
-    sectionHeader.appendChild(clearAllBtn);
-}
-
-// เพิ่ม CSS สำหรับสไตล์ของปุ่มลบและหน้าต่างยืนยัน
-function addHistoryDeleteStyles() {
-    // ตรวจสอบว่ามี style อยู่แล้วหรือไม่
-    if (document.getElementById('history-delete-styles')) return;
-    
-    const styleElement = document.createElement('style');
-    styleElement.id = 'history-delete-styles';
-    styleElement.textContent = `
-        /* สไตล์ปุ่มลบในตาราง */
-        .delete-history-btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 13px;
-        }
-        
-        .delete-history-btn:hover {
-            background-color: #d32f2f;
-            transform: translateY(-2px);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* สไตล์ปุ่มลบทั้งหมด */
-        .clear-all-history-btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: all 0.2s ease;
-            margin-left: auto;
-        }
-        
-        .clear-all-history-btn:hover {
-            background-color: #d32f2f;
-            transform: translateY(-2px);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-        }
-        
-        /* สไตล์หน้าต่างยืนยันการลบ */
-        .confirm-dialog-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        
-        .confirm-dialog {
-            background-color: white;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            overflow: hidden;
-        }
-        
-        .confirm-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 20px;
-            background-color: #f44336;
-            color: white;
-        }
-        
-        .confirm-header h3 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 500;
-        }
-        
-        .confirm-header .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0;
-        }
-        
-        .confirm-body {
-            padding: 20px;
-        }
-        
-        .confirm-body p {
-            margin: 10px 0;
-            line-height: 1.5;
-        }
-        
-        .warning-text {
-            color: #f44336;
-        }
-        
-        .confirm-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 15px 20px;
-            background-color: #f5f5f5;
-        }
-        
-        .confirm-delete-btn {
-            background-color: #f44336;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .confirm-delete-btn:hover {
-            background-color: #d32f2f;
-        }
-        
-        .cancel-btn {
-            background-color: #e0e0e0;
-            color: #333;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .cancel-btn:hover {
-            background-color: #d5d5d5;
-        }
-        
-        /* ปรับการแสดงผลบนมือถือ */
-        @media (max-width: 768px) {
-            .confirm-actions {
-                flex-direction: column;
-            }
-            
-            .confirm-delete-btn, .cancel-btn {
-                width: 100%;
-                margin-bottom: 8px;
-            }
-            
-            .action-cell {
-                text-align: center;
-            }
-        }
-    `;
-    
-    document.head.appendChild(styleElement);
-}
-
-// ฟังก์ชันปรับแต่งสไตล์ตารางประวัติการเล่น
-function addHistoryTableStyles() {
-    // ตรวจสอบว่ามี style อยู่แล้วหรือไม่
-    if (document.getElementById('history-table-styles')) return;
-    
-    const styleElement = document.createElement('style');
-    styleElement.id = 'history-table-styles';
-    styleElement.textContent = `
-
-        /* ปรับปรุงส่วนหัวของหน้าประวัติการเล่น */
-        .section-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .section-title-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .total-history-count {
-            font-size: 14px;
-            color: #666;
-            background-color: #f0f7ff;
-            padding: 4px 12px;
-            border-radius: 16px;
-            border: 1px solid rgba(25, 118, 210, 0.2);
-            font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-        }
-
-        .items-per-page-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background-color: #f8f9fa;
-            padding: 6px 12px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-        }
-                        
-        .history-table tbody tr {
-            border-bottom: 1px solid #f0f0f0;
-            transition: background-color 0.2s ease;
-        }
-        
-        .history-table tbody tr:last-child {
-            border-bottom: none;
-        }
-        
-        .history-table tbody tr:hover {
-            background-color: #f5f9ff;
-        }
-        
-        .history-table td {
-            padding: 15px 20px;
-            color: #333;
-            font-size: 14px;
-            vertical-align: middle;
-        }
-        
-        /* กำหนดความกว้างของแต่ละคอลัมน์ - ปรับความกว้างคอลัมน์ */
-        .history-table th:nth-child(1), 
-        .history-table td:nth-child(1) {
-            width: 8%;
-            text-align: center;
-            min-width: 50px;
-            max-width: 60px;
-        }
-        
-        /* ปรับความกว้างช่องชื่อผู้เล่น - ลดลงจาก 20% เหลือ 15% */
-        .history-table th:nth-child(2), 
-        .history-table td:nth-child(2) {
-            width: 15%;
-            min-width: 100px;
-            max-width: 130px;
-        }
-        
-        /* เพิ่มสไตล์สำหรับช่องชื่อผู้เล่น */
-        .history-table td:nth-child(2) {
-            font-weight: 500;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        .history-table th:nth-child(3), 
-        .history-table td:nth-child(3) {
-            width: 15%;
-            text-align: center;
-            min-width: 100px;
-        }
-        
-        /* เพิ่มพื้นที่ให้กับช่องหมวดหมู่ */
-        .history-table th:nth-child(4), 
-        .history-table td:nth-child(4) {
-            width: 40%;
-            min-width: 200px;
-        }
-        
-        /* คอลัมน์วันที่และเวลา */
-        .history-table th:nth-child(5), 
-        .history-table td:nth-child(5) {
-            width: 12%;
-            white-space: nowrap;
-            min-width: 100px;
-            max-width: 120px;
-        }
-        
-        /* คอลัมน์การจัดการ */
-.history-table th:nth-child(6), 
-.history-table td:nth-child(6) {
-    width: 12%;
-    text-align: center;
-    min-width: 80px;
-    max-width: 100px;
-}
-        
-        /* สไตล์สำหรับแสดงคะแนนให้ดูดีขึ้น */
-        .history-table .score-display {
-            display: inline-block;
-            padding: 5px 10px;
-            border-radius: 15px;
-            background-color: rgba(25, 118, 210, 0.1);
-            color: #1976d2;
-            font-weight: 600;
-        }
-        
-        /* สไตล์สำหรับแสดงชื่อผู้เล่น */
-        .history-table .player-name {
-            display: inline-flex;
-            align-items: center;
-            padding: 2px 0;
-            color: #333;
-            max-width: 100%;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-        
-        /* สไตล์สำหรับแสดงหมวดหมู่ให้ดูดีขึ้น */
-        .history-table .category-path {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 5px;
-        }
-        
-        .history-table .category-segment {
-            display: inline-block;
-            padding: 3px 8px;
-            border-radius: 12px;
-            background-color: #f0f7ff;
-            color: #1976d2;
-            font-size: 13px;
-            font-weight: 500;
-            margin-right: 3px;
-        }
-        
-        .history-table .category-segment:first-child {
-            background-color: rgba(25, 118, 210, 0.15);
-            font-weight: 600;
-        }
-        
-        .history-table .category-segment:last-child {
-            background-color: #e8f5e9;
-            color: #4caf50;
-        }
-        
-        /* ปรับปรุงการแสดงวันที่และเวลาให้กระชับ */
-        .history-table .date-time {
-            display: flex;
-            flex-direction: column;
-            gap: 2px;
-            font-size: 13px;
-        }
-        
-        .history-table .date-display {
-            font-weight: 500;
-            white-space: nowrap;
-        }
-        
-        .history-table .time-display {
-            color: #757575;
-            font-size: 12px;
-            white-space: nowrap;
-        }
-        
-        /* ปรับการแสดงผลบนมือถือ */
-        @media (max-width: 768px) {
-            .history-table {
-                border-radius: 0;
-            }
-            
-            .history-table th, 
-            .history-table td {
-                padding: 10px 8px;
-                font-size: 13px;
-            }
-            
-            .history-table th:nth-child(1), 
-            .history-table td:nth-child(1) {
-                width: 40px;
-                min-width: 40px;
-                max-width: 40px;
-                padding-left: 8px;
-                padding-right: 8px;
-            }
-            
-            /* ปรับช่องชื่อผู้เล่นบนมือถือ */
-            .history-table th:nth-child(2), 
-            .history-table td:nth-child(2) {
-                min-width: 80px;
-                max-width: 100px;
-            }
-            
-            .history-table th:nth-child(5), 
-            .history-table td:nth-child(5) {
-                min-width: 80px;
-                max-width: 90px;
-            }
-            
-            .history-table th:nth-child(6), 
-            .history-table td:nth-child(6) {
-                width: 50px;
-                min-width: 50px;
-                max-width: 50px;
-                padding-left: 5px;
-                padding-right: 5px;
-            }
-            
-            /* ปรับรูปแบบการแสดงวันที่/เวลาบนมือถือ */
-            .history-table .date-time {
-                font-size: 12px;
-            }
-            
-            .history-table .date-display,
-            .history-table .time-display {
-                font-size: 11px;
-            }
-        }
-/* แก้ไขการแสดงผลส่วนหัว */
-.section-title-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.total-history-count {
-    white-space: nowrap;
-    flex-shrink: 0;
-}
-    `;
-    
-    document.head.appendChild(styleElement);
-}
-
 function updateHistoryFilterSection() {
     const filterForm = document.querySelector('.filter-form');
     if (!filterForm) return;
@@ -1424,248 +968,6 @@ function updateHistoryFilterSection() {
             </div>
         </div>
     `;
-    
-    // เพิ่ม CSS สำหรับตัวกรองแบบใหม่
-    const style = document.createElement('style');
-    style.textContent = `
-        /* สไตล์หลักของฟอร์มกรอง */
-        .filter-form {
-            background-color: #f9fbff;
-            border-radius: 10px;
-            padding: 16px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            border: 1px solid #e0e7f4;
-            margin-top: 15px;
-        }
-        
-        .filter-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-        
-        /* แถวของแต่ละส่วนตัวกรอง */
-        .filter-row {
-            display: flex;
-            margin-bottom: 2px;
-        }
-        
-        /* กลุ่มตัวกรอง */
-        .filter-group {
-            display: flex;
-            align-items: center;
-            width: 100%;
-            background-color: white;
-            border-radius: 8px;
-            padding: 10px 15px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-        }
-        
-        /* ป้ายกำกับตัวกรอง */
-        .filter-label {
-            font-size: 14px;
-            font-weight: 500;
-            color: #485460;
-            margin-right: 15px;
-            min-width: 80px;
-        }
-        
-        /* ส่วนตัวกรองวันที่ */
-        .date-inputs {
-            display: flex;
-            align-items: center;
-            flex: 1;
-            gap: 10px;
-        }
-        
-        .date-field {
-            flex: 1;
-        }
-        
-        .date-separator {
-            color: #9aa5b1;
-            font-weight: 500;
-            margin: 0 5px;
-        }
-        
-        .date-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #d0d9e4;
-            border-radius: 6px;
-            font-size: 14px;
-            background-color: #f8f9fb;
-            transition: all 0.2s ease;
-        }
-        
-        .date-input:focus {
-            border-color: #4791db;
-            background-color: white;
-            box-shadow: 0 0 0 2px rgba(71, 145, 219, 0.15);
-            outline: none;
-        }
-        
-        /* ส่วนค้นหาชื่อผู้เล่น */
-        .search-field {
-            position: relative;
-            flex: 1;
-        }
-        
-        .search-input {
-            width: 100%;
-            padding: 8px 12px;
-            padding-right: 35px; /* ให้พื้นที่สำหรับไอคอนค้นหา */
-            border: 1px solid #d0d9e4;
-            border-radius: 6px;
-            font-size: 14px;
-            background-color: #f8f9fb;
-            transition: all 0.2s ease;
-        }
-        
-        .search-input:focus {
-            border-color: #4791db;
-            background-color: white;
-            box-shadow: 0 0 0 2px rgba(71, 145, 219, 0.15);
-            outline: none;
-        }
-        
-        .search-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #9aa5b1;
-            font-size: 14px;
-        }
-        
-        /* ส่วนกรองตามหมวดหมู่ */
-        .category-selects {
-            display: flex;
-            flex: 1;
-            gap: 10px;
-        }
-        
-        .select-field {
-            position: relative;
-            flex: 1;
-        }
-        
-        .filter-select {
-            width: 100%;
-            padding: 8px 12px;
-            padding-right: 30px; /* ให้พื้นที่สำหรับลูกศร */
-            border: 1px solid #d0d9e4;
-            border-radius: 6px;
-            font-size: 14px;
-            background-color: #f8f9fb;
-            appearance: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .filter-select:focus {
-            border-color: #4791db;
-            background-color: white;
-            box-shadow: 0 0 0 2px rgba(71, 145, 219, 0.15);
-            outline: none;
-        }
-        
-        .filter-select:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            background-color: #f0f2f5;
-        }
-        
-        .select-arrow {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 0;
-            height: 0;
-            border-left: 5px solid transparent;
-            border-right: 5px solid transparent;
-            border-top: 5px solid #9aa5b1;
-            pointer-events: none;
-        }
-        
-        /* ปุ่มกระทำ */
-        .filter-actions-row {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 5px;
-        }
-        
-        .filter-button {
-            padding: 8px 20px;
-            border: none;
-            border-radius: 6px;
-            font-size: 14px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .primary-button {
-            background-color: #1976d2;
-            color: white;
-            box-shadow: 0 2px 4px rgba(25, 118, 210, 0.25);
-        }
-        
-        .primary-button:hover {
-            background-color: #1565c0;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
-        }
-        
-        .secondary-button {
-            background-color: #e8eef7;
-            color: #485460;
-        }
-        
-        .secondary-button:hover {
-            background-color: #d9e2f1;
-            transform: translateY(-1px);
-        }
-        
-        /* ปรับแต่งสำหรับอุปกรณ์มือถือ */
-        @media (max-width: 768px) {
-            .filter-form {
-                padding: 12px;
-            }
-            
-            .filter-group {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 12px;
-            }
-            
-            .filter-label {
-                margin-right: 0;
-                margin-bottom: 8px;
-                min-width: auto;
-            }
-            
-            .date-inputs,
-            .category-selects {
-                flex-direction: column;
-                width: 100%;
-                gap: 8px;
-            }
-            
-            .filter-actions-row {
-                flex-direction: column;
-                margin-top: 8px;
-            }
-            
-            .filter-button {
-                width: 100%;
-            }
-        }
-    `;
-    
-    document.head.appendChild(style);
     
     // อัพเดตตัวกรองหมวดหมู่
     updateHistoryCategoryFilters();
@@ -1782,62 +1084,48 @@ function setupCategoryFilterListeners() {
     const sub2CategorySelect = document.getElementById('filter-history-sub2-category');
     
     if (mainCategorySelect) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newMainCategorySelect = mainCategorySelect.cloneNode(true);
-        if (mainCategorySelect.parentNode) {
-            mainCategorySelect.parentNode.replaceChild(newMainCategorySelect, mainCategorySelect);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newMainCategorySelect.addEventListener('change', function() {
+        const mainHandler = function() {
             const mainCategory = this.value;
             
-            // อัพเดตหมวดหมู่ย่อย 1
-            updateHistorySub1Category(mainCategory);
+            sub1CategorySelect.value = '';
+            sub2CategorySelect.value = '';
             
-            // รีเซ็ตหมวดหมู่ย่อย 2
-            if (sub2CategorySelect) {
+            sub2CategorySelect.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 2</option>';
+            sub2CategorySelect.disabled = true;
+            
+            if (mainCategory) {
+                updateHistorySub1Category(mainCategory);
+            } else {
+                sub1CategorySelect.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 1</option>';
+                sub1CategorySelect.disabled = true;
+            }
+            
+            filterGameHistory();
+        };
+        EventManager.add(mainCategorySelect, 'change', mainHandler, 'filter-main-category-change');
+    }
+    
+    if (sub1CategorySelect) {
+        const sub1Handler = function() {
+            const mainCategory = document.getElementById('filter-history-main-category').value;
+            const sub1Category = this.value;
+            
+            sub2CategorySelect.value = '';
+            
+            if (mainCategory && sub1Category) {
+                updateHistorySub2Category(mainCategory, sub1Category);
+            } else {
                 sub2CategorySelect.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 2</option>';
                 sub2CategorySelect.disabled = true;
             }
             
-            // ใช้ตัวกรองใหม่ทันที
             filterGameHistory();
-        });
-    }
-    
-    if (sub1CategorySelect) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newSub1CategorySelect = sub1CategorySelect.cloneNode(true);
-        if (sub1CategorySelect.parentNode) {
-            sub1CategorySelect.parentNode.replaceChild(newSub1CategorySelect, sub1CategorySelect);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newSub1CategorySelect.addEventListener('change', function() {
-            const mainCategory = document.getElementById('filter-history-main-category').value;
-            const sub1Category = this.value;
-            
-            // อัพเดตหมวดหมู่ย่อย 2
-            updateHistorySub2Category(mainCategory, sub1Category);
-            
-            // ใช้ตัวกรองใหม่ทันที
-            filterGameHistory();
-        });
+        };
+        EventManager.add(sub1CategorySelect, 'change', sub1Handler, 'filter-sub1-category-change');
     }
     
     if (sub2CategorySelect) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newSub2CategorySelect = sub2CategorySelect.cloneNode(true);
-        if (sub2CategorySelect.parentNode) {
-            sub2CategorySelect.parentNode.replaceChild(newSub2CategorySelect, sub2CategorySelect);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newSub2CategorySelect.addEventListener('change', function() {
-            // ใช้ตัวกรองใหม่ทันที
-            filterGameHistory();
-        });
+        EventManager.add(sub2CategorySelect, 'change', filterGameHistory, 'filter-sub2-category-change');
     }
 }
 
@@ -1845,106 +1133,71 @@ function setupCategoryFilterListeners() {
 function setupHistoryEventListeners() {
     const applyFilterBtn = document.getElementById('apply-history-filter');
     if (applyFilterBtn) {
-        // ลบ event listener เดิม (ถ้ามี) และเพิ่มใหม่
-        const newApplyFilterBtn = applyFilterBtn.cloneNode(true);
-        if (applyFilterBtn.parentNode) {
-            applyFilterBtn.parentNode.replaceChild(newApplyFilterBtn, applyFilterBtn);
-        }
-        
-        newApplyFilterBtn.addEventListener('click', function() {
-            try {
-                filterGameHistory();
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการกรองประวัติ:", error);
-                alert("เกิดข้อผิดพลาดในการกรองประวัติ โปรดลองใหม่อีกครั้ง");
-            }
-        });
-        console.log("ตั้งค่า event listener สำหรับปุ่มค้นหาประวัติเรียบร้อยแล้ว");
+        EventManager.add(applyFilterBtn, 'click', filterGameHistory, 'apply-history-filter-click');
     }
     
     const resetFilterBtn = document.getElementById('reset-history-filter');
     if (resetFilterBtn) {
-        // ลบ event listener เดิม (ถ้ามี) และเพิ่มใหม่
-        const newResetFilterBtn = resetFilterBtn.cloneNode(true);
-        if (resetFilterBtn.parentNode) {
-            resetFilterBtn.parentNode.replaceChild(newResetFilterBtn, resetFilterBtn);
-        }
-        
-        newResetFilterBtn.addEventListener('click', function() {
-            try {
-                // รีเซ็ตฟอร์มกรอง
-                const fromDateInput = document.getElementById('filter-date-from');
-                const toDateInput = document.getElementById('filter-date-to');
-                const playerNameInput = document.getElementById('filter-player-name');
-                const mainCategorySelect = document.getElementById('filter-history-main-category');
-                const sub1CategorySelect = document.getElementById('filter-history-sub1-category');
-                const sub2CategorySelect = document.getElementById('filter-history-sub2-category');
-                
-                if (fromDateInput) fromDateInput.value = '';
-                if (toDateInput) toDateInput.value = '';
-                if (playerNameInput) playerNameInput.value = '';
-                if (mainCategorySelect) mainCategorySelect.value = '';
-                if (sub1CategorySelect) {
-                    sub1CategorySelect.value = '';
-                    sub1CategorySelect.disabled = true;
-                }
-                if (sub2CategorySelect) {
-                    sub2CategorySelect.value = '';
-                    sub2CategorySelect.disabled = true;
-                }
-                
-                // รีเซ็ตการกรอง
-                filteredHistory = [...gameHistory];
-                currentHistoryPage = 1;
-                
-                // แสดงผลใหม่
-                displayGameHistory();
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการรีเซ็ตตัวกรอง:", error);
+        const resetHandler = function() {
+            // รีเซ็ตฟอร์มกรอง
+            const fromDateInput = document.getElementById('filter-date-from');
+            const toDateInput = document.getElementById('filter-date-to');
+            const playerNameInput = document.getElementById('filter-player-name');
+            const mainCategorySelect = document.getElementById('filter-history-main-category');
+            const sub1CategorySelect = document.getElementById('filter-history-sub1-category');
+            const sub2CategorySelect = document.getElementById('filter-history-sub2-category');
+            
+            if (fromDateInput) fromDateInput.value = '';
+            if (toDateInput) toDateInput.value = '';
+            if (playerNameInput) playerNameInput.value = '';
+            if (mainCategorySelect) mainCategorySelect.value = '';
+            if (sub1CategorySelect) {
+                sub1CategorySelect.value = '';
+                sub1CategorySelect.disabled = true;
             }
-        });
-        console.log("ตั้งค่า event listener สำหรับปุ่มรีเซ็ตการกรองเรียบร้อยแล้ว");
+            if (sub2CategorySelect) {
+                sub2CategorySelect.value = '';
+                sub2CategorySelect.disabled = true;
+            }
+            
+            // รีเซ็ตการกรอง
+            filteredHistory = [...gameHistory];
+            currentHistoryPage = 1;
+            
+            // แสดงผลใหม่
+            displayGameHistory();
+        };
+        EventManager.add(resetFilterBtn, 'click', resetHandler, 'reset-history-filter-click');
     }
     
-    // เพิ่ม event listener สำหรับช่องค้นหาชื่อผู้เล่น (กรองทันทีเมื่อพิมพ์)
+    // เพิ่ม event listener สำหรับช่องค้นหาชื่อผู้เล่น
     const playerNameInput = document.getElementById('filter-player-name');
     if (playerNameInput) {
         let searchTimeout = null;
-        playerNameInput.addEventListener('input', function() {
-            // ยกเลิกตัวจับเวลาเดิม (ถ้ามี)
+        const searchHandler = function() {
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
             }
             
-            // ตั้งตัวจับเวลาใหม่เพื่อรอให้หยุดพิมพ์ก่อนค้นหา
             searchTimeout = setTimeout(() => {
                 filterGameHistory();
                 searchTimeout = null;
-            }, 500); // รอ 500ms หลังจากหยุดพิมพ์
-        });
+            }, 500);
+        };
+        EventManager.add(playerNameInput, 'input', searchHandler, 'filter-player-name-input');
     }
     
     const historyPerPageSelect = document.getElementById('history-per-page');
     if (historyPerPageSelect) {
-        // ลบ event listener เดิม (ถ้ามี) และเพิ่มใหม่
-        const newHistoryPerPageSelect = historyPerPageSelect.cloneNode(true);
-        if (historyPerPageSelect.parentNode) {
-            historyPerPageSelect.parentNode.replaceChild(newHistoryPerPageSelect, historyPerPageSelect);
-        }
-        
-        newHistoryPerPageSelect.addEventListener('change', function() {
-            try {
-                historyItemsPerPage = parseInt(this.value);
-                if (isNaN(historyItemsPerPage) || historyItemsPerPage < 1) {
-                    historyItemsPerPage = 10; // ค่าเริ่มต้นถ้าไม่ถูกต้อง
-                }
-                currentHistoryPage = 1;
-                displayGameHistory();
-            } catch (error) {
-                console.error("เกิดข้อผิดพลาดในการเปลี่ยนจำนวนรายการต่อหน้า:", error);
+        const perPageHandler = function() {
+            historyItemsPerPage = parseInt(this.value);
+            if (isNaN(historyItemsPerPage) || historyItemsPerPage < 1) {
+                historyItemsPerPage = 10;
             }
-        });
-        console.log("ตั้งค่า event listener สำหรับตัวเลือกจำนวนรายการต่อหน้าเรียบร้อยแล้ว");
+            currentHistoryPage = 1;
+            displayGameHistory();
+        };
+        EventManager.add(historyPerPageSelect, 'change', perPageHandler, 'history-per-page-change');
     }
 }
 
@@ -1969,7 +1222,9 @@ async function initializeApp() {
     initQuestionSystem();
     
     // 6. ตั้งค่าระบบประวัติการเล่น
+    if (!isEventListenersSetup) {
     initHistorySystem();
+}
     
     // 7. ตั้งค่าระบบเล่นเกม
     initPlaySystem();
@@ -4074,64 +3329,31 @@ function updatePlaySystem() {
     // ปุ่มเริ่มเล่น
     const startQuizBtn = document.getElementById('start-quiz');
     if (startQuizBtn) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newStartQuizBtn = startQuizBtn.cloneNode(true);
-        if (startQuizBtn.parentNode) {
-            startQuizBtn.parentNode.replaceChild(newStartQuizBtn, startQuizBtn);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newStartQuizBtn.addEventListener('click', startQuiz);
+        EventManager.add(startQuizBtn, 'click', startQuiz, 'start-quiz-click');
     }
     
     // ปุ่มเล่นอีกครั้ง
     const restartQuizBtn = document.getElementById('restart-quiz');
     if (restartQuizBtn) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newRestartQuizBtn = restartQuizBtn.cloneNode(true);
-        if (restartQuizBtn.parentNode) {
-            restartQuizBtn.parentNode.replaceChild(newRestartQuizBtn, restartQuizBtn);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newRestartQuizBtn.addEventListener('click', restartQuiz);
+        EventManager.add(restartQuizBtn, 'click', restartQuiz, 'restart-quiz-click');
     }
     
-    // อัพเดตปุ่มต่างๆ ในหน้าเล่นเกม
+    // ปุ่มส่งคำตอบ
     const submitAnswerBtn = document.getElementById('submit-answer');
     if (submitAnswerBtn) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newSubmitAnswerBtn = submitAnswerBtn.cloneNode(true);
-        if (submitAnswerBtn.parentNode) {
-            submitAnswerBtn.parentNode.replaceChild(newSubmitAnswerBtn, submitAnswerBtn);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newSubmitAnswerBtn.addEventListener('click', submitAnswer);
+        EventManager.add(submitAnswerBtn, 'click', submitAnswer, 'submit-answer-click');
     }
     
+    // ปุ่มคำถามถัดไป
     const nextQuestionBtn = document.getElementById('next-question');
     if (nextQuestionBtn) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newNextQuestionBtn = nextQuestionBtn.cloneNode(true);
-        if (nextQuestionBtn.parentNode) {
-            nextQuestionBtn.parentNode.replaceChild(newNextQuestionBtn, nextQuestionBtn);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newNextQuestionBtn.addEventListener('click', showNextQuestion);
+        EventManager.add(nextQuestionBtn, 'click', showNextQuestion, 'next-question-click');
     }
     
+    // ปุ่มคำถามก่อนหน้า
     const prevQuestionBtn = document.getElementById('prev-question');
     if (prevQuestionBtn) {
-        // ลบ event listener เดิม (ถ้ามี)
-        const newPrevQuestionBtn = prevQuestionBtn.cloneNode(true);
-        if (prevQuestionBtn.parentNode) {
-            prevQuestionBtn.parentNode.replaceChild(newPrevQuestionBtn, prevQuestionBtn);
-        }
-        
-        // เพิ่ม event listener ใหม่
-        newPrevQuestionBtn.addEventListener('click', showPrevQuestion);
+        EventManager.add(prevQuestionBtn, 'click', showPrevQuestion, 'prev-question-click');
     }
     
     console.log("อัพเดตระบบเล่นเกมเรียบร้อยแล้ว");
@@ -4689,182 +3911,6 @@ function updatePlaySystemWithCategories() {
                 </div>
             `;
 
-            // เพิ่ม CSS สำหรับสไตล์ใหม่ (คงไว้เหมือนเดิม)
-            const styleElement = document.createElement('style');
-            styleElement.textContent = `
-    .category-selection-container {
-        background: linear-gradient(145deg, #ffffff, #f0f7ff);
-        border-radius: 16px;
-        box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
-        padding: 25px;
-        margin: 0 auto 25px;
-        border: 1px solid rgba(25, 118, 210, 0.1);
-        max-width: 500px; /* จำกัดความกว้างสูงสุด */
-    }
-        
-    .category-selection-header {
-        text-align: center;
-        margin-bottom: 20px; /* ปรับลดขนาดช่องว่าง */
-    }
-    
-    .category-selection-header h3 {
-        color: #1976d2;
-        font-size: 20px; /* ลดขนาดฟอนต์ลง */
-        font-weight: 600;
-        margin-bottom: 8px;
-        position: relative;
-        display: inline-block;
-    }
-    
-    .category-selection-header h3:after {
-        content: '';
-        position: absolute;
-        bottom: -6px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 60px;
-        height: 3px;
-        background: linear-gradient(90deg, #1976d2, #4791db);
-        border-radius: 3px;
-    }
-    
-    .category-selection-header p {
-        color: #555;
-        font-size: 15px; /* ลดขนาดฟอนต์ลง */
-        margin-top: 12px;
-    }
-    
-    .category-selection-form {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 15px; /* ลดช่องว่างระหว่างฟิลด์ */
-    }
-    
-    .category-field {
-        margin-bottom: 3px; /* ลดช่องว่าง */
-    }
-    
-    .category-field label {
-        display: block;
-        font-size: 14px;
-        font-weight: 600;
-        color: #1976d2;
-        margin-bottom: 6px; /* ลดช่องว่าง */
-        transition: all 0.2s ease;
-    }
-    
-    .select-wrapper {
-        position: relative;
-    }
-    
-    .select-wrapper select {
-        width: 100%;
-        padding: 10px 14px; /* ลดขนาด padding */
-        border: 2px solid #e0e0e0;
-        border-radius: 10px; /* ลดความโค้ง */
-        background-color: white;
-        font-size: 15px; /* ลดขนาดฟอนต์ */
-        font-weight: 500;
-        color: #333;
-        appearance: none;
-        transition: all 0.3s ease;
-        cursor: pointer;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    }
-    
-    .select-wrapper select:focus {
-        border-color: #1976d2;
-        box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
-        outline: none;
-    }
-    
-    .select-wrapper select:hover:not(:disabled) {
-        border-color: #1976d2;
-        background-color: #f8f9ff;
-    }
-    
-    .select-wrapper select:disabled {
-        background-color: #f5f5f5;
-        color: #999;
-        cursor: not-allowed;
-    }
-    
-    .select-arrow {
-        position: absolute;
-        top: 50%;
-        right: 14px;
-        transform: translateY(-50%);
-        width: 0;
-        height: 0;
-        border-left: 5px solid transparent;
-        border-right: 5px solid transparent;
-        border-top: 5px solid #1976d2;
-        pointer-events: none;
-        transition: all 0.2s ease;
-    }
-    
-    .select-wrapper:hover .select-arrow {
-        border-top-color: #115293;
-    }
-    
-    #start-quiz {
-        background: linear-gradient(45deg, #1976d2, #4791db);
-        color: white;
-        border: none;
-        padding: 12px 25px; /* ลดขนาด padding */
-        font-size: 16px; /* ลดขนาดฟอนต์ */
-        font-weight: 600;
-        border-radius: 30px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: block;
-        margin: 20px auto 0; /* ลดขนาดช่องว่าง */
-        box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
-        letter-spacing: 0.5px;
-    }
-    
-    #start-quiz:hover {
-        background: linear-gradient(45deg, #115293, #1976d2);
-        transform: translateY(-2px); /* ลดการเคลื่อนไหว */
-        box-shadow: 0 6px 15px rgba(25, 118, 210, 0.4);
-    }
-    
-    #start-quiz:active {
-        transform: translateY(0);
-        box-shadow: 0 3px 8px rgba(25, 118, 210, 0.3);
-    }
-    
-    @media (max-width: 600px) {
-        .category-selection-container {
-            padding: 18px;
-            margin: 0 15px 20px;
-        }
-        
-        .category-selection-header h3 {
-            font-size: 18px;
-        }
-        
-        .category-selection-header p {
-            font-size: 14px;
-        }
-    }
-`;
-            
-            document.head.appendChild(styleElement);
-            
-            // แก้ไขสไตล์สำหรับกรอบเกมตอบคำถาม (คงไว้เหมือนเดิม)
-            const fixContainerStyle = document.createElement('style');
-            fixContainerStyle.textContent = `
-                .container {
-                transform: none !important;
-                transition: box-shadow 0.3s ease;
-                }
-                .container:hover {
-                transform: none !important;
-                }
-            `;
-            document.head.appendChild(fixContainerStyle);
-
             // ตรวจสอบว่ามีปุ่ม start-quiz หรือไม่
             const startButton = startScreen.querySelector('#start-quiz');
             if (startButton) {
@@ -5046,7 +4092,9 @@ function enableCategoryPlaySystem() {
     updatePlayMainCategorySelect();
     
     // ตั้งค่า event listeners สำหรับตัวเลือกหมวดหมู่
+    if (!isEventListenersSetup) {
     setupPlayCategoryListeners();
+}
     
     // อัพเดตตัวเลือกหมวดหมู่เมื่อมีการเปลี่ยนแปลงหมวดหมู่
     const oldUpdateCategoryUI = updateCategoryUI;
@@ -5071,15 +4119,13 @@ function setupPlayCategoryListeners() {
         return;
     }
     
-    // ตั้งค่า event listener สำหรับหมวดหมู่หลัก
-    playMainCategory.addEventListener('change', function() {
+    // Handler สำหรับหมวดหมู่หลัก
+    const mainHandler = function() {
         const mainCategory = this.value;
         
-        // รีเซ็ตค่าของ dropdown หมวดย่อย
         playSubCategory1.value = '';
         playSubCategory2.value = '';
         
-        // รีเซ็ตตัวเลือกหมวดย่อย 2
         playSubCategory2.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 2</option>';
         playSubCategory2.disabled = true;
         
@@ -5089,14 +4135,13 @@ function setupPlayCategoryListeners() {
             playSubCategory1.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 1</option>';
             playSubCategory1.disabled = true;
         }
-    });
+    };
     
-    // ตั้งค่า event listener สำหรับหมวดหมู่ย่อย 1
-    playSubCategory1.addEventListener('change', function() {
+    // Handler สำหรับหมวดหมู่ย่อย 1
+    const sub1Handler = function() {
         const mainCategory = playMainCategory.value;
         const subCategory1 = this.value;
         
-        // รีเซ็ตค่าของ dropdown หมวดย่อย 2
         playSubCategory2.value = '';
         
         if (mainCategory && subCategory1) {
@@ -5105,57 +4150,52 @@ function setupPlayCategoryListeners() {
             playSubCategory2.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 2</option>';
             playSubCategory2.disabled = true;
         }
-    });
+    };
     
-    // ตั้งค่า event listener สำหรับปุ่มเริ่มเล่น
-    const startQuizBtn = document.getElementById('start-quiz');
-    if (startQuizBtn) {
-        // ลบ event listeners เดิม (ถ้ามี)
-        const newStartQuiz = startQuizBtn.cloneNode(true);
-        if (startQuizBtn.parentNode) {
-            startQuizBtn.parentNode.replaceChild(newStartQuiz, startQuizBtn);
+    // Handler สำหรับปุ่มเริ่มเล่น
+    const startHandler = function() {
+        const mainCategory = document.getElementById('play-main-category').value;
+        const subCategory1 = document.getElementById('play-sub-category1').value;
+        const subCategory2 = document.getElementById('play-sub-category2').value;
+        
+        if (!mainCategory) {
+            alert('กรุณาเลือกหมวดหมู่หลัก');
+            return;
         }
         
-        // เพิ่ม event listener ใหม่
-        newStartQuiz.addEventListener('click', function() {
-            // ตรวจสอบการเลือกหมวดหมู่
-            const mainCategory = document.getElementById('play-main-category').value;
-            const subCategory1 = document.getElementById('play-sub-category1').value;
-            const subCategory2 = document.getElementById('play-sub-category2').value;
-            
-            if (!mainCategory) {
-                alert('กรุณาเลือกหมวดหมู่หลัก');
-                return;
-            }
-            
-            if (!subCategory1) {
-                alert('กรุณาเลือกหมวดหมู่ย่อย 1');
-                return;
-            }
-            
-            if (!subCategory2) {
-                alert('กรุณาเลือกหมวดหมู่ย่อย 2');
-                return;
-            }
-            
-            // กรองคำถามตามหมวดหมู่
-            currentGameQuestions = questions.filter(q => 
-                q.category && 
-                q.category.main === mainCategory && 
-                q.category.sub1 === subCategory1 && 
-                q.category.sub2 === subCategory2
-            );
-            
-            if (currentGameQuestions.length === 0) {
-                alert('ไม่พบคำถามในหมวดหมู่ที่เลือก');
-                return;
-            }
-            
-            console.log(`พบคำถามในหมวดหมู่ที่เลือก: ${currentGameQuestions.length} ข้อ`);
-            
-            // เริ่มเล่นเกม
-            startQuiz();
-        });
+        if (!subCategory1) {
+            alert('กรุณาเลือกหมวดหมู่ย่อย 1');
+            return;
+        }
+        
+        if (!subCategory2) {
+            alert('กรุณาเลือกหมวดหมู่ย่อย 2');
+            return;
+        }
+        
+        currentGameQuestions = questions.filter(q => 
+            q.category && 
+            q.category.main === mainCategory && 
+            q.category.sub1 === subCategory1 && 
+            q.category.sub2 === subCategory2
+        );
+        
+        if (currentGameQuestions.length === 0) {
+            alert('ไม่พบคำถามในหมวดหมู่ที่เลือก');
+            return;
+        }
+        
+        console.log(`พบคำถามในหมวดหมู่ที่เลือก: ${currentGameQuestions.length} ข้อ`);
+        startQuiz();
+    };
+    
+    // ใช้ Event Manager
+    EventManager.add(playMainCategory, 'change', mainHandler, 'play-main-category-change');
+    EventManager.add(playSubCategory1, 'change', sub1Handler, 'play-sub1-category-change');
+    
+    const startQuizBtn = document.getElementById('start-quiz');
+    if (startQuizBtn) {
+        EventManager.add(startQuizBtn, 'click', startHandler, 'play-start-quiz-click');
     }
     
     console.log("ตั้งค่าตัวฟังเหตุการณ์สำหรับตัวเลือกหมวดหมู่ในหน้าเล่นเกมเรียบร้อยแล้ว");
@@ -5774,135 +4814,6 @@ function setupCategoryFilter() {
         `;
         
         questionFilters.appendChild(categoryFilter);
-        
-        // เพิ่ม CSS สำหรับตัวกรอง
-        const style = document.createElement('style');
-        style.textContent = `
-            .section-header {
-                display: flex;
-                flex-wrap: wrap;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 20px;
-            }
-            
-            .question-filters {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 15px;
-                margin-top: 10px;
-            }
-            
-            .search-container {
-                position: relative;
-                flex-grow: 1;
-                max-width: 300px;
-            }
-            
-            .search-input {
-                width: 100%;
-                padding: 10px 35px 10px 15px;
-                border: 2px solid #e0e0e0;
-                border-radius: 8px;
-                font-size: 14px;
-                transition: all 0.3s ease;
-            }
-            
-            .search-input:focus {
-                border-color: #1976d2;
-                box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
-                outline: none;
-            }
-            
-            .search-icon {
-                position: absolute;
-                right: 10px;
-                top: 50%;
-                transform: translateY(-50%);
-                color: #757575;
-            }
-            
-            .category-filter-container {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 10px;
-                margin-top: 10px;
-                width: 100%;
-            }
-            
-            .filter-group {
-                position: relative;
-                min-width: 150px;
-                flex-grow: 1;
-            }
-            
-            .filter-select {
-                width: 100%;
-                padding: 8px 10px;
-                border: 2px solid #e0e0e0;
-                border-radius: 8px;
-                font-size: 14px;
-                background-color: white;
-                cursor: pointer;
-                appearance: none;
-                transition: all 0.3s ease;
-            }
-            
-            .filter-select:focus {
-                border-color: #1976d2;
-                box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.15);
-                outline: none;
-            }
-            
-            .filter-select:disabled {
-                background-color: #f5f5f5;
-                color: #757575;
-                cursor: not-allowed;
-            }
-            
-            .filter-btn {
-                padding: 8px 15px;
-                background-color: #f5f5f5;
-                border: 2px solid #e0e0e0;
-                border-radius: 8px;
-                font-size: 14px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                white-space: nowrap;
-                color: #000000;
-                font-weight: 500;
-            }
-            
-            .filter-btn:hover {
-                background-color: #e0e0e0;
-            }
-            
-            @media (max-width: 768px) {
-                .section-header {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-                
-                .question-filters {
-                    width: 100%;
-                    margin-top: 15px;
-                }
-                
-                .search-container {
-                    max-width: 100%;
-                    width: 100%;
-                }
-                
-                .category-filter-container {
-                    flex-direction: column;
-                }
-                
-                .filter-group {
-                    width: 100%;
-                }
-            }
-        `;
-        document.head.appendChild(style);
         
         // เพิ่มตัวเลือกหมวดหมู่หลัก
         const filterMainCategory = document.getElementById('filter-main-category');
@@ -7045,351 +5956,6 @@ async function deleteCategory(type, categoryName, mainCategory = null, subCatego
 // ฟังก์ชันเริ่มต้นระบบหมวดหมู่แบบใหม่
 async function initCategorySystemNew() {
     console.log("กำลังเริ่มต้นระบบหมวดหมู่...");
-
-// เพิ่ม CSS เข้าไปในหน้าเว็บ
-const styleElement = document.createElement('style');
-styleElement.textContent = `
-/* CSS สำหรับระบบจัดการหมวดหมู่รูปแบบใหม่ */
-.category-management-container {
-background: linear-gradient(145deg, #ffffff, #f0f7ff);
-border-radius: 16px;
-box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
-padding: 25px;
-margin: 30px auto;
-border: 1px solid rgba(25, 118, 210, 0.1);
-position: relative;
-}
-
-.category-tree-container {
-margin-top: 20px;
-max-height: 600px;
-overflow-y: auto;
-padding: 10px;
-background-color: #ffffff;
-border-radius: 8px;
-box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
-}
-
-.category-item {
-margin: 8px 0;
-background-color: #f8f9fa;
-border-radius: 8px;
-transition: all 0.2s ease;
-overflow: hidden;
-}
-
-.category-header {
-padding: 12px 15px;
-display: flex;
-align-items: center;
-cursor: pointer;
-position: relative;
-}
-
-.category-header:hover {
-background-color: #eef5ff;
-}
-
-.toggle-icon {
-margin-right: 10px;
-font-size: 12px;
-color: #1976d2;
-transition: transform 0.2s ease;
-}
-
-.category-name {
-flex-grow: 1;
-font-weight: 500;
-color: #333;
-}
-
-.question-count {
-margin-left: 5px;
-font-size: 14px;
-color: #666;
-}
-
-.category-actions {
-display: flex;
-gap: 5px;
-margin-left: 10px;
-z-index: 5;
-}
-
-.small-btn {
-font-size: 12px;
-padding: 4px 8px;
-border-radius: 4px;
-background-color: #f0f0f0;
-color: #333;
-border: none;
-cursor: pointer;
-transition: all 0.2s ease;
-}
-
-.small-btn:hover {
-transform: translateY(-2px);
-}
-
-.edit-btn.small-btn {
-background-color: #1976d2;
-color: white;
-}
-
-.edit-btn.small-btn:hover {
-background-color: #0d5ca0;
-}
-
-.delete-btn.small-btn {
-background-color: #f44336;
-color: white;
-}
-
-.delete-btn.small-btn:hover {
-background-color: #d32f2f;
-}
-
-.sub-categories {
-padding-left: 25px;
-background-color: #ffffff;
-border-left: 2px dashed rgba(25, 118, 210, 0.2);
-margin-left: 10px;
-}
-
-.sub-categories-2 {
-border-left: 2px dashed rgba(76, 175, 80, 0.2);
-}
-
-.main-category > .category-header {
-background-color: rgba(25, 118, 210, 0.1);
-border-left: 3px solid #1976d2;
-}
-
-.sub-category-1 > .category-header {
-background-color: rgba(25, 118, 210, 0.05);
-border-left: 3px solid #42a5f5;
-}
-
-.sub-category-2 > .category-header {
-background-color: rgba(76, 175, 80, 0.05);
-border-left: 3px solid #4caf50;
-}
-
-.add-category-btn {
-margin: 10px 0;
-padding-left: 25px;
-}
-
-.add-btn {
-background-color: #e8f5e9;
-color: #4caf50;
-border: 1px dashed #4caf50;
-padding: 8px 12px;
-border-radius: 6px;
-cursor: pointer;
-font-size: 14px;
-transition: all 0.2s ease;
-}
-
-.add-btn:hover {
-background-color: #c8e6c9;
-transform: translateY(-2px);
-}
-
-/* สไตล์สำหรับฟอร์ม */
-#category-form-container {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background-color: rgba(0, 0, 0, 0.5);
-display: none;
-justify-content: center;
-align-items: center;
-z-index: 1000;
-}
-
-.form-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px 20px;
-background-color: #1976d2;
-color: white;
-border-radius: 10px 10px 0 0;
-}
-
-.form-header h3 {
-margin: 0;
-font-size: 20px;
-font-weight: 500;
-}
-
-.form-body {
-padding: 20px;
-background-color: white;
-border-radius: 0 0 10px 10px;
-}
-
-.form-group {
-margin-bottom: 15px;
-}
-
-.form-group label {
-display: block;
-margin-bottom: 5px;
-font-weight: 500;
-color: #333;
-}
-
-.form-input {
-width: 100%;
-padding: 10px 12px;
-border: 2px solid #e0e0e0;
-border-radius: 6px;
-font-size: 16px;
-transition: all 0.3s ease;
-}
-
-.form-input:focus {
-border-color: #1976d2;
-box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
-outline: none;
-}
-
-.form-actions {
-display: flex;
-justify-content: flex-end;
-gap: 10px;
-margin-top: 20px;
-}
-
-.close-btn {
-background: none;
-border: none;
-color: white;
-font-size: 24px;
-cursor: pointer;
-padding: 0 5px;
-}
-
-.save-btn {
-background-color: #1976d2;
-color: white;
-border: none;
-padding: 8px 16px;
-border-radius: 6px;
-cursor: pointer;
-transition: all 0.2s ease;
-}
-
-.save-btn:hover {
-background-color: #1565c0;
-}
-
-.cancel-btn {
-background-color: #e0e0e0;
-color: #333;
-border: none;
-padding: 8px 16px;
-border-radius: 6px;
-cursor: pointer;
-transition: all 0.2s ease;
-}
-
-.cancel-btn:hover {
-background-color: #d5d5d5;
-}
-
-/* สไตล์สำหรับหน้าต่างยืนยัน */
-#category-confirm-container {
-position: fixed;
-top: 0;
-left: 0;
-width: 100%;
-height: 100%;
-background-color: rgba(0, 0, 0, 0.5);
-display: none;
-justify-content: center;
-align-items: center;
-z-index: 1000;
-}
-
-.confirm-dialog {
-width: 400px;
-background-color: white;
-border-radius: 10px;
-box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-overflow: hidden;
-}
-
-.confirm-header {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 15px 20px;
-background-color: #f44336;
-color: white;
-}
-
-.confirm-header h3 {
-margin: 0;
-font-size: 20px;
-font-weight: 500;
-}
-
-.confirm-body {
-padding: 20px;
-}
-
-.confirm-body p {
-margin: 0;
-line-height: 1.5;
-}
-
-.confirm-actions {
-display: flex;
-justify-content: flex-end;
-gap: 10px;
-padding: 15px 20px;
-background-color: #f5f5f5;
-}
-
-.warning-text {
-color: #f44336;
-}
-
-/* การปรับตัวสำหรับอุปกรณ์มือถือ */
-@media (max-width: 768px) {
-.category-management-container {
-padding: 15px;
-}
-
-.category-header {
-padding: 10px;
-}
-
-.confirm-dialog {
-width: 90%;
-max-width: 400px;
-}
-
-.category-actions {
-flex-direction: column;
-gap: 5px;
-}
-
-.form-actions {
-flex-direction: column;
-}
-
-.save-btn, .cancel-btn {
-width: 100%;
-}
-}
-`;
-document.head.appendChild(styleElement);
     
     try {
         // โหลดหมวดหมู่จาก Database
@@ -8150,16 +6716,6 @@ function showAdminNotification(message) {
         animation: slideDown 0.3s ease;
     `;
     notification.textContent = message;
-    
-    // เพิ่ม CSS animation
-    const style = document.createElement('style');
-    style.textContent = `
-        @keyframes slideDown {
-            from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-    `;
-    document.head.appendChild(style);
     
     // เพิ่มเข้าไปในหน้าเว็บ
     document.body.appendChild(notification);
