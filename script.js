@@ -1084,48 +1084,62 @@ function setupCategoryFilterListeners() {
     const sub2CategorySelect = document.getElementById('filter-history-sub2-category');
     
     if (mainCategorySelect) {
-        const mainHandler = function() {
+        // ลบ event listener เดิม (ถ้ามี)
+        const newMainCategorySelect = mainCategorySelect.cloneNode(true);
+        if (mainCategorySelect.parentNode) {
+            mainCategorySelect.parentNode.replaceChild(newMainCategorySelect, mainCategorySelect);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newMainCategorySelect.addEventListener('change', function() {
             const mainCategory = this.value;
             
-            sub1CategorySelect.value = '';
-            sub2CategorySelect.value = '';
+            // อัพเดตหมวดหมู่ย่อย 1
+            updateHistorySub1Category(mainCategory);
             
-            sub2CategorySelect.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 2</option>';
-            sub2CategorySelect.disabled = true;
-            
-            if (mainCategory) {
-                updateHistorySub1Category(mainCategory);
-            } else {
-                sub1CategorySelect.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 1</option>';
-                sub1CategorySelect.disabled = true;
-            }
-            
-            filterGameHistory();
-        };
-        EventManager.add(mainCategorySelect, 'change', mainHandler, 'filter-main-category-change');
-    }
-    
-    if (sub1CategorySelect) {
-        const sub1Handler = function() {
-            const mainCategory = document.getElementById('filter-history-main-category').value;
-            const sub1Category = this.value;
-            
-            sub2CategorySelect.value = '';
-            
-            if (mainCategory && sub1Category) {
-                updateHistorySub2Category(mainCategory, sub1Category);
-            } else {
+            // รีเซ็ตหมวดหมู่ย่อย 2
+            if (sub2CategorySelect) {
                 sub2CategorySelect.innerHTML = '<option value="">ทุกหมวดหมู่ย่อย 2</option>';
                 sub2CategorySelect.disabled = true;
             }
             
+            // ใช้ตัวกรองใหม่ทันที
             filterGameHistory();
-        };
-        EventManager.add(sub1CategorySelect, 'change', sub1Handler, 'filter-sub1-category-change');
+        });
+    }
+    
+    if (sub1CategorySelect) {
+        // ลบ event listener เดิม (ถ้ามี)
+        const newSub1CategorySelect = sub1CategorySelect.cloneNode(true);
+        if (sub1CategorySelect.parentNode) {
+            sub1CategorySelect.parentNode.replaceChild(newSub1CategorySelect, sub1CategorySelect);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newSub1CategorySelect.addEventListener('change', function() {
+            const mainCategory = document.getElementById('filter-history-main-category').value;
+            const sub1Category = this.value;
+            
+            // อัพเดตหมวดหมู่ย่อย 2
+            updateHistorySub2Category(mainCategory, sub1Category);
+            
+            // ใช้ตัวกรองใหม่ทันที
+            filterGameHistory();
+        });
     }
     
     if (sub2CategorySelect) {
-        EventManager.add(sub2CategorySelect, 'change', filterGameHistory, 'filter-sub2-category-change');
+        // ลบ event listener เดิม (ถ้ามี)
+        const newSub2CategorySelect = sub2CategorySelect.cloneNode(true);
+        if (sub2CategorySelect.parentNode) {
+            sub2CategorySelect.parentNode.replaceChild(newSub2CategorySelect, sub2CategorySelect);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newSub2CategorySelect.addEventListener('change', function() {
+            // ใช้ตัวกรองใหม่ทันที
+            filterGameHistory();
+        });
     }
 }
 
@@ -1133,71 +1147,106 @@ function setupCategoryFilterListeners() {
 function setupHistoryEventListeners() {
     const applyFilterBtn = document.getElementById('apply-history-filter');
     if (applyFilterBtn) {
-        EventManager.add(applyFilterBtn, 'click', filterGameHistory, 'apply-history-filter-click');
+        // ลบ event listener เดิม (ถ้ามี) และเพิ่มใหม่
+        const newApplyFilterBtn = applyFilterBtn.cloneNode(true);
+        if (applyFilterBtn.parentNode) {
+            applyFilterBtn.parentNode.replaceChild(newApplyFilterBtn, applyFilterBtn);
+        }
+        
+        newApplyFilterBtn.addEventListener('click', function() {
+            try {
+                filterGameHistory();
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการกรองประวัติ:", error);
+                alert("เกิดข้อผิดพลาดในการกรองประวัติ โปรดลองใหม่อีกครั้ง");
+            }
+        });
+        console.log("ตั้งค่า event listener สำหรับปุ่มค้นหาประวัติเรียบร้อยแล้ว");
     }
     
     const resetFilterBtn = document.getElementById('reset-history-filter');
     if (resetFilterBtn) {
-        const resetHandler = function() {
-            // รีเซ็ตฟอร์มกรอง
-            const fromDateInput = document.getElementById('filter-date-from');
-            const toDateInput = document.getElementById('filter-date-to');
-            const playerNameInput = document.getElementById('filter-player-name');
-            const mainCategorySelect = document.getElementById('filter-history-main-category');
-            const sub1CategorySelect = document.getElementById('filter-history-sub1-category');
-            const sub2CategorySelect = document.getElementById('filter-history-sub2-category');
-            
-            if (fromDateInput) fromDateInput.value = '';
-            if (toDateInput) toDateInput.value = '';
-            if (playerNameInput) playerNameInput.value = '';
-            if (mainCategorySelect) mainCategorySelect.value = '';
-            if (sub1CategorySelect) {
-                sub1CategorySelect.value = '';
-                sub1CategorySelect.disabled = true;
+        // ลบ event listener เดิม (ถ้ามี) และเพิ่มใหม่
+        const newResetFilterBtn = resetFilterBtn.cloneNode(true);
+        if (resetFilterBtn.parentNode) {
+            resetFilterBtn.parentNode.replaceChild(newResetFilterBtn, resetFilterBtn);
+        }
+        
+        newResetFilterBtn.addEventListener('click', function() {
+            try {
+                // รีเซ็ตฟอร์มกรอง
+                const fromDateInput = document.getElementById('filter-date-from');
+                const toDateInput = document.getElementById('filter-date-to');
+                const playerNameInput = document.getElementById('filter-player-name');
+                const mainCategorySelect = document.getElementById('filter-history-main-category');
+                const sub1CategorySelect = document.getElementById('filter-history-sub1-category');
+                const sub2CategorySelect = document.getElementById('filter-history-sub2-category');
+                
+                if (fromDateInput) fromDateInput.value = '';
+                if (toDateInput) toDateInput.value = '';
+                if (playerNameInput) playerNameInput.value = '';
+                if (mainCategorySelect) mainCategorySelect.value = '';
+                if (sub1CategorySelect) {
+                    sub1CategorySelect.value = '';
+                    sub1CategorySelect.disabled = true;
+                }
+                if (sub2CategorySelect) {
+                    sub2CategorySelect.value = '';
+                    sub2CategorySelect.disabled = true;
+                }
+                
+                // รีเซ็ตการกรอง
+                filteredHistory = [...gameHistory];
+                currentHistoryPage = 1;
+                
+                // แสดงผลใหม่
+                displayGameHistory();
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการรีเซ็ตตัวกรอง:", error);
             }
-            if (sub2CategorySelect) {
-                sub2CategorySelect.value = '';
-                sub2CategorySelect.disabled = true;
-            }
-            
-            // รีเซ็ตการกรอง
-            filteredHistory = [...gameHistory];
-            currentHistoryPage = 1;
-            
-            // แสดงผลใหม่
-            displayGameHistory();
-        };
-        EventManager.add(resetFilterBtn, 'click', resetHandler, 'reset-history-filter-click');
+        });
+        console.log("ตั้งค่า event listener สำหรับปุ่มรีเซ็ตการกรองเรียบร้อยแล้ว");
     }
     
-    // เพิ่ม event listener สำหรับช่องค้นหาชื่อผู้เล่น
+    // เพิ่ม event listener สำหรับช่องค้นหาชื่อผู้เล่น (กรองทันทีเมื่อพิมพ์)
     const playerNameInput = document.getElementById('filter-player-name');
     if (playerNameInput) {
         let searchTimeout = null;
-        const searchHandler = function() {
+        playerNameInput.addEventListener('input', function() {
+            // ยกเลิกตัวจับเวลาเดิม (ถ้ามี)
             if (searchTimeout) {
                 clearTimeout(searchTimeout);
             }
             
+            // ตั้งตัวจับเวลาใหม่เพื่อรอให้หยุดพิมพ์ก่อนค้นหา
             searchTimeout = setTimeout(() => {
                 filterGameHistory();
                 searchTimeout = null;
-            }, 500);
-        };
-        EventManager.add(playerNameInput, 'input', searchHandler, 'filter-player-name-input');
+            }, 500); // รอ 500ms หลังจากหยุดพิมพ์
+        });
     }
     
     const historyPerPageSelect = document.getElementById('history-per-page');
     if (historyPerPageSelect) {
-        const perPageHandler = function() {
-            historyItemsPerPage = parseInt(this.value);
-            if (isNaN(historyItemsPerPage) || historyItemsPerPage < 1) {
-                historyItemsPerPage = 10;
+        // ลบ event listener เดิม (ถ้ามี) และเพิ่มใหม่
+        const newHistoryPerPageSelect = historyPerPageSelect.cloneNode(true);
+        if (historyPerPageSelect.parentNode) {
+            historyPerPageSelect.parentNode.replaceChild(newHistoryPerPageSelect, historyPerPageSelect);
+        }
+        
+        newHistoryPerPageSelect.addEventListener('change', function() {
+            try {
+                historyItemsPerPage = parseInt(this.value);
+                if (isNaN(historyItemsPerPage) || historyItemsPerPage < 1) {
+                    historyItemsPerPage = 10; // ค่าเริ่มต้นถ้าไม่ถูกต้อง
+                }
+                currentHistoryPage = 1;
+                displayGameHistory();
+            } catch (error) {
+                console.error("เกิดข้อผิดพลาดในการเปลี่ยนจำนวนรายการต่อหน้า:", error);
             }
-            currentHistoryPage = 1;
-            displayGameHistory();
-        };
-        EventManager.add(historyPerPageSelect, 'change', perPageHandler, 'history-per-page-change');
+        });
+        console.log("ตั้งค่า event listener สำหรับตัวเลือกจำนวนรายการต่อหน้าเรียบร้อยแล้ว");
     }
 }
 
@@ -1222,9 +1271,7 @@ async function initializeApp() {
     initQuestionSystem();
     
     // 6. ตั้งค่าระบบประวัติการเล่น
-    if (!isEventListenersSetup) {
     initHistorySystem();
-}
     
     // 7. ตั้งค่าระบบเล่นเกม
     initPlaySystem();
@@ -3329,31 +3376,64 @@ function updatePlaySystem() {
     // ปุ่มเริ่มเล่น
     const startQuizBtn = document.getElementById('start-quiz');
     if (startQuizBtn) {
-        EventManager.add(startQuizBtn, 'click', startQuiz, 'start-quiz-click');
+        // ลบ event listener เดิม (ถ้ามี)
+        const newStartQuizBtn = startQuizBtn.cloneNode(true);
+        if (startQuizBtn.parentNode) {
+            startQuizBtn.parentNode.replaceChild(newStartQuizBtn, startQuizBtn);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newStartQuizBtn.addEventListener('click', startQuiz);
     }
     
     // ปุ่มเล่นอีกครั้ง
     const restartQuizBtn = document.getElementById('restart-quiz');
     if (restartQuizBtn) {
-        EventManager.add(restartQuizBtn, 'click', restartQuiz, 'restart-quiz-click');
+        // ลบ event listener เดิม (ถ้ามี)
+        const newRestartQuizBtn = restartQuizBtn.cloneNode(true);
+        if (restartQuizBtn.parentNode) {
+            restartQuizBtn.parentNode.replaceChild(newRestartQuizBtn, restartQuizBtn);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newRestartQuizBtn.addEventListener('click', restartQuiz);
     }
     
-    // ปุ่มส่งคำตอบ
+    // อัพเดตปุ่มต่างๆ ในหน้าเล่นเกม
     const submitAnswerBtn = document.getElementById('submit-answer');
     if (submitAnswerBtn) {
-        EventManager.add(submitAnswerBtn, 'click', submitAnswer, 'submit-answer-click');
+        // ลบ event listener เดิม (ถ้ามี)
+        const newSubmitAnswerBtn = submitAnswerBtn.cloneNode(true);
+        if (submitAnswerBtn.parentNode) {
+            submitAnswerBtn.parentNode.replaceChild(newSubmitAnswerBtn, submitAnswerBtn);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newSubmitAnswerBtn.addEventListener('click', submitAnswer);
     }
     
-    // ปุ่มคำถามถัดไป
     const nextQuestionBtn = document.getElementById('next-question');
     if (nextQuestionBtn) {
-        EventManager.add(nextQuestionBtn, 'click', showNextQuestion, 'next-question-click');
+        // ลบ event listener เดิม (ถ้ามี)
+        const newNextQuestionBtn = nextQuestionBtn.cloneNode(true);
+        if (nextQuestionBtn.parentNode) {
+            nextQuestionBtn.parentNode.replaceChild(newNextQuestionBtn, nextQuestionBtn);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newNextQuestionBtn.addEventListener('click', showNextQuestion);
     }
     
-    // ปุ่มคำถามก่อนหน้า
     const prevQuestionBtn = document.getElementById('prev-question');
     if (prevQuestionBtn) {
-        EventManager.add(prevQuestionBtn, 'click', showPrevQuestion, 'prev-question-click');
+        // ลบ event listener เดิม (ถ้ามี)
+        const newPrevQuestionBtn = prevQuestionBtn.cloneNode(true);
+        if (prevQuestionBtn.parentNode) {
+            prevQuestionBtn.parentNode.replaceChild(newPrevQuestionBtn, prevQuestionBtn);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newPrevQuestionBtn.addEventListener('click', showPrevQuestion);
     }
     
     console.log("อัพเดตระบบเล่นเกมเรียบร้อยแล้ว");
@@ -4092,9 +4172,7 @@ function enableCategoryPlaySystem() {
     updatePlayMainCategorySelect();
     
     // ตั้งค่า event listeners สำหรับตัวเลือกหมวดหมู่
-    if (!isEventListenersSetup) {
     setupPlayCategoryListeners();
-}
     
     // อัพเดตตัวเลือกหมวดหมู่เมื่อมีการเปลี่ยนแปลงหมวดหมู่
     const oldUpdateCategoryUI = updateCategoryUI;
@@ -4119,13 +4197,15 @@ function setupPlayCategoryListeners() {
         return;
     }
     
-    // Handler สำหรับหมวดหมู่หลัก
-    const mainHandler = function() {
+    // ตั้งค่า event listener สำหรับหมวดหมู่หลัก
+    playMainCategory.addEventListener('change', function() {
         const mainCategory = this.value;
         
+        // รีเซ็ตค่าของ dropdown หมวดย่อย
         playSubCategory1.value = '';
         playSubCategory2.value = '';
         
+        // รีเซ็ตตัวเลือกหมวดย่อย 2
         playSubCategory2.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 2</option>';
         playSubCategory2.disabled = true;
         
@@ -4135,13 +4215,14 @@ function setupPlayCategoryListeners() {
             playSubCategory1.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 1</option>';
             playSubCategory1.disabled = true;
         }
-    };
+    });
     
-    // Handler สำหรับหมวดหมู่ย่อย 1
-    const sub1Handler = function() {
+    // ตั้งค่า event listener สำหรับหมวดหมู่ย่อย 1
+    playSubCategory1.addEventListener('change', function() {
         const mainCategory = playMainCategory.value;
         const subCategory1 = this.value;
         
+        // รีเซ็ตค่าของ dropdown หมวดย่อย 2
         playSubCategory2.value = '';
         
         if (mainCategory && subCategory1) {
@@ -4150,52 +4231,57 @@ function setupPlayCategoryListeners() {
             playSubCategory2.innerHTML = '<option value="" disabled selected>เลือกหมวดหมู่ย่อย 2</option>';
             playSubCategory2.disabled = true;
         }
-    };
+    });
     
-    // Handler สำหรับปุ่มเริ่มเล่น
-    const startHandler = function() {
-        const mainCategory = document.getElementById('play-main-category').value;
-        const subCategory1 = document.getElementById('play-sub-category1').value;
-        const subCategory2 = document.getElementById('play-sub-category2').value;
-        
-        if (!mainCategory) {
-            alert('กรุณาเลือกหมวดหมู่หลัก');
-            return;
-        }
-        
-        if (!subCategory1) {
-            alert('กรุณาเลือกหมวดหมู่ย่อย 1');
-            return;
-        }
-        
-        if (!subCategory2) {
-            alert('กรุณาเลือกหมวดหมู่ย่อย 2');
-            return;
-        }
-        
-        currentGameQuestions = questions.filter(q => 
-            q.category && 
-            q.category.main === mainCategory && 
-            q.category.sub1 === subCategory1 && 
-            q.category.sub2 === subCategory2
-        );
-        
-        if (currentGameQuestions.length === 0) {
-            alert('ไม่พบคำถามในหมวดหมู่ที่เลือก');
-            return;
-        }
-        
-        console.log(`พบคำถามในหมวดหมู่ที่เลือก: ${currentGameQuestions.length} ข้อ`);
-        startQuiz();
-    };
-    
-    // ใช้ Event Manager
-    EventManager.add(playMainCategory, 'change', mainHandler, 'play-main-category-change');
-    EventManager.add(playSubCategory1, 'change', sub1Handler, 'play-sub1-category-change');
-    
+    // ตั้งค่า event listener สำหรับปุ่มเริ่มเล่น
     const startQuizBtn = document.getElementById('start-quiz');
     if (startQuizBtn) {
-        EventManager.add(startQuizBtn, 'click', startHandler, 'play-start-quiz-click');
+        // ลบ event listeners เดิม (ถ้ามี)
+        const newStartQuiz = startQuizBtn.cloneNode(true);
+        if (startQuizBtn.parentNode) {
+            startQuizBtn.parentNode.replaceChild(newStartQuiz, startQuizBtn);
+        }
+        
+        // เพิ่ม event listener ใหม่
+        newStartQuiz.addEventListener('click', function() {
+            // ตรวจสอบการเลือกหมวดหมู่
+            const mainCategory = document.getElementById('play-main-category').value;
+            const subCategory1 = document.getElementById('play-sub-category1').value;
+            const subCategory2 = document.getElementById('play-sub-category2').value;
+            
+            if (!mainCategory) {
+                alert('กรุณาเลือกหมวดหมู่หลัก');
+                return;
+            }
+            
+            if (!subCategory1) {
+                alert('กรุณาเลือกหมวดหมู่ย่อย 1');
+                return;
+            }
+            
+            if (!subCategory2) {
+                alert('กรุณาเลือกหมวดหมู่ย่อย 2');
+                return;
+            }
+            
+            // กรองคำถามตามหมวดหมู่
+            currentGameQuestions = questions.filter(q => 
+                q.category && 
+                q.category.main === mainCategory && 
+                q.category.sub1 === subCategory1 && 
+                q.category.sub2 === subCategory2
+            );
+            
+            if (currentGameQuestions.length === 0) {
+                alert('ไม่พบคำถามในหมวดหมู่ที่เลือก');
+                return;
+            }
+            
+            console.log(`พบคำถามในหมวดหมู่ที่เลือก: ${currentGameQuestions.length} ข้อ`);
+            
+            // เริ่มเล่นเกม
+            startQuiz();
+        });
     }
     
     console.log("ตั้งค่าตัวฟังเหตุการณ์สำหรับตัวเลือกหมวดหมู่ในหน้าเล่นเกมเรียบร้อยแล้ว");
