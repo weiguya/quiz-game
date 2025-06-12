@@ -7454,18 +7454,38 @@ async function sendResetEmail() {
     }
     
     try {
+        const submitBtn = document.querySelector('#forgot-password-modal .submit-button');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '📧 กำลังส่ง...';
+        }
+        
+        // กำหนด redirectTo URL ให้ถูกต้อง
+        const currentURL = window.location.origin + window.location.pathname;
+        
         const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin + '/reset-password'
+            redirectTo: `${currentURL}#reset-password`
         });
         
         if (error) throw error;
         
-        alert('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว');
+        alert('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว กรุณาตรวจสอบกล่องจดหมาย');
         closeForgotModal();
+        
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '📧 ส่งลิงก์รีเซ็ตรหัสผ่าน';
+        }
         
     } catch (error) {
         console.error('Error sending reset email:', error);
         alert('เกิดข้อผิดพลาด: ' + error.message);
+        
+        const submitBtn = document.querySelector('#forgot-password-modal .submit-button');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '📧 ส่งลิงก์รีเซ็ตรหัสผ่าน';
+        }
     }
 }
 
@@ -7969,9 +7989,8 @@ async function handleRegister(event) {
     const email = document.getElementById('register-email').value.trim();
     const password = document.getElementById('register-password').value.trim();
     const confirmPassword = document.getElementById('register-confirm').value.trim();
-    const acceptTerms = document.getElementById('accept-terms').checked;
     
-    // ตรวจสอบข้อมูล
+    // Validation
     if (!name || !email || !password || !confirmPassword) {
         alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
         return;
@@ -7987,14 +8006,17 @@ async function handleRegister(event) {
         return;
     }
     
-    if (!acceptTerms) {
+    const termsAccepted = document.getElementById('accept-terms').checked;
+    if (!termsAccepted) {
         alert('กรุณายอมรับเงื่อนไขการใช้งาน');
         return;
     }
     
     try {
-        // แสดง loading
         showRegistrationLoading(true);
+        
+        // กำหนด redirectTo URL ให้ถูกต้อง
+        const currentURL = window.location.origin + window.location.pathname;
         
         const { data, error } = await supabaseClient.auth.signUp({
             email: email,
@@ -8002,36 +8024,26 @@ async function handleRegister(event) {
             options: {
                 data: {
                     display_name: name
-                }
-                // Supabase จะส่งอีเมลยืนยันอัตโนมัติถ้าเปิดใช้งานใน Dashboard
+                },
+                emailRedirectTo: `${currentURL}#email-confirmed`
             }
         });
         
         if (error) throw error;
         
-        console.log('ส่งอีเมลยืนยันแล้ว:', data);
+        console.log('สมัครสมาชิกสำเร็จ:', data);
         
-        // แสดงหน้าต่างแจ้งให้ยืนยันอีเมล
+        // ปิด modal สมัครสมาชิก
+        closeRegisterModal();
+        
+        // แสดง modal แจ้งให้ตรวจสอบอีเมล
         showEmailVerificationModal(email);
         
-        // ซ่อน loading
-        showRegistrationLoading(false);
-        
     } catch (error) {
-        console.error('สมัครสมาชิกไม่สำเร็จ:', error);
+        console.error('เกิดข้อผิดพลาดในการสมัครสมาชิก:', error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+    } finally {
         showRegistrationLoading(false);
-        
-        let errorMessage = 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
-        
-        if (error.message.includes('already registered') || error.message.includes('User already registered')) {
-            errorMessage = 'อีเมลนี้ถูกใช้งานแล้ว กรุณาใช้อีเมลอื่น';
-        } else if (error.message.includes('Invalid email')) {
-            errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
-        } else if (error.message.includes('Password')) {
-            errorMessage = 'รหัสผ่านไม่ตรงตามเงื่อนไข';
-        }
-        
-        alert(errorMessage);
     }
 }
 
@@ -8226,32 +8238,32 @@ async function resendVerificationEmail(email) {
 
 // ฟังก์ชันใหม่: ตรวจสอบการยืนยันอีเมลเมื่อโหลดหน้า
 async function handleEmailVerification() {
-    // ตรวจสอบ URL parameters สำหรับการยืนยันอีเมล
-    const urlParams = new URLSearchParams(window.location.search);
-    const accessToken = urlParams.get('access_token');
-    const refreshToken = urlParams.get('refresh_token');
-    const type = urlParams.get('type');
+    const hash = window.location.hash;
+    console.log('ตรวจสอบ URL hash:', hash);
     
-    if (accessToken && refreshToken && type === 'signup') {
+    if (hash.includes('email-confirmed')) {
+        console.log('ตรวจพบการยืนยันอีเมล');
+        
+        // ลบ hash ออกจาก URL
+        window.location.hash = '';
+        
+        // แสดงข้อความยืนยันสำเร็จ
+        showEmailVerifiedSuccess();
+        
+        // ตรวจสอบสถานะผู้ใช้ปัจจุบัน
         try {
-            // ตั้งค่า session จากโทเค็นที่ได้รับ
-            const { data, error } = await supabaseClient.auth.setSession({
-                access_token: accessToken,
-                refresh_token: refreshToken
-            });
-            
-            if (error) throw error;
-            
-            // แสดงข้อความยืนยันสำเร็จ
-            showEmailVerifiedSuccess();
-            
-            // ลบ parameters ออกจาก URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-            
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session) {
+                console.log('ผู้ใช้ยืนยันอีเมลสำเร็จและมี session');
+            }
         } catch (error) {
-            console.error('เกิดข้อผิดพลาดในการยืนยันอีเมล:', error);
-            alert('เกิดข้อผิดพลาดในการยืนยันอีเมล กรุณาลองใหม่อีกครั้ง');
+            console.error('เกิดข้อผิดพลาดในการตรวจสอบ session:', error);
         }
+    }
+    
+    // รองรับการรีเซ็ตรหัสผ่าน
+    if (hash.includes('reset-password')) {
+        await handlePasswordReset();
     }
 }
 
@@ -8298,3 +8310,22 @@ function closeSuccessModal() {
     modals.forEach(modal => modal.remove());
     document.body.style.overflow = '';
 }
+
+// เพิ่มฟังก์ชันตรวจสอบ URL ปัจจุบัน
+function getCurrentSiteURL() {
+    // ตรวจสอบว่าเป็น GitHub Pages หรือไม่
+    if (window.location.hostname.includes('github.io')) {
+        return window.location.origin + window.location.pathname;
+    }
+    
+    // ตรวจสอบว่าเป็น localhost หรือไม่
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return window.location.origin;
+    }
+    
+    // ใช้ URL ปัจจุบัน
+    return window.location.origin + window.location.pathname;
+}
+
+// แสดงข้อมูล URL ปัจจุบันในคอนโซล (สำหรับ debug)
+console.log('Site URL ปัจจุบัน:', getCurrentSiteURL());
