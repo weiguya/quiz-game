@@ -102,13 +102,33 @@ async function loginAdmin(email, password) {
 // ฟังก์ชันออกจากระบบแอดมิน
 async function logoutAdmin() {
     try {
-        // ใช้ฟังก์ชันล็อกเอาท์ทั้งหมด
-        await forceLogoutAllSessions();
+        // ออกจาก Supabase Auth
+        await supabaseClient.auth.signOut();
+        
+        // รีเซ็ตตัวแปรทั้งหมด
+        currentPlayer = null;
+        currentUser = null;
+        userMode = null;
+        isAdminMode = false;
+        adminProfile = null;
+        
+        // ล้างประวัติ
+        gameHistory = [];
+        filteredHistory = [];
+        
+        // รีเซ็ต UI
+        removeAdminUI();
+        updateAdminTabs();
         
         console.log('ออกจากระบบแอดมินแล้ว');
         
+        // *** เพิ่มการแสดงหน้าล็อกอินหลัก ***
+        showMainLoginScreen();
+        
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการออกจากระบบ:', error);
+        // ถึงแม้จะเกิดข้อผิดพลาดก็ยังแสดงหน้าล็อกอิน
+        showMainLoginScreen();
     }
 }
 
@@ -4289,11 +4309,8 @@ function setupPlayCategoryListeners() {
 
 // เพิ่มในส่วน DOMContentLoaded
 document.addEventListener('DOMContentLoaded', async function() {
-    // เพิ่มคลาส fade-in เพื่อให้เนื้อหาค่อยๆ ปรากฏ
     document.getElementById('play-content').classList.add('fade-in');
-    
-    // เริ่มต้นแอปพลิเคชัน
-    await initializeApp(); // ใหม่
+    await initializeAppWithNewLogin(); // เปลี่ยนชื่อฟังก์ชัน
 });
 
 function initPlayerSystem() {
@@ -7364,13 +7381,670 @@ async function forceLogoutAllSessions() {
         
         console.log("ล็อกเอาท์ทุก session เรียบร้อยแล้ว");
         
-        // แสดงหน้าต้อนรับใหม่
-        showWelcomeScreen();
+        // *** แสดงหน้าล็อกอินหลักแทนหน้าต้อนรับ ***
+        showMainLoginScreen();
         
         return true;
         
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการล็อกเอาท์:', error);
+        // ถึงแม้จะเกิดข้อผิดพลาดก็ยังแสดงหน้าล็อกอิน
+        showMainLoginScreen();
         return false;
     }
+}
+
+// ======================================================
+// ฟังก์ชันสำหรับระบบล็อกอินหลักใหม่
+// ======================================================
+
+// สลับระหว่างแท็บเข้าสู่ระบบและสร้างบัญชี
+function initLoginTabs() {
+    const tabs = document.querySelectorAll('.login-tab');
+    const contents = document.querySelectorAll('.login-tab-content');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const targetTab = tab.dataset.tab;
+            
+            // อัพเดตแท็บ
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // อัพเดตเนื้อหา
+            contents.forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(`${targetTab}-tab-content`).classList.add('active');
+        });
+    });
+}
+
+// แสดง/ซ่อนรหัสผ่าน
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.parentNode.querySelector('.password-toggle');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        button.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        button.textContent = '👁️';
+    }
+}
+
+// แสดง Modal ลืมรหัสผ่าน
+function showForgotPassword() {
+    document.getElementById('forgot-password-modal').classList.remove('hidden');
+}
+
+function closeForgotModal() {
+    document.getElementById('forgot-password-modal').classList.add('hidden');
+    document.getElementById('forgot-email-input').value = '';
+}
+
+// ส่งอีเมลรีเซ็ตรหัสผ่าน
+async function sendResetEmail() {
+    const email = document.getElementById('forgot-email-input').value.trim();
+    
+    if (!email) {
+        alert('กรุณากรอกอีเมล');
+        return;
+    }
+    
+    try {
+        const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin + '/reset-password'
+        });
+        
+        if (error) throw error;
+        
+        alert('ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณแล้ว');
+        closeForgotModal();
+        
+    } catch (error) {
+        console.error('Error sending reset email:', error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+    }
+}
+
+function showGuestModal() {
+    document.getElementById('guest-modal').classList.remove('hidden');
+    setTimeout(() => {
+        document.getElementById('guest-name-input').focus();
+    }, 300);
+}
+
+function closeGuestModal() {
+    document.getElementById('guest-modal').classList.add('hidden');
+    document.getElementById('guest-name-input').value = '';
+}
+
+function showRegisterModal() {
+    document.getElementById('register-modal').classList.remove('hidden');
+    setTimeout(() => {
+        document.getElementById('register-name').focus();
+    }, 300);
+}
+
+function closeRegisterModal() {
+    document.getElementById('register-modal').classList.add('hidden');
+    // Clear form
+    document.getElementById('register-form-element').reset();
+}
+
+// เริ่มเกม Guest
+function startGuestGame() {
+    const guestName = document.getElementById('guest-name-input').value.trim();
+    
+    if (!guestName) {
+        alert('กรุณากรอกชื่อผู้เล่น');
+        return;
+    }
+    
+    userMode = 'guest';
+    currentPlayer = {
+        name: guestName,
+        mode: 'guest',
+        loginTime: new Date().toISOString()
+    };
+    
+    closeGuestModal();
+    hideMainLoginScreen();
+    startGameAfterLogin();
+}
+
+// ล็อกอินด้วย Google
+async function loginWithGoogle() {
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                redirectTo: window.location.origin
+            }
+        });
+        
+        if (error) throw error;
+        
+    } catch (error) {
+        console.error('Google login error:', error);
+        alert('เกิดข้อผิดพลาด: ' + error.message);
+    }
+}
+
+// สร้างบัญชีด้วย Google
+async function registerWithGoogle() {
+    // ใช้ฟังก์ชันเดียวกับ login เพราะ OAuth จะสร้างบัญชีอัตโนมัติ
+    await loginWithGoogle();
+}
+
+// จัดการฟอร์มเข้าสู่ระบบ
+async function handleMainLogin(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('main-login-email').value.trim();
+    const password = document.getElementById('main-login-password').value.trim();
+    
+    if (!email || !password) {
+        alert('กรุณากรอกอีเมลและรหัสผ่าน');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) throw error;
+        
+        console.log('เข้าสู่ระบบสำเร็จ:', data.user);
+        
+        // ตรวจสอบว่าเป็นแอดมินหรือไม่
+        const adminData = await checkIsAdmin(data.user.id);
+        
+        if (adminData) {
+            // โหมดแอดมิน
+            userMode = 'admin';
+            isAdminMode = true;
+            adminProfile = adminData;
+            currentUser = data.user;
+            currentPlayer = {
+                name: adminData.name || 'Admin',
+                mode: 'admin',
+                userId: data.user.id,
+                loginTime: new Date().toISOString()
+            };
+            
+            activateAdminMode();
+        } else {
+            // โหมดผู้ใช้ทั่วไป
+            userMode = 'user';
+            currentUser = data.user;
+            currentPlayer = {
+                name: data.user.user_metadata?.display_name || data.user.email.split('@')[0],
+                mode: 'user',
+                userId: data.user.id,
+                loginTime: new Date().toISOString()
+            };
+        }
+        
+        hideMainLoginScreen();
+        startGameAfterLogin();
+        
+    } catch (error) {
+        console.error('เข้าสู่ระบบไม่สำเร็จ:', error);
+        alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    }
+}
+
+// จัดการฟอร์มสร้างบัญชี
+async function handleMainRegister(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('main-register-name').value.trim();
+    const email = document.getElementById('main-register-email').value.trim();
+    const password = document.getElementById('main-register-password').value.trim();
+    const confirmPassword = document.getElementById('main-register-confirm').value.trim();
+    const acceptTerms = document.getElementById('accept-terms').checked;
+    
+    // ตรวจสอบข้อมูล
+    if (!name || !email || !password || !confirmPassword) {
+        alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        alert('รหัสผ่านไม่ตรงกัน');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
+    
+    if (!acceptTerms) {
+        alert('กรุณายอมรับเงื่อนไขการใช้งาน');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    display_name: name
+                }
+            }
+        });
+        
+        if (error) throw error;
+        
+        console.log('สมัครสมาชิกสำเร็จ:', data.user);
+        
+        // ตั้งค่าผู้ใช้
+        userMode = 'user';
+        currentUser = data.user;
+        currentPlayer = {
+            name: name,
+            mode: 'user',
+            userId: data.user.id,
+            loginTime: new Date().toISOString()
+        };
+        
+        alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ');
+        hideMainLoginScreen();
+        startGameAfterLogin();
+        
+    } catch (error) {
+        console.error('สมัครสมาชิกไม่สำเร็จ:', error);
+        let errorMessage = 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+        
+        if (error.message.includes('already registered')) {
+            errorMessage = 'อีเมลนี้ถูกใช้งานแล้ว';
+        }
+        
+        alert(errorMessage);
+    }
+}
+
+// ซ่อนหน้าล็อกอินหลักและแสดงแอป
+function hideMainLoginScreen() {
+    document.getElementById('main-login-screen').classList.add('hidden');
+}
+
+// แสดงหน้าล็อกอินหลัก
+function showMainLoginScreen() {
+    // ซ่อนเนื้อหาแท็บทั้งหมด
+    const allTabContents = document.querySelectorAll('.tab-content');
+    allTabContents.forEach(content => {
+        content.classList.remove('active');
+        content.classList.add('hidden');
+    });
+    
+    // ซ่อนหน้าอื่นๆ ที่อาจจะแสดงอยู่
+    const screensToHide = [
+        'start-screen',
+        'quiz-screen', 
+        'result-screen',
+        'category-selection-container',
+        'welcome-screen',
+        'login-screen'
+    ];
+    
+    screensToHide.forEach(screenId => {
+        const screen = document.getElementById(screenId);
+        if (screen) {
+            screen.classList.add('hidden');
+        }
+    });
+    
+    // แสดงหน้าล็อกอินหลัก
+    const mainLoginScreen = document.getElementById('main-login-screen');
+    if (mainLoginScreen) {
+        mainLoginScreen.classList.remove('hidden');
+        console.log("แสดงหน้าล็อกอินหลักแล้ว");
+    } else {
+        console.error("ไม่พบ element 'main-login-screen'");
+        // ถ้าไม่พบ main-login-screen ให้ reload หน้า
+        location.reload();
+    }
+}
+
+// ตรวจสอบ session ที่มีอยู่เมื่อโหลดหน้า
+async function checkExistingLoginSession() {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        
+        if (session && session.user) {
+            console.log("พบ session ที่ล็อกอินอยู่:", session.user.email);
+            
+            // ตรวจสอบว่าเป็นแอดมินหรือไม่
+            const adminData = await checkIsAdmin(session.user.id);
+            
+            if (adminData) {
+                // เป็นแอดมิน
+                userMode = 'admin';
+                isAdminMode = true;
+                adminProfile = adminData;
+                currentUser = session.user;
+                currentPlayer = {
+                    name: adminData.name || 'Admin',
+                    mode: 'admin',
+                    userId: session.user.id,
+                    loginTime: new Date().toISOString()
+                };
+                
+                activateAdminMode();
+                hideMainLoginScreen();
+                startGameAfterLogin();
+                return true;
+            } else {
+                // เป็นผู้ใช้ทั่วไป
+                userMode = 'user';
+                currentUser = session.user;
+                currentPlayer = {
+                    name: session.user.user_metadata?.display_name || session.user.email.split('@')[0],
+                    mode: 'user',
+                    userId: session.user.id,
+                    loginTime: new Date().toISOString()
+                };
+                
+                hideMainLoginScreen();
+                startGameAfterLogin();
+                return true;
+            }
+        }
+        
+        return false; // ไม่มี session
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการตรวจสอบ session:', error);
+        return false;
+    }
+}
+
+// เริ่มต้นระบบล็อกอินใหม่
+function initNewLoginSystem() {
+    console.log("กำลังเริ่มต้นระบบล็อกอินใหม่...");
+    
+    // ตั้งค่าแท็บ
+    initLoginTabs();
+    
+    // ตั้งค่าฟอร์ม
+    const loginForm = document.getElementById('main-login-form');
+    const registerForm = document.getElementById('main-register-form');
+    
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleMainLogin);
+    }
+    
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleMainRegister);
+    }
+    
+    // รองรับ Enter key ใน input guest
+    const guestInput = document.getElementById('guest-name-input');
+    if (guestInput) {
+        guestInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                startGuestGame();
+            }
+        });
+    }
+    
+    // รองรับ Enter key ใน input forgot password
+    const forgotInput = document.getElementById('forgot-email-input');
+    if (forgotInput) {
+        forgotInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendResetEmail();
+            }
+        });
+    }
+    
+    console.log("ระบบล็อกอินใหม่พร้อมใช้งานแล้ว");
+}
+
+// อัพเดตฟังก์ชัน initializeApp
+async function initializeAppWithNewLogin() {
+    console.log("กำลังเริ่มต้นแอปพลิเคชันด้วยระบบล็อกอินใหม่...");
+    
+    // เริ่มต้นระบบล็อกอินใหม่
+    initNewLoginSystem();
+    
+    // แสดงหน้าล็อกอินเสมอ (ไม่ตรวจสอบ session เก่า)
+    showMainLoginScreen();
+    
+    // โหลดข้อมูลพื้นฐาน
+    await loadCategories();
+    await loadQuestions();
+    await loadGameHistory();
+    
+    // ตั้งค่าระบบต่างๆ
+    setupTabNavigation();
+    await initCategorySystemNew();
+    initQuestionSystem();
+    initHistorySystem();
+    initPlaySystem();
+    enableCategoryPlaySystem();
+    setupCategoryFilter();
+    setupSearchQuestions();
+    initAdminSystem();
+    startAdminStatusMonitor();
+    
+    console.log("เริ่มต้นแอปพลิเคชันเรียบร้อยแล้ว");
+}
+
+// ฟังก์ชันสำหรับหน้าล็อกอินใหม่
+function initNewLogin() {
+    // Tab switching
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const targetTab = button.dataset.tab;
+            
+            // Update active tab
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            
+            // Update active content
+            tabContents.forEach(content => content.classList.remove('active'));
+            document.getElementById(targetTab + '-form').classList.add('active');
+        });
+    });
+    
+    // Form submissions
+    document.getElementById('login-form-element').addEventListener('submit', handleLogin);
+    document.getElementById('register-form-element').addEventListener('submit', handleRegister);
+}
+
+function togglePasswordVisibility(inputId) {
+    const input = document.getElementById(inputId);
+    const button = input.parentNode.querySelector('.password-toggle');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        button.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        button.textContent = '👁️';
+    }
+}
+
+async function handleLogin(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value.trim();
+    
+    if (!email || !password) {
+        alert('กรุณากรอกอีเมลและรหัสผ่าน');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+        
+        if (error) throw error;
+        
+        const adminData = await checkIsAdmin(data.user.id);
+        
+        if (adminData) {
+            userMode = 'admin';
+            isAdminMode = true;
+            adminProfile = adminData;
+            currentUser = data.user;
+            currentPlayer = {
+                name: adminData.name || 'Admin',
+                mode: 'admin',
+                userId: data.user.id,
+                loginTime: new Date().toISOString()
+            };
+            activateAdminMode();
+        } else {
+            userMode = 'user';
+            currentUser = data.user;
+            currentPlayer = {
+                name: data.user.user_metadata?.display_name || data.user.email.split('@')[0],
+                mode: 'user',
+                userId: data.user.id,
+                loginTime: new Date().toISOString()
+            };
+        }
+        
+        hideMainLoginScreen();
+        startGameAfterLogin();
+        
+    } catch (error) {
+        console.error('เข้าสู่ระบบไม่สำเร็จ:', error);
+        alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+    }
+}
+
+async function handleRegister(event) {
+    event.preventDefault();
+    
+    const name = document.getElementById('register-name').value.trim();
+    const email = document.getElementById('register-email').value.trim();
+    const password = document.getElementById('register-password').value.trim();
+    const confirmPassword = document.getElementById('register-confirm').value.trim();
+    const acceptTerms = document.getElementById('accept-terms').checked;
+    
+    if (!name || !email || !password || !confirmPassword) {
+        alert('กรุณากรอกข้อมูลให้ครบทุกช่อง');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        alert('รหัสผ่านไม่ตรงกัน');
+        return;
+    }
+    
+    if (password.length < 6) {
+        alert('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+        return;
+    }
+    
+    if (!acceptTerms) {
+        alert('กรุณายอมรับเงื่อนไขการใช้งาน');
+        return;
+    }
+    
+    try {
+        const { data, error } = await supabaseClient.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    display_name: name
+                }
+            }
+        });
+        
+        if (error) throw error;
+        
+        userMode = 'user';
+        currentUser = data.user;
+        currentPlayer = {
+            name: name,
+            mode: 'user',
+            userId: data.user.id,
+            loginTime: new Date().toISOString()
+        };
+        
+        alert('สมัครสมาชิกสำเร็จ! ยินดีต้อนรับ');
+        hideMainLoginScreen();
+        startGameAfterLogin();
+        
+    } catch (error) {
+        console.error('สมัครสมาชิกไม่สำเร็จ:', error);
+        let errorMessage = 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+        
+        if (error.message.includes('already registered')) {
+            errorMessage = 'อีเมลนี้ถูกใช้งานแล้ว';
+        }
+        
+        alert(errorMessage);
+    }
+}
+
+function showGuestLogin() {
+    const guestName = prompt('กรุณากรอกชื่อผู้เล่น:');
+    
+    if (!guestName || !guestName.trim()) {
+        return;
+    }
+    
+    userMode = 'guest';
+    currentPlayer = {
+        name: guestName.trim(),
+        mode: 'guest',
+        loginTime: new Date().toISOString()
+    };
+    
+    hideMainLoginScreen();
+    startGameAfterLogin();
+}
+
+function hideMainLoginScreen() {
+    document.getElementById('main-login-screen').classList.add('hidden');
+}
+
+// เพิ่มในฟังก์ชัน initializeAppWithNewLogin
+async function initializeAppWithNewLogin() {
+    console.log("กำลังเริ่มต้นแอปพลิเคชันด้วยระบบล็อกอินใหม่...");
+    
+    // เริ่มต้นระบบล็อกอินใหม่
+    initNewLogin();
+    
+    // แสดงหน้าล็อกอินเสมอ
+    document.getElementById('main-login-screen').classList.remove('hidden');
+    
+    // โหลดข้อมูลพื้นฐาน
+    await loadCategories();
+    await loadQuestions();
+    await loadGameHistory();
+    
+    // ตั้งค่าระบบต่างๆ
+    setupTabNavigation();
+    await initCategorySystemNew();
+    initQuestionSystem();
+    initHistorySystem();
+    initPlaySystem();
+    enableCategoryPlaySystem();
+    setupCategoryFilter();
+    setupSearchQuestions();
+    initAdminSystem();
+    startAdminStatusMonitor();
+    
+    console.log("เริ่มต้นแอปพลิเคชันเรียบร้อยแล้ว");
 }
