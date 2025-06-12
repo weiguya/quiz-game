@@ -144,7 +144,7 @@
     </div>
 </div>
 
-<!-- Modern Guest Modal -->
+<!-- แทนที่ส่วน Guest Modal เดิมด้วยโค้ดนี้ -->
 <div id="guest-modal" class="modal-overlay hidden">
     <div class="modern-modal guest-modal">
         <div class="modal-header">
@@ -158,7 +158,8 @@
                 <small>ประวัติการเล่นจะไม่ถูกบันทึกถาวร</small>
             </div>
             <div class="input-group">
-                <input type="text" id="guest-name-input" placeholder="ชื่อของคุณ" maxlength="20" class="guest-input">
+                <!-- เปลี่ยน ID เพื่อไม่ให้ซ้ำ -->
+                <input type="text" id="guest-name-modal-input" placeholder="ชื่อของคุณ" maxlength="20" class="guest-input">
             </div>
             <button class="guest-start-btn" onclick="startGuestGame()">
                 🚀 เริ่มเล่นเลย!
@@ -632,6 +633,28 @@
             </div>
         </div>
     </div>
+
+<!-- Forgot Password Modal -->
+<div id="forgot-password-modal" class="modal-overlay hidden">
+    <div class="modern-modal">
+        <div class="modal-header">
+            <h3>🔑 ลืมรหัสผ่าน</h3>
+            <button class="close-btn" onclick="closeForgotModal()">×</button>
+        </div>
+        <div class="modal-body">
+            <div class="forgot-intro">
+                <p>กรอกอีเมลของคุณ เราจะส่งลิงก์สำหรับตั้งรหัสผ่านใหม่</p>
+            </div>
+            <div class="input-group">
+                <label>อีเมล</label>
+                <input type="email" id="forgot-email-input" placeholder="กรอกอีเมลของคุณ" required>
+            </div>
+            <button class="submit-button" onclick="sendResetEmail()">
+                📧 ส่งลิงก์รีเซ็ตรหัสผ่าน
+            </button>
+        </div>
+    </div>
+</div>
 
     <!-- Local JavaScript -->
     <script src="script.js"></script>
