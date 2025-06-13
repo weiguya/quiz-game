@@ -19,8 +19,7 @@
     <div class="login-card">
         <!-- Header -->
         <div class="login-header">
-            <h1 class="app-title">🎯 Quiz Master</h1>
-            <p class="app-subtitle">ระบบทดสอบความรู้ออนไลน์</p>
+            <h1 class="app-title">Quiz Master</h1>
         </div>
 
         <!-- Login Form Container -->
@@ -41,7 +40,12 @@
                     <label>รหัสผ่าน</label>
                     <div class="password-field">
                         <input type="password" id="login-password" placeholder="กรอกรหัสผ่าน" required>
-                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('login-password')">👁️</button>
+                        <button type="button" class="password-toggle" onclick="togglePasswordVisibility('login-password')">
+    <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+    </svg>
+</button>
                     </div>
                 </div>
                 
@@ -72,10 +76,10 @@
             
             <div class="action-buttons">
                 <button class="guest-button" onclick="showGuestModal()">
-                    🎮 เล่นแบบ Guest
+                    ทดลองเล่น
                 </button>
                 <button class="register-button" onclick="showRegisterModal()">
-                    📝 สร้างบัญชีใหม่
+                    สร้างบัญชีใหม่
                 </button>
             </div>
         </div>
