@@ -5925,23 +5925,22 @@ button.delete:hover {
         radial-gradient(circle at 80% 80%, rgba(147, 197, 253, 0.15) 0%, transparent 50%),
         linear-gradient(135deg, #f8fafc 0%, #e0f2fe 30%, #e2e8f0 100%);
     display: flex;
-    align-items: stretch;
+    align-items: center;
     justify-content: center;
     z-index: 10000;
-    padding: 0;
+    padding: 20px;
     overflow: hidden;
 }
 
 .login-card {
     background: white;
-    border-radius: 0;
-    box-shadow: none;
+    border-radius: 20px;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
     width: 100%;
-    max-width: 100vw;
-    min-height: 100vh;
-    min-height: 100dvh;
+    max-width: 600px;
+    max-height: 95vh;
+    min-height: auto;
     overflow: hidden;
-    overflow-x: hidden;
     animation: slideInUp 0.6s ease;
     display: flex;
     flex-direction: column;
@@ -5960,13 +5959,18 @@ button.delete:hover {
 
 .login-header {
     background: 
-        linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%),
-        linear-gradient(135deg, #475569 0%, #64748b 50%, #94a3b8 100%);
+        radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.2) 0%, transparent 60%),
+        linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #1d4ed8 100%);
     color: white;
     text-align: center;
-    padding: 40px 30px;
+    padding: 50px 30px;
     position: relative;
     overflow: hidden;
+    border-bottom: 3px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .login-header::before {
@@ -5991,30 +5995,34 @@ button.delete:hover {
 }
 
 .app-title {
-    font-size: 28px;
-    font-weight: 300;
-    margin: 0 0 8px 0;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #bae6fd 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 36px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+    letter-spacing: 1px;
+    text-transform: none;
+    color: #ffffff;
+    text-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.3),
+        0 0 20px rgba(255, 255, 255, 0.2);
     position: relative;
     z-index: 2;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 .app-subtitle {
-    font-size: 16px;
+    font-size: 18px;
     margin: 0;
-    opacity: 0.9;
+    opacity: 0.95;
+    font-weight: 400;
+    color: #e0f2fe;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    letter-spacing: 0.5px;
 }
 
 .login-form-container {
     padding: 25px 20px 30px;
     flex: 1;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow: visible;
 }
 
 .welcome-text {
@@ -6086,6 +6094,8 @@ button.delete:hover {
     color: #666;
     font-size: 18px;
     padding: 4px;
+    z-index: 15; /* เพิ่มบรรทัดนี้ */
+    border-radius: 4px;
 }
 
 .form-options {
@@ -7258,4 +7268,244 @@ select {
 
 .history-table td {
     font-size: 16px !important;
+}
+
+/* ===== Responsive สำหรับ Mobile ===== */
+@media (max-width: 480px) {
+    .login-overlay {
+        padding: 15px;
+    }
+    
+    .login-card {
+        max-width: 100%;
+        max-height: 90vh;
+        border-radius: 16px;
+    }
+    
+    .login-header {
+        padding: 25px 20px;
+    }
+    
+    .login-form-container {
+        padding: 20px 15px 25px;
+    }
+}
+
+/* ===== Responsive สำหรับ Tablet ===== */
+@media (min-width: 768px) {
+    .login-card {
+        max-width: 420px;
+    }
+}
+
+/* ===== Responsive สำหรับ Desktop ===== */
+@media (min-width: 1024px) {
+    .login-card {
+        max-width: 450px;
+    }
+}
+
+/* ===== สำหรับ Landscape Mobile ===== */
+@media (max-height: 600px) and (orientation: landscape) {
+    .login-overlay {
+        align-items: flex-start;
+        padding-top: 10px;
+    }
+    
+    .login-card {
+        max-height: 95vh;
+    }
+    
+    .login-header {
+        padding: 15px 20px;
+    }
+    
+    .app-title {
+        font-size: 24px;
+    }
+}
+
+/* Password Toggle - ไม่ให้เด้ง */
+.password-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    color: #666;
+    border-radius: 4px;
+    /* ไม่มี transition หรือ animation */
+}
+
+.password-toggle:hover {
+    color: #333;
+    background-color: rgba(0,0,0,0.05);
+}
+
+.password-toggle:active {
+    transform: none; /* ไม่ให้เด้งเวลากด */
+}
+
+.eye-icon {
+    /* ไม่มี transition */
+}
+
+.password-toggle * {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+}
+
+.password-toggle {
+    transition: none !important;
+    animation: none !important;
+}
+
+.password-toggle:hover,
+.password-toggle:active,
+.password-toggle:focus {
+    transition: none !important;
+    animation: none !important;
+    transform: translateY(-50%) !important;
+    z-index: 15 !important; /* เพิ่มบรรทัดนี้ */
+}
+
+/* ให้ไอคอนรหัสผ่านในหน้าล็อกอินหลักมี z-index สูงสุด */
+.login-password-toggle {
+    z-index: 25 !important;
+}
+
+/* ป้องกันการทับซ้อน */
+.password-field {
+    position: relative !important;
+    overflow: visible !important;
+}
+
+/* ===== แก้ปัญหาไอคอนรหัสผ่านซ้อนทับ - Final Solution ===== */
+
+/* ปิดไอคอนทั้งหมดของเบราว์เซอร์ */
+input[type="password"]::-webkit-credentials-auto-fill-button,
+input[type="password"]::-webkit-strong-password-auto-fill-button,
+input[type="password"]::-webkit-textfield-decoration-container,
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    right: -9999px !important;
+    width: 0 !important;
+    height: 0 !important;
+    opacity: 0 !important;
+}
+
+/* บังคับให้ password field ไม่แสดงไอคอนใดๆ */
+input[type="password"] {
+    background-image: none !important;
+    background-position: 0 0 !important;
+    background-repeat: no-repeat !important;
+    background-size: 0 0 !important;
+    padding-right: 45px !important; /* เว้นที่สำหรับปุ่มของเรา */
+}
+
+/* ให้แน่ใจว่าปุ่มของเราอยู่ข้างบน */
+.password-field {
+    position: relative !important;
+}
+
+.password-toggle {
+    position: absolute !important;
+    right: 12px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 999 !important;
+    background: transparent !important;
+    border: none !important;
+    cursor: pointer !important;
+    padding: 4px !important;
+}
+
+/* ปิด autocomplete ทั้งหมด */
+input[type="password"] {
+    autocomplete: new-password !important;
+}
+
+/* สำหรับ Firefox */
+input[type="password"]::-moz-reveal {
+    display: none !important;
+}
+
+/* ===== Checkbox จำการเข้าสู่ระบบ ===== */
+
+.checkbox-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    cursor: pointer !important;
+    font-size: 14px !important;
+    color: #555 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* ซ่อน checkbox เดิม */
+.checkbox-wrapper input[type="checkbox"] {
+    position: absolute !important;
+    opacity: 0 !important;
+    cursor: pointer !important;
+    height: 0 !important;
+    width: 0 !important;
+}
+
+/* สร้าง checkbox ใหม่ */
+.checkbox-wrapper input[type="checkbox"] + span::before {
+    content: "" !important;
+    display: inline-block !important;
+    width: 18px !important;
+    height: 18px !important;
+    border: 2px solid #ddd !important;
+    border-radius: 4px !important;
+    background: white !important;
+    margin-right: 8px !important;
+    vertical-align: middle !important;
+    transition: all 0.2s ease !important;
+    flex-shrink: 0 !important;
+}
+
+/* เมื่อ hover */
+.checkbox-wrapper:hover input[type="checkbox"] + span::before {
+    border-color: #4285f4 !important;
+    background-color: #f8f9ff !important;
+}
+
+/* เมื่อถูกเลือก */
+.checkbox-wrapper input[type="checkbox"]:checked + span::before {
+    background-color: #4285f4 !important;
+    border-color: #4285f4 !important;
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") !important;
+    background-size: 12px !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
+/* Focus state */
+.checkbox-wrapper input[type="checkbox"]:focus + span::before {
+    box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2) !important;
+    outline: none !important;
+}
+
+/* ข้อความ */
+.checkbox-wrapper span {
+    color: #555 !important;
+    font-size: 14px !important;
+    line-height: 1.4 !important;
+    user-select: none !important;
+}
+
+/* เมื่อ checkbox ถูกเลือก ข้อความจะเข้มขึ้น */
+.checkbox-wrapper input[type="checkbox"]:checked + span {
+    color: #333 !important;
+    font-weight: 500 !important;
 }
