@@ -345,16 +345,19 @@ button.delete:hover {
 .quiz-progress {
     margin: 5px 0 20px;
     padding: 12px;
-    background-color: rgba(25, 118, 210, 0.05);
-    border-radius: 4px;
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.1) 0%, transparent 60%),
+        linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(147, 197, 253, 0.08));
+    border-radius: 8px;
     font-size: 16px;
     font-weight: 500;
-    color: var(--primary-dark);
-    box-shadow: 0 2px 5px var(--shadow-color);
+    color: #1e40af;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.1);
     text-align: center;
     width: 90%;
     margin-left: auto;
     margin-right: auto;
+    border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
 .quiz-result {
@@ -585,19 +588,33 @@ button.delete:hover {
 }
 
 .result-header {
-    background: #99CCFF;
-    color: #333333;
+    background: 
+        linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%),
+        linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
+    color: white;
     padding: 25px;
     text-align: center;
+    border-bottom: 1px solid rgba(255,255,255,0.2);
     position: relative;
-    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.result-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    pointer-events: none;
 }
 
 .result-header h2 {
-    margin: 0;
-    font-size: 28px;
-    color: #333333;  /* กำหนดสีตามที่ต้องการ */
-    font-weight: 600;
+    color: white;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 2;
 }
 
 .result-score-container {
@@ -607,18 +624,14 @@ button.delete:hover {
 }
 
 .result-score {
-  background-color: var(--white);
-  border-radius: 50%;
-  width: 180px;
-  height: 180px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 3px 10px var(--shadow-color);
-  border: 3px solid var(--primary-color);
-  position: relative;
-  transition: all 0.3s ease;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    padding: 30px;
+    min-width: 300px;
+    width: auto;
+    height: auto;
 }
 
 .result-score:hover {
@@ -627,29 +640,24 @@ button.delete:hover {
 }
 
 .score-display {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
+  display: inline-block;
+  font-size: 48px;
   font-weight: 700;
   color: var(--primary-color);
   line-height: 1;
+  text-align: center;
 }
 
 .score-value {
-  font-size: 54px;
-  margin-right: 2px;
   color: var(--primary-dark);
-  font-weight: 700;
 }
 
 .score-separator {
-  font-size: 36px;
-  margin: 0 2px;
   color: var(--text-color);
+  margin: 0 3px;
 }
 
 .score-max {
-  font-size: 36px;
   color: var(--primary-color);
 }
 
@@ -671,12 +679,14 @@ button.delete:hover {
 }
 
 .quiz-stats {
-  display: flex;
-  justify-content: space-around;
-  padding: 20px;
-  background-color: var(--secondary-color);
-  border-top: 1px solid var(--border-color);
-  border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    padding: 20px;
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 60%),
+        linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
+    border-top: 1px solid rgba(59, 130, 246, 0.15);
+    border-bottom: 1px solid rgba(59, 130, 246, 0.15);
 }
 
 .stat-item {
@@ -897,23 +907,43 @@ button.delete:hover {
 }
 
 #restart-quiz {
-  background: var(--primary-color);
-  color: var(--white);
-  border: none;
-  padding: 12px 30px;
-  border-radius: 30px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 3px 8px rgba(25, 118, 210, 0.2);
-  transition: all 0.3s ease;
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+    color: white;
+    border: none;
+    padding: 14px 35px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+#restart-quiz::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+#restart-quiz:hover::before {
+    left: 100%;
 }
 
 #restart-quiz:hover {
-  background: var(--primary-dark);
-  box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3);
-  transform: scale(1.05);
-  letter-spacing: 1px;
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+    transform: translateY(-2px) scale(1.02);
 }
 
 #restart-quiz:active {
@@ -1448,14 +1478,19 @@ button.delete:hover {
 }
 
 .category-select:focus {
-    border-color: #1976d2;
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.25);
+    border-color: #3b82f6;
+    background: 
+        radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     outline: none;
 }
 
 .category-select:hover:not(:disabled) {
-    border-color: #1976d2;
-    background-color: #f8f9ff;
+    border-color: #3b82f6;
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
 }
 
 .category-select:disabled {
@@ -2030,13 +2065,28 @@ button.delete:hover {
 
 /* เพิ่มต่อท้ายโค้ด CSS ที่มีอยู่แล้วในแท็ก <style> */
 .category-selection-container {
-    background: linear-gradient(145deg, #ffffff, #f0f7ff);
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(147, 197, 253, 0.12) 0%, transparent 50%),
+        linear-gradient(145deg, #ffffff, #f0f9ff);
     border-radius: 16px;
-    box-shadow: 0 10px 20px rgba(25, 118, 210, 0.1);
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.15);
     padding: 25px;
     margin: 0 auto 25px;
-    border: 1px solid rgba(25, 118, 210, 0.1);
-    max-width: 500px; /* จำกัดความกว้างสูงสุด */
+    border: 1px solid rgba(59, 130, 246, 0.15);
+    max-width: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+.category-selection-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #3b82f6, #1d4ed8, #3b82f6);
 }
 
 .category-selection-header {
@@ -2145,25 +2195,46 @@ button.delete:hover {
 }
 
 #start-quiz {
-    background: linear-gradient(45deg, #1976d2, #4791db);
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+        linear-gradient(45deg, #3b82f6, #1d4ed8);
     color: white;
     border: none;
-    padding: 12px 25px; /* ลดขนาด padding */
-    font-size: 16px; /* ลดขนาดฟอนต์ */
+    padding: 12px 25px;
+    font-size: 16px;
     font-weight: 600;
     border-radius: 30px;
     cursor: pointer;
     transition: all 0.3s ease;
     display: block;
-    margin: 20px auto 0; /* ลดขนาดช่องว่าง */
-    box-shadow: 0 4px 12px rgba(25, 118, 210, 0.3);
+    margin: 20px auto 0;
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
     letter-spacing: 0.5px;
+    position: relative;
+    overflow: hidden;
+}
+
+#start-quiz::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+#start-quiz:hover::before {
+    left: 100%;
 }
 
 #start-quiz:hover {
-    background: linear-gradient(45deg, #115293, #1976d2);
-    transform: translateY(-2px); /* ลดการเคลื่อนไหว */
-    box-shadow: 0 6px 15px rgba(25, 118, 210, 0.4);
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+        linear-gradient(45deg, #2563eb, #1e40af);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
 }
 
 #start-quiz:active {
@@ -2894,12 +2965,6 @@ button.delete:hover {
   max-width: 100px;
 }
 
-.history-table th:nth-child(3),
-.history-table td:nth-child(3) {
-  width: 80px;
-  min-width: 80px;
-}
-
 .history-table th:nth-child(4),
 .history-table td:nth-child(4) {
   width: 200px;
@@ -2929,8 +2994,15 @@ button.delete:hover {
 }
 
 .history-table .score-display {
-  font-size: 13px;
-  padding: 4px 8px;
+    font-size: 12px;
+    padding: 2px 6px;
+    display: inline-block;
+    background-color: rgba(25, 118, 210, 0.1);
+    color: #1976d2;
+    border-radius: 10px;
+    font-weight: 500;
+    min-width: auto;
+    font-family: 'Prompt', sans-serif;
 }
 
 .history-table .date-time {
@@ -3857,6 +3929,39 @@ button.delete:hover {
   border-radius: 25px;
   order: 1;
   margin: 0 0 5px 0;
+  /* เพิ่มโทนสีใหม่ */
+  background: 
+      linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+      linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+#submit-answer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.6s ease;
+}
+
+#submit-answer:hover::before {
+  left: 100%;
+}
+
+#submit-answer:hover {
+  background: 
+      linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+      linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
 }
 
 #prev-question, #next-question {
@@ -4780,45 +4885,6 @@ button.delete:hover {
     text-align: center;
 }
 
-/* Admin Logout Button (กดได้) */
-.admin-logout-btn {
-    background: linear-gradient(135deg, #f44336, #e57373);
-    color: white;
-    border: 2px solid #d32f2f;
-    padding: 10px 16px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: 'Prompt', sans-serif;
-    letter-spacing: 0.5px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 
-        0 3px 8px rgba(244, 67, 54, 0.3),
-        0 1px 4px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    text-align: center;
-}
-
-.admin-logout-btn:hover {
-    background: linear-gradient(135deg, #d32f2f, #f44336);
-    border-color: #b71c1c;
-    transform: translateY(-2px) scale(1.02);
-    box-shadow: 
-        0 5px 12px rgba(244, 67, 54, 0.4),
-        0 2px 6px rgba(0, 0, 0, 0.15),
-        inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-.admin-logout-btn:active {
-    transform: translateY(0) scale(1);
-    box-shadow: 
-        0 2px 6px rgba(244, 67, 54, 0.3),
-        0 1px 3px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.1);
-}
-
 /* ปรับแต่งสำหรับหน้าจอมือถือ - ย้ายลงล่างสุด */
 @media (max-width: 768px) {
     .admin-ui-container {
@@ -4828,16 +4894,8 @@ button.delete:hover {
         gap: 6px;
     }
     
-    /* ซ่อน indicator บนมือถือ */
     .admin-mode-indicator {
         display: none;
-    }
-    
-    /* ปุ่มออกจากระบบเล็กลงอีก */
-    .admin-logout-btn {
-        padding: 3px 6px;
-        font-size: 9px;
-        border-radius: 8px;
     }
 }
 
@@ -5035,11 +5093,12 @@ button.delete:hover {
 }
 
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 24px;
-  border-bottom: 1px solid #eee;
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: white;
+    padding: 25px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .modal-header h3 {
@@ -5237,26 +5296,6 @@ button.delete:hover {
     text-align: center;
 }
 
-.admin-logout-btn {
-    background: linear-gradient(135deg, #f44336, #e57373);
-    color: white;
-    border: 2px solid #d32f2f;
-    padding: 10px 16px;
-    border-radius: 20px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-    font-family: 'Prompt', sans-serif;
-    letter-spacing: 0.5px;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 
-        0 3px 8px rgba(244, 67, 54, 0.3),
-        0 1px 4px rgba(0, 0, 0, 0.1),
-        inset 0 1px 0 rgba(255, 255, 255, 0.2);
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    text-align: center;
-}
-
 /* 2. Category Management Styles */
 .category-tree-container {
     margin-top: 20px;
@@ -5408,11 +5447,22 @@ button.delete:hover {
     max-width: 130px;
 }
 
-.history-table th:nth-child(3), 
+.history-table th:nth-child(3),
 .history-table td:nth-child(3) {
-    width: 15%;
+    width: 80px;
+    min-width: 80px;
     text-align: center;
-    min-width: 100px;
+}
+
+.history-table td:nth-child(3) {
+    font-size: 10px;
+}
+
+.history-table .score-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #333;
+  font-family: 'Prompt', sans-serif;
 }
 
 .history-table th:nth-child(4), 
@@ -5731,7 +5781,8 @@ button.delete:hover {
     border-radius: 15px;
     background-color: rgba(25, 118, 210, 0.1);
     color: #1976d2;
-    font-weight: 600;
+    font-weight: 500;
+    font-family: 'Prompt', sans-serif;
 }
 
 .player-name {
@@ -5869,15 +5920,16 @@ button.delete:hover {
     left: 0;
     width: 100vw;
     height: 100vh;
-    height: 100dvh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: 
+        radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(147, 197, 253, 0.15) 0%, transparent 50%),
+        linear-gradient(135deg, #f8fafc 0%, #e0f2fe 30%, #e2e8f0 100%);
     display: flex;
     align-items: stretch;
     justify-content: center;
     z-index: 10000;
     padding: 0;
-    overflow: hidden; /* ป้องกันการเลื่อน */
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
 }
 
 .login-card {
@@ -5907,17 +5959,49 @@ button.delete:hover {
 }
 
 .login-header {
-    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    background: 
+        linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 100%),
+        linear-gradient(135deg, #475569 0%, #64748b 50%, #94a3b8 100%);
     color: white;
     text-align: center;
     padding: 40px 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+.login-header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
 }
 
 .app-title {
     font-size: 28px;
-    font-weight: 700;
+    font-weight: 300;
     margin: 0 0 8px 0;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 50%, #bae6fd 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    z-index: 2;
 }
 
 .app-subtitle {
@@ -5978,9 +6062,13 @@ button.delete:hover {
 
 .input-group input:focus {
     outline: none;
-    border-color: #1976d2;
-    background: white;
-    box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+    border-color: #3b82f6;
+    background: 
+        radial-gradient(circle at 10% 10%, rgba(59, 130, 246, 0.05) 0%, transparent 50%),
+        linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%);
+    box-shadow: 
+        0 0 0 3px rgba(59, 130, 246, 0.1),
+        inset 0 1px 3px rgba(59, 130, 246, 0.1);
 }
 
 .password-field {
@@ -6032,22 +6120,43 @@ button.delete:hover {
 
 .submit-button {
     width: 100%;
-    background: linear-gradient(135deg, #1976d2, #42a5f5);
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #3b82f6 0%, #1d4ed8 50%, #1e40af 100%);
     color: white;
     border: none;
     padding: 16px;
-    border-radius: 12px;
+    border-radius: 8px;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
     margin-bottom: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    transition: left 0.6s ease;
+}
+
+.submit-button:hover::before {
+    left: 100%;
 }
 
 .submit-button:hover {
-    background: linear-gradient(135deg, #1565c0, #1976d2);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(25, 118, 210, 0.3);
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e3a8a 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
 }
 
 .divider {
@@ -6124,25 +6233,89 @@ button.delete:hover {
 }
 
 .guest-button {
-    background: linear-gradient(135deg, #ff9800, #ffb74d);
-    color: white;
+    padding: 14px 16px;
+    border: 2px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(148, 163, 184, 0.1) 0%, transparent 50%),
+        linear-gradient(135deg, #ffffff 0%, #f1f5f9 50%, #e2e8f0 100%);
+    color: #475569;
+    position: relative;
+    overflow: hidden;
+}
+
+.guest-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 0%, rgba(100, 116, 139, 0.1) 50%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.guest-button:hover::before {
+    opacity: 1;
 }
 
 .guest-button:hover {
-    background: linear-gradient(135deg, #f57c00, #ff9800);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+    background: 
+        radial-gradient(circle at 30% 30%, rgba(100, 116, 139, 0.2) 0%, transparent 50%),
+        linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #cbd5e1 100%);
+    border-color: #94a3b8;
+    color: #334155;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(148, 163, 184, 0.2);
 }
 
 .register-button {
-    background: linear-gradient(135deg, #4caf50, #66bb6a);
+    padding: 14px 16px;
+    border: 2px solid #64748b;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 50%),
+        linear-gradient(135deg, #64748b 0%, #475569 100%);
     color: white;
+    position: relative;
+    overflow: hidden;
+}
+
+.register-button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, transparent 70%);
+    transition: all 0.6s ease;
+    transform: translate(-50%, -50%);
+}
+
+.register-button:hover::after {
+    width: 300px;
+    height: 300px;
 }
 
 .register-button:hover {
-    background: linear-gradient(135deg, #388e3c, #4caf50);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+    background: 
+        linear-gradient(45deg, rgba(255,255,255,0.15) 0%, transparent 50%),
+        linear-gradient(135deg, #475569 0%, #334155 100%);
+    border-color: #475569;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(71, 85, 105, 0.3);
 }
 
 /* ===== Modern Modal System ===== */
@@ -6713,4 +6886,376 @@ button[disabled] {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* User Info Bar */
+.user-info-bar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.user-info-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    backdrop-filter: blur(10px);
+}
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.user-mode {
+    font-size: 12px;
+    background: rgba(255,255,255,0.2);
+    padding: 2px 8px;
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+}
+
+.user-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.logout-btn {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.2);
+    border-color: rgba(255,255,255,0.3);
+    transform: translateY(-1px);
+}
+
+.logout-btn:active {
+    transform: translateY(0);
+}
+
+.logout-btn svg {
+    opacity: 0.8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .user-info-bar {
+        padding: 10px 15px;
+    }
+    
+    .user-info-container {
+        flex-direction: row;
+        gap: 10px;
+    }
+    
+    .user-details {
+        flex: 1;
+        min-width: 0;
+    }
+    
+    .user-name {
+        font-size: 14px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .logout-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    
+    .logout-btn span {
+        display: none;
+    }
+}
+
+/* เมื่อแสดง user-info-bar ให้ปรับ nav-tabs */
+.user-info-bar + .nav-tabs {
+    border-top: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Animation สำหรับ Loading Spinner */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.guest-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.guest-input:focus {
+    outline: none;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+}
+
+.input-hint {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+    text-align: center;
+}
+
+.guest-start-btn {
+    width: 100%;
+    padding: 14px 20px;
+    background: linear-gradient(45deg, #4caf50, #66bb6a);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 15px;
+}
+
+.guest-start-btn:hover {
+    background: linear-gradient(45deg, #45a049, #5db85d);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+.guest-start-btn:active {
+    transform: translateY(0);
+}
+
+.guest-start-btn:disabled {
+    background: #cccccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ปรับขนาดคะแนนสำหรับมือถือ */
+@media (max-width: 768px) {
+  .score-display {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 375px) {
+  .score-display {
+    font-size: 28px;
+  }
+}
+
+/* ===== UI ใหม่สำหรับสรุปคะแนน - เพิ่มต่อท้าย ===== */
+.result-score-container {
+  display: flex !important;
+  justify-content: center !important;
+  margin: 30px 0 !important;
+  padding: 0 20px !important;
+}
+
+.result-score {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  border-radius: 20px !important;
+  padding: 30px !important;
+  min-width: 300px !important;
+  color: white !important;
+  box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3) !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.main-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 42px;
+  font-weight: 800;
+  margin-bottom: 15px;
+}
+
+.score-number {
+  font-size: 48px;
+  line-height: 1;
+}
+
+.score-divider {
+  font-size: 32px;
+  opacity: 0.8;
+}
+
+.score-total {
+  font-size: 32px;
+  opacity: 0.9;
+}
+
+/* แก้ไขการแสดงผลคะแนนให้ถูกต้อง */
+.score-display {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  font-size: 48px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+
+.score-value {
+  color: var(--primary-dark);
+}
+
+.score-separator {
+  color: var(--text-color);
+  margin: 0 3px;
+}
+
+.score-max {
+  color: var(--primary-color);
+}
+
+.score-percent {
+    position: absolute;
+    bottom: -15px;
+    background-color: #99CCFF;
+    color: #333333;
+    font-weight: 600;
+    padding: 6px 18px;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    border-radius: 20px;
+    transition: all 0.3s ease;
+}
+
+/* สไตล์สรุปคะแนนแบบมืออาชีพ - เรียบง่าย โมเดิร์น */
+.result-score {
+ background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+ border: 1px solid #dee2e6 !important;
+ box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08) !important;
+}
+
+.score-value {
+ color: #2c3e50 !important;
+ font-size: 48px !important;
+ font-weight: 700 !important;
+}
+
+.score-separator {
+ color: #6c757d !important;
+ font-size: 36px !important;
+ font-weight: 400 !important;
+ margin: 0 6px !important;
+}
+
+.score-max {
+ color: #495057 !important;
+ font-size: 36px !important;
+ font-weight: 500 !important;
+}
+
+.score-percent {
+ background: #1976d2 !important;
+ color: white !important;
+ padding: 6px 14px !important;
+ border-radius: 6px !important;
+ font-size: 14px !important;
+ font-weight: 500 !important;
+ margin-top: 12px !important;
+ border: none !important;
+ backdrop-filter: none !important;
+}
+
+/* เพิ่มในท้าย style.css */
+.admin-logout-btn {
+    display: none !important;
+}
+
+/* ซ่อนไอคอนค้นหาที่ลอยมา */
+.search-icon {
+    display: none !important;
+}
+
+/* ซ่อนลูกศร dropdown ที่ลอยมา */
+.select-arrow {
+    display: none !important;
+}
+
+/* ซ่อนไอคอนทั้งหมดที่อาจลอยมา */
+.fa-search,
+.fa-chevron-down,
+.fa-caret-down,
+[class*="search-icon"],
+[class*="select-arrow"],
+[class*="dropdown-arrow"] {
+    display: none !important;
+}
+
+/* แก้ไข select ให้ใช้ลูกศรเริ่มต้นของ browser */
+select {
+    appearance: auto !important;
+    -webkit-appearance: auto !important;
+}
+
+/* ป้องกันไอคอนลอยมาในอนาคต */
+.floating-icon,
+.orphaned-icon {
+    display: none !important;
+}
+
+/* แก้ไขขนาดฟอนต์คะแนนให้เล็กลง - ท้ายสุด */
+.history-table td:nth-child(3) .score-display,
+.history-table td:nth-child(3) .score-text,
+.history-table td:nth-child(3) {
+    font-size: 15px !important;
+}
+
+.history-table td {
+    font-size: 16px !important;
 }
