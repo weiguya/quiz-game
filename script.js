@@ -7919,14 +7919,33 @@ function initNewLogin() {
 
 function togglePasswordVisibility(inputId) {
     const input = document.getElementById(inputId);
-    const button = input.parentNode.querySelector('.password-toggle');
+    const button = input.parentElement.querySelector('.password-toggle');
+    const icon = button.querySelector('.eye-icon');
     
     if (input.type === 'password') {
+        // แสดงรหัสผ่าน - เปลี่ยนเป็นไอคอนตาที่มีขีดทับ
         input.type = 'text';
-        button.textContent = '🙈';
+        
+        // ⭐ ลบเนื้อหาเก่าทั้งหมดก่อน แล้วใส่ใหม่
+        icon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 11 8 11 8a13.16 13.16 0 0 1-1.67 2.68"/>
+                <path d="M6.61 6.61A13.526 13.526 0 0 0 1 12s4 8 11 8a9.74 9.74 0 0 0 5.39-1.61"/>
+                <line x1="2" y1="2" x2="22" y2="22"/>
+            </svg>
+        `;
     } else {
+        // ซ่อนรหัสผ่าน - เปลี่ยนเป็นไอคอนตาเปิด
         input.type = 'password';
-        button.textContent = '👁️';
+        
+        // ⭐ ลบเนื้อหาเก่าทั้งหมดก่อน แล้วใส่ใหม่
+        icon.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+            </svg>
+        `;
     }
 }
 
@@ -7951,6 +7970,9 @@ async function handleLogin(event) {
         });
         
         if (error) throw error;
+        
+        // ⭐ เพิ่มบรรทัดนี้ - บันทึกการจำเข้าสู่ระบบ
+        saveRememberMe();
         
         // ตรวจสอบการยืนยันอีเมล
         if (!data.user.email_confirmed_at) {
@@ -8794,3 +8816,70 @@ function cleanupOldGuestFunctions() {
 
 // เรียกใช้ทำความสะอาด
 cleanupOldGuestFunctions();
+
+// ===== ฟังก์ชันจำการเข้าสู่ระบบ =====
+
+// โหลดข้อมูลที่จำไว้เมื่อเปิดหน้า
+document.addEventListener('DOMContentLoaded', function() {
+    loadRememberedLogin();
+});
+
+// ฟังก์ชันโหลดข้อมูลที่จำไว้
+function loadRememberedLogin() {
+    try {
+        const rememberedEmail = localStorage.getItem('rememberedEmail');
+        const rememberMe = localStorage.getItem('rememberMe') === 'true';
+        
+        if (rememberedEmail && rememberMe) {
+            const emailInput = document.getElementById('login-email');
+            const rememberCheckbox = document.getElementById('remember-me');
+            
+            if (emailInput) {
+                emailInput.value = rememberedEmail;
+            }
+            
+            if (rememberCheckbox) {
+                rememberCheckbox.checked = true;
+            }
+            
+            console.log('โหลดข้อมูลที่จำไว้:', rememberedEmail);
+        }
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการโหลดข้อมูลที่จำไว้:', error);
+    }
+}
+
+// ฟังก์ชันบันทึกข้อมูลเมื่อล็อกอิน (เรียกใช้ในฟังก์ชันล็อกอิน)
+function saveRememberMe() {
+    try {
+        const emailInput = document.getElementById('login-email');
+        const rememberCheckbox = document.getElementById('remember-me');
+        
+        if (rememberCheckbox && rememberCheckbox.checked) {
+            // จำอีเมล
+            if (emailInput && emailInput.value) {
+                localStorage.setItem('rememberedEmail', emailInput.value);
+                localStorage.setItem('rememberMe', 'true');
+                console.log('บันทึกข้อมูลการจำเข้าสู่ระบบ');
+            }
+        } else {
+            // ลบข้อมูลที่จำไว้
+            localStorage.removeItem('rememberedEmail');
+            localStorage.removeItem('rememberMe');
+            console.log('ลบข้อมูลการจำเข้าสู่ระบบ');
+        }
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการบันทึกข้อมูล:', error);
+    }
+}
+
+// ฟังก์ชันล้างข้อมูลที่จำไว้ (เรียกใช้เมื่อออกจากระบบ)
+function clearRememberedLogin() {
+    try {
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberMe');
+        console.log('ล้างข้อมูลการจำเข้าสู่ระบบแล้ว');
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการล้างข้อมูล:', error);
+    }
+}
