@@ -6885,47 +6885,68 @@ function selectWelcomeOption(option) {
   }
 }
 
-// แสดงฟอร์มชื่อผู้เล่น Guest
-function showGuestForm() {
-  document.getElementById('guest-name-form').classList.remove('hidden');
-  setTimeout(() => {
-    document.getElementById('guest-name-input').focus();
-  }, 100);
+// เพิ่มฟังก์ชัน switchToTab
+function switchToTab(tabName) {
+    console.log('สลับไปแท็บ:', tabName);
+    
+    // ซ่อนแท็บทั้งหมด
+    const allTabs = document.querySelectorAll('.nav-tab');
+    const allContents = document.querySelectorAll('.tab-content');
+    
+    allTabs.forEach(tab => tab.classList.remove('active'));
+    allContents.forEach(content => content.classList.remove('active'));
+    
+    // แสดงแท็บที่เลือก
+    const targetTab = document.getElementById(tabName + '-tab');
+    const targetContent = document.getElementById(tabName + '-content');
+    
+    if (targetTab) targetTab.classList.add('active');
+    if (targetContent) targetContent.classList.add('active');
 }
 
-// ปิดฟอร์ม Guest
-function closeGuestForm() {
-  document.getElementById('guest-name-form').classList.add('hidden');
-  document.getElementById('guest-name-input').value = '';
+// ฟังก์ชันล้างข้อความเตือนทั้งหมด
+function clearAllAlerts() {
+    try {
+        // ไม่ทำอะไรเลย เพียงแค่ focus window
+        window.focus();
+    } catch (e) {
+        // ไม่ต้องทำอะไร
+    }
+    
+    // ล้าง error messages ธรรมดา
+    const errorMessages = document.querySelectorAll('.error-message');
+    errorMessages.forEach(error => {
+        error.style.display = 'none';
+        error.textContent = '';
+    });
+    
+    console.log('ล้างข้อความเตือนแล้ว');
 }
 
-// เริ่มโหมด Guest
-function startGuestMode() {
-  const guestName = document.getElementById('guest-name-input').value.trim();
-  
-  if (!guestName) {
-    alert('กรุณากรอกชื่อผู้เล่น');
-    return;
-  }
-  
-  // ตั้งค่าโหมด Guest
-  userMode = 'guest';
-  currentPlayer = {
-    name: guestName,
-    mode: 'guest',
-    loginTime: new Date().toISOString()
-  };
-  
-  console.log('เริ่มโหมด Guest:', currentPlayer);
-  
-  // ปิด Modal ก่อน
-  closeGuestForm();
-  
-  // ซ่อนหน้าต้อนรับ
-  hideWelcomeScreen();
-  
-  // ไปยังหน้าเลือกหมวดหมู่
-  startGameAfterLogin();
+// เพิ่มฟังก์ชันตรวจสอบและล้าง DOM elements ที่อาจมีข้อความค้างอยู่
+function cleanupPageMessages() {
+    // ล้าง modal overlays ที่อาจค้างอยู่
+    const modals = document.querySelectorAll('.modal-overlay:not(.hidden)');
+    modals.forEach(modal => {
+        if (modal.id !== 'main-login-screen') { // ยกเว้นหน้าล็อกอินหลัก
+            modal.classList.add('hidden');
+        }
+    });
+    
+    // ล้าง error states
+    const errorElements = document.querySelectorAll('.error, .warning, .alert-message');
+    errorElements.forEach(element => {
+        element.style.display = 'none';
+    });
+    
+    // ล้าง validation messages
+    const validationMessages = document.querySelectorAll('.validation-message, .form-error');
+    validationMessages.forEach(message => {
+        message.textContent = '';
+        message.style.display = 'none';
+    });
+    
+    console.log('ทำความสะอาดข้อความในหน้าเว็บแล้ว');
 }
 
 // แสดงฟอร์มเข้าสู่ระบบ
@@ -7203,23 +7224,39 @@ function hideWelcomeScreen() {
 
 // เริ่มเกมหลังจากเข้าสู่ระบบ
 function startGameAfterLogin() {
-  // ซ่อนหน้า login เดิม
-  const oldLoginScreen = document.getElementById('login-screen');
-  if (oldLoginScreen) {
-    oldLoginScreen.classList.add('hidden');
-  }
-  
-  // แสดงหน้าเลือกหมวดหมู่
-  const startScreen = document.getElementById('start-screen');
-  const categorySelection = document.getElementById('category-selection-container');
-  
-  if (startScreen) startScreen.classList.remove('hidden');
-  if (categorySelection) categorySelection.classList.remove('hidden');
-  
-  // อัพเดต UI ตามโหมด
-  updateUIForUserMode();
-  
-  console.log('เริ่มเกมในโหมด:', userMode);
+    console.log('เริ่มเกม - โหมด:', userMode, 'ผู้เล่น:', currentPlayer);
+    
+    // ล้างข้อความเตือนก่อนเริ่มเกม
+    clearAllAlerts();
+    
+    // ซ่อนหน้าล็อกอิน
+    hideMainLoginScreen();
+    
+    // แสดง User Info Bar
+    showUserInfoBar();
+    
+    // แสดง navigation tabs
+    const navTabs = document.querySelector('.nav-tabs');
+    if (navTabs) {
+        navTabs.style.display = 'flex';
+    }
+    
+    // เปิดแท็บเล่นเกม
+    switchToTab('play');
+    
+    // เปิดใช้งานระบบเกม
+    document.body.style.overflow = 'auto';
+    
+    // แสดงหน้าเลือกหมวดหมู่และซ่อนหน้าล็อกอินเก่า
+    const startScreen = document.getElementById('start-screen');
+    const categorySelection = document.getElementById('category-selection-container');
+    const loginScreen = document.getElementById('login-screen');
+    
+    if (startScreen) startScreen.classList.remove('hidden');
+    if (categorySelection) categorySelection.classList.remove('hidden');
+    if (loginScreen) loginScreen.classList.add('hidden');
+    
+    console.log(`เริ่มเกมสำเร็จ - โหมด: ${userMode}, ผู้เล่น: ${currentPlayer?.name || 'ไม่ระบุ'}`);
 }
 
 // อัพเดต UI ตามโหมดผู้ใช้
@@ -7497,8 +7534,18 @@ function showGuestModal() {
 }
 
 function closeGuestModal() {
-    document.getElementById('guest-modal').classList.add('hidden');
-    document.getElementById('guest-name-input').value = '';
+    const guestModal = document.getElementById('guest-modal');
+    if (guestModal) {
+        guestModal.classList.add('hidden');
+    }
+    
+    // ล้างค่าใน input
+    const guestInput = document.getElementById('guest-name');
+    if (guestInput) {
+        guestInput.value = '';
+    }
+    
+    console.log('ปิด Guest Modal แล้ว');
 }
 
 function showRegisterModal() {
@@ -7512,27 +7559,6 @@ function closeRegisterModal() {
     document.getElementById('register-modal').classList.add('hidden');
     // Clear form
     document.getElementById('register-form-element').reset();
-}
-
-// เริ่มเกม Guest
-function startGuestGame() {
-    const guestName = document.getElementById('guest-name-input').value.trim();
-    
-    if (!guestName) {
-        alert('กรุณากรอกชื่อผู้เล่น');
-        return;
-    }
-    
-    userMode = 'guest';
-    currentPlayer = {
-        name: guestName,
-        mode: 'guest',
-        loginTime: new Date().toISOString()
-    };
-    
-    closeGuestModal();
-    hideMainLoginScreen();
-    startGameAfterLogin();
 }
 
 // ล็อกอินด้วย Google
@@ -7691,9 +7717,13 @@ async function handleMainRegister(event) {
     }
 }
 
-// ซ่อนหน้าล็อกอินหลักและแสดงแอป
+// แก้ไขฟังก์ชัน hideMainLoginScreen เพื่อไม่ซ่อน user info bar
 function hideMainLoginScreen() {
-    document.getElementById('main-login-screen').classList.add('hidden');
+    const mainLoginScreen = document.getElementById('main-login-screen');
+    if (mainLoginScreen) {
+        mainLoginScreen.classList.add('hidden');
+    }
+    document.body.style.overflow = 'auto';
 }
 
 // แสดงหน้าล็อกอินหลัก
@@ -8065,10 +8095,6 @@ function showGuestLogin() {
     startGameAfterLogin();
 }
 
-function hideMainLoginScreen() {
-    document.getElementById('main-login-screen').classList.add('hidden');
-}
-
 // เพิ่มในฟังก์ชัน initializeAppWithNewLogin
 async function initializeAppWithNewLogin() {
     console.log("กำลังเริ่มต้นแอปพลิเคชันด้วยระบบล็อกอินใหม่...");
@@ -8329,3 +8355,442 @@ function getCurrentSiteURL() {
 
 // แสดงข้อมูล URL ปัจจุบันในคอนโซล (สำหรับ debug)
 console.log('Site URL ปัจจุบัน:', getCurrentSiteURL());
+
+// ฟังก์ชันแสดง User Info Bar หลังจากล็อกอินสำเร็จ
+function showUserInfoBar() {
+    const userInfoBar = document.getElementById('user-info-bar');
+    const userNameElement = document.getElementById('current-user-name');
+    const userModeElement = document.getElementById('current-user-mode');
+    
+    console.log('แสดง User Info Bar:', { userInfoBar, userNameElement, userModeElement }); // Debug
+    
+    if (userInfoBar && userNameElement && userModeElement) {
+        // ตั้งค่าชื่อผู้เล่น
+        userNameElement.textContent = currentPlayer?.name || 'ไม่ระบุชื่อ';
+        
+        // ตั้งค่าโหมด
+        if (userMode === 'guest') {
+            userModeElement.textContent = '🎮 Guest Mode';
+            userModeElement.style.background = 'rgba(255, 193, 7, 0.8)';
+        } else {
+            userModeElement.textContent = '👤 User Account';
+            userModeElement.style.background = 'rgba(40, 167, 69, 0.8)';
+        }
+        
+        // แสดง User Info Bar
+        userInfoBar.classList.remove('hidden');
+        
+        console.log('User Info Bar แสดงแล้ว'); // Debug
+    } else {
+        console.error('ไม่พบ User Info Bar elements'); // Debug
+    }
+}
+
+// ตรวจสอบว่ามี event listener สำหรับปุ่ม Guest
+document.addEventListener('DOMContentLoaded', function() {
+    // ตรวจสอบว่ามีปุ่ม guest-start-btn หรือไม่
+    const guestStartBtn = document.getElementById('guest-start-btn');
+    if (guestStartBtn) {
+        console.log('พบปุ่ม Guest Start:', guestStartBtn);
+        
+        // ลบ event listener เดิม (ถ้ามี)
+        guestStartBtn.replaceWith(guestStartBtn.cloneNode(true));
+        
+        // เพิ่ม event listener ใหม่
+        const newGuestStartBtn = document.getElementById('guest-start-btn');
+        newGuestStartBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log('กดปุ่ม Guest Start');
+            startGuestMode();
+        });
+    } else {
+        console.error('ไม่พบปุ่ม guest-start-btn');
+    }
+    
+    // ตรวจสอบว่ามี input field หรือไม่
+    const guestNameInput = document.getElementById('guest-name');
+    if (guestNameInput) {
+        console.log('พบ input guest-name:', guestNameInput);
+        
+        // เพิ่ม event listener สำหรับ Enter key
+        guestNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                startGuestMode();
+            }
+        });
+    } else {
+        console.error('ไม่พบ input guest-name');
+    }
+});
+
+// ฟังก์ชันซ่อน User Info Bar
+function hideUserInfoBar() {
+    const userInfoBar = document.getElementById('user-info-bar');
+    if (userInfoBar) {
+        userInfoBar.classList.add('hidden');
+    }
+}
+
+// ฟังก์ชันออกจากระบบ
+async function performLogout() {
+    try {
+        // ยืนยันการออกจากระบบ
+        const confirmed = confirm('คุณต้องการออกจากระบบหรือไม่?');
+        if (!confirmed) {
+            return;
+        }
+
+        // แสดง loading
+        const logoutBtn = document.getElementById('logout-button');
+        if (logoutBtn) {
+            logoutBtn.disabled = true;
+            logoutBtn.innerHTML = `
+                <svg class="animate-spin" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                </svg>
+                กำลังออกจากระบบ...
+            `;
+        }
+
+        // ออกจากระบบ Supabase (หากเป็น user account)
+        if (userMode === 'user' && supabaseClient) {
+            await supabaseClient.auth.signOut();
+        }
+
+        // ล้างข้อมูลในหน่วยความจำ
+        clearUserSession();
+
+        // แสดงหน้าล็อกอินกลับ
+        showMainLoginScreen();
+        hideUserInfoBar();
+
+        // ล้างข้อมูลเกม
+        resetGameState();
+
+        console.log('ออกจากระบบเรียบร้อยแล้ว');
+
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการออกจากระบบ:', error);
+        alert('เกิดข้อผิดพลาดในการออกจากระบบ กรุณาลองใหม่อีกครั้ง');
+
+        // รีเซ็ตปุ่ม
+        const logoutBtn = document.getElementById('logout-button');
+        if (logoutBtn) {
+            logoutBtn.disabled = false;
+            logoutBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16,17 21,12 16,7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                ออกจากระบบ
+            `;
+        }
+    }
+}
+
+// ฟังก์ชันล้างข้อมูล User Session
+function clearUserSession() {
+    // ล้างตัวแปรทั่วโลก
+    currentPlayer = null;
+    userMode = null;
+    
+    // ล้าง localStorage (หากมีการบันทึก remember me)
+    try {
+        localStorage.removeItem('rememberedUser');
+        localStorage.removeItem('autoLogin');
+    } catch (e) {
+        console.warn('ไม่สามารถล้าง localStorage:', e);
+    }
+}
+
+// ฟังก์ชันแสดงหน้าล็อกอินกลับ
+function showMainLoginScreen() {
+    // ซ่อนเนื้อหาเกม
+    hideAllTabContents();
+    
+    // แสดงหน้าล็อกอิน
+    const mainLoginScreen = document.getElementById('main-login-screen');
+    if (mainLoginScreen) {
+        mainLoginScreen.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+    
+    // ซ่อน navigation tabs
+    const navTabs = document.querySelector('.nav-tabs');
+    if (navTabs) {
+        navTabs.style.display = 'none';
+    }
+}
+
+// ฟังก์ชันรีเซ็ตสถานะเกม
+function resetGameState() {
+    // รีเซ็ตสถานะเกม
+    try {
+        // ซ่อน quiz screens
+        const screens = ['start-screen', 'quiz-screen', 'result-screen'];
+        screens.forEach(screenId => {
+            const screen = document.getElementById(screenId);
+            if (screen) screen.classList.add('hidden');
+        });
+
+        // แสดง category selection กลับ
+        const categorySelection = document.getElementById('category-selection-container');
+        if (categorySelection) {
+            categorySelection.classList.remove('hidden');
+        }
+
+        // รีเซ็ตตัวแปรเกม
+        if (typeof currentQuizQuestions !== 'undefined') {
+            currentQuizQuestions = [];
+        }
+        if (typeof currentQuestionIndex !== 'undefined') {
+            currentQuestionIndex = 0;
+        }
+        if (typeof userAnswers !== 'undefined') {
+            userAnswers = [];
+        }
+
+        // รีเซ็ต navigation tabs กลับไปที่เล่นเกม
+        switchToTab('play');
+
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการรีเซ็ตสถานะเกม:', error);
+    }
+}
+
+// ฟังก์ชันซ่อนเนื้อหาทั้งหมด
+function hideAllTabContents() {
+    const navTabs = document.querySelector('.nav-tabs');
+    if (navTabs) {
+        navTabs.style.display = 'none';
+    }
+
+    const tabContents = document.querySelectorAll('.tab-content');
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+}
+
+// ฟังก์ชันแสดง Guest Modal - ใช้ฟังก์ชันเดียว
+function showGuestModal() {
+    console.log("เปิด Guest Modal");
+    
+    const guestModal = document.getElementById('guest-modal');
+    if (guestModal) {
+        guestModal.classList.remove('hidden');
+        
+        // โฟกัสที่ input หลังจาก modal แสดง
+        setTimeout(() => {
+            const guestNameInput = document.getElementById('guest-name');
+            if (guestNameInput) {
+                guestNameInput.focus();
+                guestNameInput.select(); // เลือกข้อความทั้งหมด (ถ้ามี)
+            }
+        }, 300);
+    } else {
+        console.error("ไม่พบ guest-modal element");
+    }
+}
+
+// ฟังก์ชันปิด Guest Modal - ใช้ฟังก์ชันเดียว
+function closeGuestModal() {
+    console.log("ปิด Guest Modal");
+    
+    const guestModal = document.getElementById('guest-modal');
+    if (guestModal) {
+        guestModal.classList.add('hidden');
+    }
+    
+    // ล้างค่าใน input
+    const guestNameInput = document.getElementById('guest-name');
+    if (guestNameInput) {
+        guestNameInput.value = '';
+    }
+}
+
+// ฟังก์ชันเริ่มเกม Guest - รวมเป็นฟังก์ชันเดียว
+function startGuestGame() {
+    console.log("เริ่มเกม Guest");
+    
+    // ดึงค่าจาก input field ที่ถูกต้อง
+    const guestNameInput = document.getElementById('guest-name');
+    
+    if (!guestNameInput) {
+        console.error("ไม่พบ guest-name input element");
+        alert('เกิดข้อผิดพลาดในระบบ กรุณาลองใหม่อีกครั้ง');
+        return;
+    }
+    
+    const guestName = guestNameInput.value.trim();
+    console.log("ชื่อที่กรอก:", guestName);
+    
+    // ตรวจสอบว่ากรอกชื่อหรือไม่
+    if (!guestName) {
+        console.log("ไม่ได้กรอกชื่อ");
+        alert('กรุณากรอกชื่อผู้เล่น');
+        guestNameInput.focus();
+        return;
+    }
+    
+    // ตรวจสอบความยาวชื่อ
+    if (guestName.length > 20) {
+        alert('ชื่อผู้เล่นต้องไม่เกิน 20 ตัวอักษร');
+        guestNameInput.focus();
+        return;
+    }
+    
+    // ตั้งค่าโหมด Guest
+    userMode = 'guest';
+    currentPlayer = {
+        name: guestName,
+        mode: 'guest',
+        loginTime: new Date().toISOString(),
+        isGuest: true
+    };
+    
+    console.log("ตั้งค่า Guest Player:", currentPlayer);
+    
+    // ปิด Guest Modal
+    closeGuestModal();
+    
+    // ซ่อนหน้าล็อกอินหลัก
+    hideMainLoginScreen();
+    
+    // เริ่มเกม
+    startGameAfterLogin();
+    
+    console.log("เริ่มเกม Guest สำเร็จ");
+}
+
+// ฟังก์ชันตั้งค่า Event Listeners สำหรับ Guest Modal
+function setupGuestEventListeners() {
+    console.log("ตั้งค่า Guest Event Listeners");
+    
+    // ตั้งค่าปุ่มเริ่มเกม
+    const guestStartBtn = document.getElementById('guest-start-btn');
+    if (guestStartBtn) {
+        // ลบ event listener เดิม
+        guestStartBtn.replaceWith(guestStartBtn.cloneNode(true));
+        
+        // เพิ่ม event listener ใหม่
+        const newGuestStartBtn = document.getElementById('guest-start-btn');
+        newGuestStartBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            console.log("คลิกปุ่มเริ่มเกม Guest");
+            startGuestGame();
+        });
+        
+        console.log("ตั้งค่าปุ่มเริ่มเกม Guest สำเร็จ");
+    } else {
+        console.error("ไม่พบ guest-start-btn element");
+    }
+    
+    // ตั้งค่า Enter key ในช่องกรอกชื่อ
+    const guestNameInput = document.getElementById('guest-name');
+    if (guestNameInput) {
+        // ลบ event listener เดิม
+        guestNameInput.replaceWith(guestNameInput.cloneNode(true));
+        
+        // เพิ่ม event listener ใหม่
+        const newGuestNameInput = document.getElementById('guest-name');
+        newGuestNameInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log("กด Enter ในช่องชื่อ Guest");
+                startGuestGame();
+            }
+        });
+        
+        // เพิ่ม validation แบบ real-time
+        newGuestNameInput.addEventListener('input', function(e) {
+            const value = e.target.value;
+            if (value.length > 20) {
+                e.target.value = value.substring(0, 20);
+            }
+        });
+        
+        console.log("ตั้งค่าช่องกรอกชื่อ Guest สำเร็จ");
+    } else {
+        console.error("ไม่พบ guest-name input element");
+    }
+    
+    // ตั้งค่าปุ่มปิด Modal
+    const closeBtn = document.querySelector('#guest-modal .close-btn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            closeGuestModal();
+        });
+    }
+    
+    // ตั้งค่าคลิกพื้นหลังเพื่อปิด Modal
+    const guestModal = document.getElementById('guest-modal');
+    if (guestModal) {
+        guestModal.addEventListener('click', function(e) {
+            if (e.target === guestModal) {
+                closeGuestModal();
+            }
+        });
+    }
+}
+
+// ฟังก์ชันเริ่มต้นระบบ Guest - เรียกใช้ตอน DOM โหลดเสร็จ
+function initGuestSystem() {
+    console.log("เริ่มต้นระบบ Guest");
+    
+    // รอให้ DOM โหลดเสร็จก่อน
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupGuestEventListeners);
+    } else {
+        setupGuestEventListeners();
+    }
+}
+
+// เริ่มต้นระบบ Guest
+initGuestSystem();
+
+// ======================================================
+// ฟังก์ชันเสริมสำหรับ Debug
+// ======================================================
+
+// ฟังก์ชัน Debug สำหรับตรวจสอบ Elements
+function debugGuestElements() {
+    console.log("=== Debug Guest Elements ===");
+    
+    const elements = [
+        'guest-modal',
+        'guest-name', 
+        'guest-start-btn'
+    ];
+    
+    elements.forEach(id => {
+        const element = document.getElementById(id);
+        console.log(`${id}:`, element ? "พบ" : "ไม่พบ", element);
+    });
+}
+
+// เรียกใช้ Debug (ลบออกในโปรดักชั่น)
+// debugGuestElements();
+
+// ======================================================
+// ทำความสะอาดฟังก์ชันเก่า (ถ้ามี)
+// ======================================================
+
+// ฟังก์ชันลบฟังก์ชันเก่าที่อาจจะขัดแย้ง
+function cleanupOldGuestFunctions() {
+    // ลบฟังก์ชันเก่าออกจาก global scope (ถ้ามี)
+    if (typeof window.startGuestMode !== 'undefined') {
+        delete window.startGuestMode;
+    }
+    if (typeof window.showGuestForm !== 'undefined') {
+        delete window.showGuestForm;
+    }
+    if (typeof window.closeGuestForm !== 'undefined') {
+        delete window.closeGuestForm;
+    }
+}
+
+// เรียกใช้ทำความสะอาด
+cleanupOldGuestFunctions();
