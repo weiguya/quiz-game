@@ -158,10 +158,12 @@
                 <small>ประวัติการเล่นจะไม่ถูกบันทึกถาวร</small>
             </div>
             <div class="input-group">
-                <!-- เปลี่ยน ID เพื่อไม่ให้ซ้ำ -->
-                <input type="text" id="guest-name-modal-input" placeholder="ชื่อของคุณ" maxlength="20" class="guest-input">
+                <!-- ใช้ ID เดียวกันทั้งหมด: guest-name -->
+                <input type="text" id="guest-name" placeholder="ชื่อของคุณ" maxlength="20" class="guest-input">
+                <div class="input-hint">สูงสุด 20 ตัวอักษร</div>
             </div>
-            <button class="guest-start-btn" onclick="startGuestGame()">
+            <!-- ใช้ฟังก์ชันเดียว: startGuestGame() -->
+            <button id="guest-start-btn" class="guest-start-btn">
                 🚀 เริ่มเล่นเลย!
             </button>
         </div>
@@ -261,10 +263,34 @@
 
     <!-- Main Navigation Tabs -->
     <div class="nav-tabs">
-        <div class="nav-tab active" id="play-tab">เล่นเกม</div>
-        <div class="nav-tab" id="history-tab">ประวัติการเล่น</div>
-        <div class="nav-tab" id="create-tab">ตั้งค่า</div>
+    <div class="nav-tab active" id="play-tab">เล่นเกม</div>
+    <div class="nav-tab" id="history-tab">ประวัติการเล่น</div>
+    <div class="nav-tab" id="create-tab">ตั้งค่า</div>
     </div>
+
+<!-- User Info Bar (แสดงหลังจากล็อกอินแล้ว) -->
+<div id="user-info-bar" class="user-info-bar hidden">
+    <div class="user-info-container">
+        <div class="user-info">
+            <div class="user-avatar">👤</div>
+            <div class="user-details">
+                <span class="user-name" id="current-user-name">ชื่อผู้เล่น</span>
+                <span class="user-mode" id="current-user-mode">Guest</span>
+            </div>
+        </div>
+        
+        <div class="user-actions">
+            <button id="logout-button" class="logout-btn" onclick="performLogout()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16,17 21,12 16,7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                ออกจากระบบ
+            </button>
+        </div>
+    </div>
+</div>
 
     <!-- Create/Settings Tab Content -->
     <div id="create-content" class="tab-content">
