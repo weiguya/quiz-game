@@ -7950,16 +7950,14 @@ async function initializeAppWithNewLogin() {
 
 async function checkOAuthCallback() {
     try {
-        // ตรวจสอบ URL parameters หรือ fragment
-        const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        // ตรวจสอบ URL fragment (หลัง #)
+        const hash = window.location.hash;
         
-        // ตรวจสอบว่าเป็น OAuth callback หรือไม่
-        if (urlParams.has('code') || hashParams.has('access_token') || hashParams.has('error')) {
-            console.log('ตรวจพบ OAuth callback');
+        if (hash && (hash.includes('access_token') || hash.includes('error'))) {
+            console.log('ตรวจพบ OAuth callback จาก Google');
             
-            // รอให้ Supabase ประมวลผล OAuth
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            // รอให้ Supabase ประมวลผล
+            await new Promise(resolve => setTimeout(resolve, 1500));
             
             // ตรวจสอบ session
             const { data: { session }, error } = await supabaseClient.auth.getSession();
@@ -7973,12 +7971,18 @@ async function checkOAuthCallback() {
             
             if (session && session.user) {
                 console.log('Google OAuth สำเร็จ:', session.user.email);
+                console.log('User metadata:', session.user.user_metadata);
+                
                 await processUserLogin(session.user);
                 
-                // ลบ parameters ออกจาก URL
+                // ลบ hash ออกจาก URL
                 window.history.replaceState({}, document.title, window.location.pathname);
                 
                 return true;
+            } else {
+                console.log('ไม่พบ session หลัง OAuth');
+                showMainLoginScreen();
+                return false;
             }
         }
         
@@ -7986,6 +7990,7 @@ async function checkOAuthCallback() {
         
     } catch (error) {
         console.error('Error checking OAuth callback:', error);
+        showMainLoginScreen();
         return false;
     }
 }
@@ -8259,6 +8264,29 @@ async function savePlayerName() {
             submitBtn.textContent = '✅ เริ่มเล่นเกม';
         }
     }
+}
+
+function completeUserLogin(user, playerName) {
+    console.log('เสร็จสิ้นการล็อกอิน:', playerName);
+    
+    currentPlayer = {
+        name: playerName,
+        mode: 'user',
+        userId: user.id,
+        loginTime: new Date().toISOString(),
+        avatar: user.user_metadata?.avatar_url
+    };
+    
+    startGameAfterLogin();
+    showWelcomeMessage(playerName);
+}
+
+function closePlayerNameForm() {
+    const form = document.getElementById('player-name-form');
+    if (form) {
+        form.remove();
+    }
+    document.body.style.overflow = '';
 }
 
 function showWelcomeMessage(userName) {
