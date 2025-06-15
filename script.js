@@ -7863,21 +7863,28 @@ function initNewLoginSystem() {
 async function initializeAppWithNewLogin() {
     console.log("กำลังเริ่มต้นแอปพลิเคชันด้วยระบบล็อกอินใหม่...");
     
-    // *** เพิ่มบรรทัดนี้ - ตรวจสอบการยืนยันอีเมลก่อน ***
-    await handleEmailVerification();
+    // ตรวจสอบ OAuth callback ก่อน
+    const hasOAuthSession = await checkOAuthCallback();
     
-    // เริ่มต้นระบบล็อกอินใหม่
+    if (!hasOAuthSession) {
+        // ตรวจสอบ session ที่มีอยู่
+        const hasExistingSession = await checkExistingLoginSession();
+        
+        if (!hasExistingSession) {
+            // แสดงหน้าล็อกอิน
+            document.getElementById('main-login-screen').classList.remove('hidden');
+        }
+    }
+    
+    // เริ่มต้นระบบ
     initNewLogin();
     
-    // แสดงหน้าล็อกอินเสมอ
-    document.getElementById('main-login-screen').classList.remove('hidden');
-    
-    // โหลดข้อมูลพื้นฐาน
+    // โหลดข้อมูล
     await loadCategories();
     await loadQuestions();
     await loadGameHistory();
     
-    // ตั้งค่าระบบต่างๆ
+    // ตั้งค่าระบบ
     setupTabNavigation();
     await initCategorySystemNew();
     initQuestionSystem();
@@ -7890,6 +7897,48 @@ async function initializeAppWithNewLogin() {
     startAdminStatusMonitor();
     
     console.log("เริ่มต้นแอปพลิเคชันเรียบร้อยแล้ว");
+}
+
+async function checkOAuthCallback() {
+    try {
+        // ตรวจสอบ URL parameters หรือ fragment
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        
+        // ตรวจสอบว่าเป็น OAuth callback หรือไม่
+        if (urlParams.has('code') || hashParams.has('access_token') || hashParams.has('error')) {
+            console.log('ตรวจพบ OAuth callback');
+            
+            // รอให้ Supabase ประมวลผล OAuth
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // ตรวจสอบ session
+            const { data: { session }, error } = await supabaseClient.auth.getSession();
+            
+            if (error) {
+                console.error('OAuth Error:', error);
+                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
+                showMainLoginScreen();
+                return false;
+            }
+            
+            if (session && session.user) {
+                console.log('Google OAuth สำเร็จ:', session.user.email);
+                await processUserLogin(session.user);
+                
+                // ลบ parameters ออกจาก URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                return true;
+            }
+        }
+        
+        return false;
+        
+    } catch (error) {
+        console.error('Error checking OAuth callback:', error);
+        return false;
+    }
 }
 
 // ฟังก์ชันสำหรับหน้าล็อกอินใหม่
