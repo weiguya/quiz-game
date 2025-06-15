@@ -7961,7 +7961,6 @@ async function handleLogin(event) {
     }
     
     try {
-        // แสดง loading
         showLoginLoading(true);
         
         const { data, error } = await supabaseClient.auth.signInWithPassword({
@@ -7971,67 +7970,95 @@ async function handleLogin(event) {
         
         if (error) throw error;
         
-        // ⭐ เพิ่มบรรทัดนี้ - บันทึกการจำเข้าสู่ระบบ
+        // บันทึกการจำเข้าสู่ระบบ
         saveRememberMe();
         
         // ตรวจสอบการยืนยันอีเมล
         if (!data.user.email_confirmed_at) {
             showLoginLoading(false);
-            alert('กรุณายืนยันอีเมลก่อนเข้าใช้งาน ตรวจสอบกล่องจดหมายของคุณ');
-            
-            // เสนอการส่งอีเมลยืนยันใหม่
-            if (confirm('ต้องการส่งอีเมลยืนยันใหม่หรือไม่?')) {
-                await resendVerificationEmail(email);
-            }
+            alert('กรุณายืนยันอีเมลก่อนเข้าใช้งาน');
             return;
         }
         
-        console.log('เข้าสู่ระบบสำเร็จ:', data.user);
-        
-        // ตรวจสอบว่าเป็นแอดมินหรือไม่
-        const adminData = await checkIsAdmin(data.user.id);
-        
-        if (adminData) {
-            userMode = 'admin';
-            isAdminMode = true;
-            adminProfile = adminData;
-            currentUser = data.user;
-            currentPlayer = {
-                name: adminData.name || 'Admin',
-                mode: 'admin',
-                userId: data.user.id,
-                loginTime: new Date().toISOString()
-            };
-            activateAdminMode();
-        } else {
-            userMode = 'user';
-            currentUser = data.user;
-            currentPlayer = {
-                name: data.user.user_metadata?.display_name || data.user.email.split('@')[0],
-                mode: 'user',
-                userId: data.user.id,
-                loginTime: new Date().toISOString()
-            };
-        }
-        
-        showLoginLoading(false);
-        hideMainLoginScreen();
-        startGameAfterLogin();
+        await processUserLogin(data.user);
         
     } catch (error) {
         console.error('เข้าสู่ระบบไม่สำเร็จ:', error);
         showLoginLoading(false);
-        
-        let errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-        
-        if (error.message.includes('Invalid login credentials')) {
-            errorMessage = 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-        } else if (error.message.includes('Email not confirmed')) {
-            errorMessage = 'กรุณายืนยันอีเมลก่อนเข้าใช้งาน';
-        }
-        
-        alert(errorMessage);
+        alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง');
     }
+}
+
+async function processUserLogin(user) {
+    console.log('ประมวลผลการเข้าสู่ระบบ:', user.email);
+    
+    // ตรวจสอบว่าเป็นแอดมินหรือไม่
+    const adminData = await checkIsAdmin(user.id);
+    
+    if (adminData) {
+        userMode = 'admin';
+        isAdminMode = true;
+        adminProfile = adminData;
+        currentUser = user;
+        currentPlayer = {
+            name: adminData.name || user.user_metadata?.full_name || user.email.split('@')[0],
+            mode: 'admin',
+            userId: user.id,
+            loginTime: new Date().toISOString(),
+            avatar: user.user_metadata?.avatar_url
+        };
+        activateAdminMode();
+    } else {
+        userMode = 'user';
+        currentUser = user;
+        currentPlayer = {
+            name: user.user_metadata?.full_name || user.email.split('@')[0],
+            mode: 'user',
+            userId: user.id,
+            loginTime: new Date().toISOString(),
+            avatar: user.user_metadata?.avatar_url
+        };
+    }
+    
+    showLoginLoading(false);
+    hideMainLoginScreen();
+    startGameAfterLogin();
+    
+    // แสดงข้อความต้อนรับ
+    showWelcomeMessage(currentPlayer.name);
+}
+
+function showWelcomeMessage(userName) {
+    const welcomeToast = document.createElement('div');
+    welcomeToast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 16px 24px;
+        border-radius: 12px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        z-index: 10000;
+        animation: slideInRight 0.5s ease;
+    `;
+    welcomeToast.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <div style="font-size: 24px;">🎉</div>
+            <div>
+                <div style="font-weight: 600; font-size: 16px;">ยินดีต้อนรับ!</div>
+                <div style="font-size: 14px; opacity: 0.9;">${userName}</div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(welcomeToast);
+    
+    setTimeout(() => {
+        if (welcomeToast.parentNode) {
+            welcomeToast.remove();
+        }
+    }, 4000);
 }
 
 async function handleRegister(event) {
