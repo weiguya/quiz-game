@@ -8094,6 +8094,7 @@ async function processUserLogin(user) {
     const adminData = await checkIsAdmin(user.id);
     
     if (adminData) {
+        // โฟลว์แอดมิน (เหมือนเดิม)
         userMode = 'admin';
         isAdminMode = true;
         adminProfile = adminData;
@@ -8105,25 +8106,159 @@ async function processUserLogin(user) {
             loginTime: new Date().toISOString(),
             avatar: user.user_metadata?.avatar_url
         };
+        
         activateAdminMode();
+        showLoginLoading(false);
+        hideMainLoginScreen();
+        startGameAfterLogin();
+        showWelcomeMessage(currentPlayer.name);
     } else {
+        // โฟลว์ผู้ใช้ทั่วไป - ตรวจสอบว่ามีชื่อผู้เล่นหรือยัง
         userMode = 'user';
         currentUser = user;
-        currentPlayer = {
-            name: user.user_metadata?.full_name || user.email.split('@')[0],
-            mode: 'user',
-            userId: user.id,
-            loginTime: new Date().toISOString(),
-            avatar: user.user_metadata?.avatar_url
-        };
+        
+        showLoginLoading(false);
+        hideMainLoginScreen();
+        
+        // ตรวจสอบว่ามีชื่อผู้เล่นหรือยัง
+        const playerName = user.user_metadata?.display_name || user.user_metadata?.full_name;
+        
+        if (!playerName || playerName.trim() === '') {
+            // ยังไม่มีชื่อผู้เล่น แสดงฟอร์มให้กรอกชื่อ
+            showPlayerNameForm(user);
+        } else {
+            // มีชื่อแล้ว ไปเล่นเกมเลย
+            completeUserLogin(user, playerName);
+        }
+    }
+}
+
+function showPlayerNameForm(user) {
+    console.log('แสดงฟอร์มกรอกชื่อผู้เล่น');
+    
+    // ลบฟอร์มเก่า (ถ้ามี)
+    const existingForm = document.getElementById('player-name-form');
+    if (existingForm) {
+        existingForm.remove();
     }
     
-    showLoginLoading(false);
-    hideMainLoginScreen();
-    startGameAfterLogin();
+    // สร้างฟอร์มใหม่
+    const nameFormOverlay = document.createElement('div');
+    nameFormOverlay.id = 'player-name-form';
+    nameFormOverlay.className = 'modal-overlay';
     
-    // แสดงข้อความต้อนรับ
-    showWelcomeMessage(currentPlayer.name);
+    nameFormOverlay.innerHTML = `
+        <div class="modern-modal">
+            <div class="modal-header">
+                <h3>🎮 ตั้งชื่อผู้เล่น</h3>
+            </div>
+            <div class="modal-body">
+                <div class="welcome-message">
+                    <p>ยินดีต้อนรับ! <strong>${user.email}</strong></p>
+                    <p>กรุณาตั้งชื่อผู้เล่นที่จะแสดงในเกม</p>
+                </div>
+                <div class="input-group">
+                    <label for="player-display-name">ชื่อผู้เล่น</label>
+                    <input type="text" 
+                           id="player-display-name" 
+                           placeholder="กรอกชื่อที่จะแสดงในเกม" 
+                           maxlength="20"
+                           value="${user.user_metadata?.full_name || user.email.split('@')[0] || ''}"
+                           class="form-input">
+                    <div class="input-hint">สูงสุด 20 ตัวอักษร</div>
+                </div>
+                <div id="name-form-error" class="error-message hidden"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="submit-button" onclick="savePlayerName()">
+                    ✅ เริ่มเล่นเกม
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(nameFormOverlay);
+    
+    // โฟกัสที่ input
+    setTimeout(() => {
+        const nameInput = document.getElementById('player-display-name');
+        if (nameInput) {
+            nameInput.focus();
+            nameInput.select();
+        }
+    }, 300);
+    
+    // รองรับ Enter key
+    document.getElementById('player-display-name').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            savePlayerName();
+        }
+    });
+    
+    // ป้องกัน scroll
+    document.body.style.overflow = 'hidden';
+}
+
+async function savePlayerName() {
+    const nameInput = document.getElementById('player-display-name');
+    const errorDiv = document.getElementById('name-form-error');
+    const playerName = nameInput.value.trim();
+    
+    // ตรวจสอบชื่อ
+    if (!playerName) {
+        errorDiv.textContent = 'กรุณากรอกชื่อผู้เล่น';
+        errorDiv.classList.remove('hidden');
+        nameInput.focus();
+        return;
+    }
+    
+    if (playerName.length > 20) {
+        errorDiv.textContent = 'ชื่อผู้เล่นต้องไม่เกิน 20 ตัวอักษร';
+        errorDiv.classList.remove('hidden');
+        nameInput.focus();
+        return;
+    }
+    
+    try {
+        // แสดง loading
+        const submitBtn = document.querySelector('#player-name-form .submit-button');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = '⏳ กำลังบันทึก...';
+        }
+        
+        // อัพเดตชื่อใน Supabase
+        const { error } = await supabaseClient.auth.updateUser({
+            data: {
+                display_name: playerName,
+                full_name: playerName
+            }
+        });
+        
+        if (error) {
+            throw error;
+        }
+        
+        console.log('บันทึกชื่อผู้เล่นสำเร็จ:', playerName);
+        
+        // ปิดฟอร์ม
+        closePlayerNameForm();
+        
+        // ไปเล่นเกม
+        completeUserLogin(currentUser, playerName);
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการบันทึกชื่อ:', error);
+        errorDiv.textContent = 'เกิดข้อผิดพลาดในการบันทึกชื่อ กรุณาลองใหม่';
+        errorDiv.classList.remove('hidden');
+        
+        // รีเซ็ตปุ่ม
+        const submitBtn = document.querySelector('#player-name-form .submit-button');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = '✅ เริ่มเล่นเกม';
+        }
+    }
 }
 
 function showWelcomeMessage(userName) {
