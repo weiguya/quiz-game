@@ -7863,7 +7863,7 @@ function initNewLoginSystem() {
 async function initializeAppWithNewLogin() {
     console.log("กำลังเริ่มต้นแอปพลิเคชันด้วยระบบล็อกอินใหม่...");
     
-    // ตรวจสอบการยืนยันอีเมลก่อน
+    // *** เพิ่มบรรทัดนี้ - ตรวจสอบการยืนยันอีเมลก่อน ***
     await handleEmailVerification();
     
     // เริ่มต้นระบบล็อกอินใหม่
@@ -8067,8 +8067,8 @@ async function handleRegister(event) {
     try {
         showRegistrationLoading(true);
         
-        // กำหนด redirectTo URL ให้ถูกต้อง
-        const currentURL = window.location.origin + window.location.pathname;
+        // *** การเปลี่ยนแปลงสำคัญ: เพิ่ม emailRedirectTo ***
+        const siteUrl = window.location.origin + window.location.pathname;
         
         const { data, error } = await supabaseClient.auth.signUp({
             email: email,
@@ -8077,23 +8077,33 @@ async function handleRegister(event) {
                 data: {
                     display_name: name
                 },
-                emailRedirectTo: `${currentURL}#email-confirmed`
+                // ตั้งค่า URL ที่จะ redirect หลังคลิกลิงก์ยืนยัน
+                emailRedirectTo: `${siteUrl}#email-verified`
             }
         });
         
         if (error) throw error;
         
-        console.log('สมัครสมาชิกสำเร็จ:', data);
+        console.log('ส่งอีเมลยืนยันแล้ว:', data);
         
         // ปิด modal สมัครสมาชิก
         closeRegisterModal();
         
-        // แสดง modal แจ้งให้ตรวจสอบอีเมล
+        // *** การเปลี่ยนแปลงสำคัญ: แสดง modal แจ้งให้ตรวจสอบอีเมล ***
         showEmailVerificationModal(email);
         
     } catch (error) {
         console.error('เกิดข้อผิดพลาดในการสมัครสมาชิก:', error);
-        alert('เกิดข้อผิดพลาด: ' + error.message);
+        
+        let errorMessage = 'เกิดข้อผิดพลาดในการสมัครสมาชิก';
+        
+        if (error.message.includes('already registered')) {
+            errorMessage = 'อีเมลนี้ถูกใช้งานแล้ว';
+        } else if (error.message.includes('Invalid email')) {
+            errorMessage = 'รูปแบบอีเมลไม่ถูกต้อง';
+        }
+        
+        alert(errorMessage);
     } finally {
         showRegistrationLoading(false);
     }
@@ -8250,15 +8260,19 @@ function closeEmailVerificationModal() {
 // ฟังก์ชันใหม่: ส่งอีเมลยืนยันใหม่
 async function resendVerificationEmail(email) {
     try {
-        const resendBtn = document.querySelector('.resend-btn');
+        const resendBtn = document.querySelector('[onclick*="resendVerificationEmail"]');
         if (resendBtn) {
             resendBtn.disabled = true;
             resendBtn.textContent = '📨 กำลังส่ง...';
         }
         
+        // *** การเปลี่ยนแปลงสำคัญ: เพิ่ม emailRedirectTo ***
         const { error } = await supabaseClient.auth.resend({
             type: 'signup',
-            email: email
+            email: email,
+            options: {
+                emailRedirectTo: `${window.location.origin + window.location.pathname}#email-verified`
+            }
         });
         
         if (error) throw error;
@@ -8276,7 +8290,7 @@ async function resendVerificationEmail(email) {
         alert('เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง');
         
         // รีเซ็ตปุ่ม
-        const resendBtn = document.querySelector('.resend-btn');
+        const resendBtn = document.querySelector('[onclick*="resendVerificationEmail"]');
         if (resendBtn) {
             resendBtn.disabled = false;
             resendBtn.textContent = '📨 ส่งอีเมลใหม่';
@@ -8289,23 +8303,33 @@ async function handleEmailVerification() {
     const hash = window.location.hash;
     console.log('ตรวจสอบ URL hash:', hash);
     
-    if (hash.includes('email-confirmed')) {
+    // ตรวจสอบว่าผู้ใช้กลับมาจากการคลิกลิงก์ยืนยันหรือไม่
+    if (hash.includes('email-verified') || hash.includes('email-confirmed')) {
         console.log('ตรวจพบการยืนยันอีเมล');
         
         // ลบ hash ออกจาก URL
-        window.location.hash = '';
+        window.history.replaceState(null, null, window.location.pathname);
         
-        // แสดงข้อความยืนยันสำเร็จ
-        showEmailVerifiedSuccess();
-        
-        // ตรวจสอบสถานะผู้ใช้ปัจจุบัน
         try {
+            // ตรวจสอบสถานะผู้ใช้ปัจจุบัน
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (session) {
-                console.log('ผู้ใช้ยืนยันอีเมลสำเร็จและมี session');
+            
+            if (session && session.user) {
+                console.log('ผู้ใช้ยืนยันอีเมลสำเร็จและมี session:', session.user.email);
+                
+                // แสดงข้อความยืนยันสำเร็จ
+                showEmailVerifiedSuccess();
+                
+                // ตั้งค่าผู้ใช้และเริ่มเกม
+                await handleSuccessfulEmailVerification(session.user);
+                
+            } else {
+                console.log('ไม่มี session หลังยืนยันอีเมล - ต้องล็อกอินใหม่');
+                showEmailVerifiedButNeedLogin();
             }
         } catch (error) {
             console.error('เกิดข้อผิดพลาดในการตรวจสอบ session:', error);
+            showEmailVerificationError();
         }
     }
     
@@ -8823,6 +8847,240 @@ cleanupOldGuestFunctions();
 document.addEventListener('DOMContentLoaded', function() {
     loadRememberedLogin();
 });
+
+// ฟังก์ชันแสดง Modal แจ้งให้ตรวจสอบอีเมล
+function showEmailVerificationModal(email) {
+    // ลบ modal เดิม (ถ้ามี)
+    const existingModal = document.getElementById('email-verification-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // สร้าง modal ใหม่
+    const modal = document.createElement('div');
+    modal.id = 'email-verification-modal';
+    modal.className = 'modal-overlay';
+    
+    modal.innerHTML = `
+        <div class="modern-modal">
+            <div class="modal-header">
+                <div class="verification-icon">📧</div>
+                <h3>ตรวจสอบอีเมลของคุณ</h3>
+                <button class="close-btn" onclick="closeEmailVerificationModal()">×</button>
+            </div>
+            
+            <div class="modal-body">
+                <p class="verification-message">
+                    เราได้ส่งลิงก์ยืนยันไปยังอีเมล
+                </p>
+                <div class="email-display">${email}</div>
+                <p class="verification-instruction">
+                    กรุณาคลิกลิงก์ในอีเมลเพื่อยืนยันบัญชีของคุณ<br>
+                    <strong>คุณจะสามารถเข้าใช้งานได้ทันทีหลังจากคลิกลิงก์</strong>
+                </p>
+                
+                <div class="verification-tips">
+                    <h4>💡 ไม่เห็นอีเมล?</h4>
+                    <ul>
+                        <li>ตรวจสอบในโฟลเดอร์ Spam/Junk</li>
+                        <li>รอสักครู่ อาจใช้เวลา 2-3 นาที</li>
+                        <li>ตรวจสอบว่าอีเมลถูกต้องหรือไม่</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="submit-button" onclick="resendVerificationEmail('${email}')">
+                    📨 ส่งอีเมลใหม่
+                </button>
+                <button class="btn-secondary" onclick="closeEmailVerificationModal()">
+                    ปิด
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // เพิ่ม event listener สำหรับปิด modal เมื่อคลิกพื้นหลัง
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeEmailVerificationModal();
+        }
+    });
+    
+    // ป้องกัน scroll
+    document.body.style.overflow = 'hidden';
+}
+
+// ฟังก์ชันปิด Modal ยืนยันอีเมล
+function closeEmailVerificationModal() {
+    const modal = document.getElementById('email-verification-modal');
+    if (modal) {
+        modal.remove();
+    }
+    document.body.style.overflow = '';
+}
+
+// ฟังก์ชันจัดการเมื่อยืนยันอีเมลสำเร็จ
+async function handleSuccessfulEmailVerification(user) {
+    try {
+        // ตรวจสอบว่าเป็นแอดมินหรือไม่
+        const adminData = await checkIsAdmin(user.id);
+        
+        if (adminData) {
+            // เป็นแอดมิน
+            userMode = 'admin';
+            isAdminMode = true;
+            adminProfile = adminData;
+            currentUser = user;
+            currentPlayer = {
+                name: adminData.name || 'Admin',
+                mode: 'admin',
+                userId: user.id,
+                loginTime: new Date().toISOString()
+            };
+            
+            activateAdminMode();
+        } else {
+            // เป็นผู้ใช้ทั่วไป
+            userMode = 'user';
+            currentUser = user;
+            currentPlayer = {
+                name: user.user_metadata?.display_name || user.email.split('@')[0],
+                mode: 'user',
+                userId: user.id,
+                loginTime: new Date().toISOString()
+            };
+        }
+        
+        // ซ่อนหน้าล็อกอินและเริ่มเกม
+        setTimeout(() => {
+            hideMainLoginScreen();
+            startGameAfterLogin();
+        }, 2000); // รอ 2 วินาทีให้ผู้ใช้อ่านข้อความ
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการตั้งค่าผู้ใช้:', error);
+        showEmailVerificationError();
+    }
+}
+
+// ฟังก์ชันแสดงข้อความยืนยันสำเร็จ
+function showEmailVerifiedSuccess() {
+    const successModal = document.createElement('div');
+    successModal.className = 'modal-overlay';
+    
+    successModal.innerHTML = `
+        <div class="modern-modal success">
+            <div class="modal-header">
+                <div class="verification-icon success">✅</div>
+                <h3>ยืนยันอีเมลสำเร็จ!</h3>
+            </div>
+            
+            <div class="modal-body">
+                <p class="verification-message">
+                    บัญชีของคุณได้รับการยืนยันเรียบร้อยแล้ว
+                </p>
+                <p class="verification-instruction">
+                    กำลังเข้าสู่ระบบ กรุณารอสักครู่...
+                </p>
+                
+                <div class="success-message">
+                    🎉 ยินดีต้อนรับสู่ระบบ!
+                </div>
+            </div>
+            
+            <div class="loading-indicator">
+                <div class="spinner"></div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(successModal);
+    document.body.style.overflow = 'hidden';
+    
+    // ปิดอัตโนมัติหลัง 3 วินาที
+    setTimeout(() => {
+        if (successModal && successModal.parentNode) {
+            successModal.remove();
+            document.body.style.overflow = '';
+        }
+    }, 3000);
+}
+
+// ฟังก์ชันแสดงข้อความว่ายืนยันแล้วแต่ต้องล็อกอินใหม่
+function showEmailVerifiedButNeedLogin() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    
+    modal.innerHTML = `
+        <div class="modern-modal">
+            <div class="modal-header">
+                <div class="verification-icon success">✅</div>
+                <h3>ยืนยันอีเมลสำเร็จ!</h3>
+            </div>
+            
+            <div class="modal-body">
+                <p class="verification-message">
+                    บัญชีของคุณได้รับการยืนยันแล้ว
+                </p>
+                <p class="verification-instruction">
+                    กรุณาเข้าสู่ระบบเพื่อเริ่มใช้งาน
+                </p>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="submit-button" onclick="closeSuccessModal()">
+                    เข้าสู่ระบบ
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+// ฟังก์ชันแสดงข้อความเมื่อเกิดข้อผิดพลาด
+function showEmailVerificationError() {
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    
+    modal.innerHTML = `
+        <div class="modern-modal error">
+            <div class="modal-header">
+                <div class="verification-icon error">❌</div>
+                <h3>เกิดข้อผิดพลาด</h3>
+            </div>
+            
+            <div class="modal-body">
+                <p class="verification-message">
+                    เกิดข้อผิดพลาดในการยืนยันอีเมล
+                </p>
+                <p class="verification-instruction">
+                    กรุณาลองเข้าสู่ระบบใหม่อีกครั้ง
+                </p>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="submit-button" onclick="closeSuccessModal()">
+                    ตกลง
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+// ฟังก์ชันปิดหน้าต่างแจ้งสำเร็จ
+function closeSuccessModal() {
+    const modals = document.querySelectorAll('.modal-overlay');
+    modals.forEach(modal => modal.remove());
+    document.body.style.overflow = '';
+}
 
 // ฟังก์ชันโหลดข้อมูลที่จำไว้
 function loadRememberedLogin() {
