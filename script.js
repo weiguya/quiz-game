@@ -7912,7 +7912,29 @@ function initNewLoginSystem() {
 async function initializeAppWithNewLogin() {
     console.log("กำลังเริ่มต้นแอปพลิเคชันด้วยระบบล็อกอินใหม่...");
     
-    // *** เพิ่มส่วนนี้ - ตรวจสอบ OAuth callback ก่อนสิ่งอื่นใด ***
+    // *** เพิ่ม Auth State Listener ที่นี่ ***
+    supabaseClient.auth.onAuthStateChange(async (event, session) => {
+        console.log('🔄 Auth State Change:', event, session);
+        
+        if (event === 'SIGNED_IN' && session) {
+            console.log('✅ ผู้ใช้ล็อกอินแล้ว:', session.user.email);
+            
+            try {
+                // ประมวลผลการล็อกอิน
+                await processGoogleLogin(session.user);
+                
+                // ล้าง URL hash
+                const cleanURL = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, document.title, cleanURL);
+                
+                console.log('🧹 ล้าง URL hash เรียบร้อยแล้ว');
+            } catch (error) {
+                console.error('❌ เกิดข้อผิดพลาดในการประมวลผล Auth:', error);
+            }
+        }
+    });
+    
+    // *** ตรวจสอบ OAuth callback ก่อนสิ่งอื่นใด ***
     console.log('🔍 ตรวจสอบ OAuth callback...');
     const hasOAuthSession = await checkOAuthCallback();
     
