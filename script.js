@@ -7908,24 +7908,31 @@ function initNewLoginSystem() {
     console.log("ระบบล็อกอินใหม่พร้อมใช้งานแล้ว");
 }
 
-// อัพเดตฟังก์ชัน initializeApp
+// แทนที่ฟังก์ชัน initializeAppWithNewLogin() ทั้งหมด
 async function initializeAppWithNewLogin() {
     console.log("กำลังเริ่มต้นแอปพลิเคชันด้วยระบบล็อกอินใหม่...");
     
-    // ตรวจสอบ OAuth callback ก่อน
+    // *** เพิ่มส่วนนี้ - ตรวจสอบ OAuth callback ก่อนสิ่งอื่นใด ***
+    console.log('🔍 ตรวจสอบ OAuth callback...');
     const hasOAuthSession = await checkOAuthCallback();
     
-    if (!hasOAuthSession) {
-        // ตรวจสอบ session ที่มีอยู่
+    if (hasOAuthSession) {
+        console.log('✅ พบ OAuth session - ดำเนินการแล้ว');
+        // ถ้าเป็น OAuth callback ฟังก์ชัน checkOAuthCallback จะจัดการทุกอย่างเอง
+        // ไม่ต้องทำอะไรเพิ่มเติม
+    } else {
+        console.log('ℹ️ ไม่พบ OAuth callback - ตรวจสอบ session ปกติ');
+        
+        // ตรวจสอบ session ที่มีอยู่แล้ว
         const hasExistingSession = await checkExistingLoginSession();
         
         if (!hasExistingSession) {
-            // แสดงหน้าล็อกอิน
+            console.log('👋 แสดงหน้าล็อกอิน');
             document.getElementById('main-login-screen').classList.remove('hidden');
         }
     }
     
-    // เริ่มต้นระบบ
+    // เริ่มต้นระบบต่างๆ
     initNewLogin();
     
     // โหลดข้อมูล
@@ -7947,6 +7954,35 @@ async function initializeAppWithNewLogin() {
     
     console.log("เริ่มต้นแอปพลิเคชันเรียบร้อยแล้ว");
 }
+
+// เพิ่มฟังก์ชันสำหรับ debug OAuth
+function debugOAuthURL() {
+    console.log('=== OAuth Debug ===');
+    console.log('Full URL:', window.location.href);
+    console.log('Origin:', window.location.origin);
+    console.log('Pathname:', window.location.pathname);
+    console.log('Hash:', window.location.hash);
+    console.log('Search:', window.location.search);
+    
+    // ตรวจสอบว่ามี access_token หรือไม่
+    const hash = window.location.hash;
+    if (hash && hash.includes('access_token')) {
+        console.log('🎯 พบ access_token ใน URL!');
+        
+        // แยกพารามิเตอร์ออกมา
+        const params = new URLSearchParams(hash.substring(1));
+        console.log('Access Token:', params.get('access_token') ? 'มี' : 'ไม่มี');
+        console.log('Expires At:', params.get('expires_at'));
+        console.log('Token Type:', params.get('token_type'));
+    }
+    
+    console.log('==================');
+}
+
+// เรียกใช้ debug ทันทีเมื่อโหลดหน้า
+document.addEventListener('DOMContentLoaded', function() {
+    debugOAuthURL();
+});
 
 async function checkOAuthCallback() {
     try {
