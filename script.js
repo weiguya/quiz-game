@@ -9241,3 +9241,30 @@ function clearRememberedLogin() {
         console.error('เกิดข้อผิดพลาดในการล้างข้อมูล:', error);
     }
 }
+
+// เพิ่มที่ท้ายไฟล์ script.js
+document.addEventListener('DOMContentLoaded', function() {
+    // เพิ่ม Auth State Listener
+    if (typeof supabaseClient !== 'undefined') {
+        supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            console.log('🔄 Auth State Change:', event);
+            
+            if (event === 'SIGNED_IN' && session) {
+                console.log('✅ ผู้ใช้ล็อกอินแล้ว:', session.user.email);
+                
+                try {
+                    await processGoogleLogin(session.user);
+                    
+                    // ล้าง URL hash
+                    const cleanURL = window.location.origin + window.location.pathname;
+                    window.history.replaceState({}, document.title, cleanURL);
+                    
+                } catch (error) {
+                    console.error('❌ เกิดข้อผิดพลาดในการประมวลผล Auth:', error);
+                }
+            }
+        });
+        
+        console.log('✅ เพิ่ม Auth State Listener สำเร็จ');
+    }
+});
