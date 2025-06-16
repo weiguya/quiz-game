@@ -7603,3 +7603,28 @@ input[type="password"]::-moz-reveal {
     padding: 20px 15px;
   }
 }
+
+/* CSS สำหรับ OAuth Loading Message */
+.oauth-loading {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    z-index: 10000;
+    text-align: center;
+    font-family: inherit;
+}
+
+.oauth-loading .loading-icon {
+    margin-bottom: 10px;
+    font-size: 24px;
+}
+
+.oauth-loading .loading-text {
+    font-size: 16px;
+    margin: 0;
+}
