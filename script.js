@@ -7977,12 +7977,13 @@ function debugOAuthURL() {
     }
     
     console.log('==================');
+    
+    // เพิ่มส่วนนี้ - Auto-detect OAuth callback
+    if (window.location.hash.includes('access_token')) {
+        console.log('🚀 Auto-detecting OAuth callback...');
+        checkOAuthCallback();
+    }
 }
-
-// เรียกใช้ debug ทันทีเมื่อโหลดหน้า
-document.addEventListener('DOMContentLoaded', function() {
-    debugOAuthURL();
-});
 
 async function checkOAuthCallback() {
     try {
