@@ -7992,20 +7992,29 @@ async function checkOAuthCallback() {
         
         const hash = window.location.hash;
         
+        // เพิ่ม debug ข้อมูล
+        console.log('Hash length:', hash.length);
+        console.log('Contains access_token:', hash.includes('access_token'));
+        
         // ตรวจสอบว่ามี access_token ใน hash หรือไม่
         if (hash && hash.includes('access_token')) {
             console.log('🎉 ตรวจพบ Google OAuth callback!');
             
             // รอให้ Supabase ประมวลผล
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            console.log('⏳ รอ Supabase ประมวลผล...');
+            await new Promise(resolve => setTimeout(resolve, 3000));
             
             // ตรวจสอบ session หลายครั้ง
             let session = null;
             let attempts = 0;
-            const maxAttempts = 5;
+            const maxAttempts = 10;
+            
+            console.log('🔄 เริ่มตรวจสอบ session...');
             
             while (!session && attempts < maxAttempts) {
                 const { data: { session: currentSession }, error } = await supabaseClient.auth.getSession();
+                
+                console.log(`ครั้งที่ ${attempts + 1}: session =`, currentSession ? 'มี' : 'ไม่มี');
                 
                 if (error) {
                     console.error('❌ OAuth Session Error:', error);
@@ -8014,12 +8023,13 @@ async function checkOAuthCallback() {
                 
                 if (currentSession && currentSession.user) {
                     session = currentSession;
+                    console.log('✅ พบ session!');
                     break;
                 }
                 
                 attempts++;
                 console.log(`⏳ รอ session... ครั้งที่ ${attempts}/${maxAttempts}`);
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                await new Promise(resolve => setTimeout(resolve, 1500));
             }
             
             if (session && session.user) {
@@ -8028,24 +8038,28 @@ async function checkOAuthCallback() {
                 console.log('📋 User metadata:', session.user.user_metadata);
                 
                 // ประมวลผลการล็อกอิน
+                console.log('🔄 เริ่มประมวลผลการล็อกอิน...');
                 await processGoogleLogin(session.user);
                 
                 // ล้าง hash จาก URL
+                console.log('🧹 ล้าง URL...');
                 const cleanURL = window.location.origin + window.location.pathname;
                 window.history.replaceState({}, document.title, cleanURL);
                 
+                console.log('🎯 OAuth callback เสร็จสิ้น - return true');
                 return true;
             } else {
-                throw new Error('ไม่พบ session หลังจาก OAuth');
+                console.error('❌ ไม่พบ session หลังจากพยายาม', maxAttempts, 'ครั้ง');
+                throw new Error('ไม่พบ session หลังจาก OAuth - ลองใหม่อีกครั้ง');
             }
         }
         
-        console.log('ℹ️ ไม่พบ OAuth callback');
+        console.log('ℹ️ ไม่พบ OAuth callback (ไม่มี access_token ใน hash)');
         return false;
         
     } catch (error) {
         console.error('💥 Error in OAuth callback:', error);
-        alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: ' + error.message);
+        alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: ' + error.message + '\n\nลองรีเฟรชหน้าและลองใหม่');
         showMainLoginScreen();
         return false;
     }
