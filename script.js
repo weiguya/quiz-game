@@ -7950,48 +7950,156 @@ async function initializeAppWithNewLogin() {
 
 async function checkOAuthCallback() {
     try {
-        // ตรวจสอบ URL fragment (หลัง #)
+        console.log('=== ตรวจสอบ OAuth Callback ===');
+        console.log('Current URL:', window.location.href);
+        console.log('Hash:', window.location.hash);
+        
         const hash = window.location.hash;
         
-        if (hash && (hash.includes('access_token') || hash.includes('error'))) {
-            console.log('ตรวจพบ OAuth callback จาก Google');
+        // ตรวจสอบว่ามี access_token ใน hash หรือไม่
+        if (hash && hash.includes('access_token')) {
+            console.log('🎉 ตรวจพบ Google OAuth callback!');
+            
+            // แสดงข้อความ loading
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'oauth-loading';
+            loadingMsg.innerHTML = `
+                <div class="loading-icon">🔄</div>
+                <div class="loading-text">กำลังประมวลผลการเข้าสู่ระบบ...</div>
+            `;
+            document.body.appendChild(loadingMsg);
             
             // รอให้ Supabase ประมวลผล
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            await new Promise(resolve => setTimeout(resolve, 2000));
             
             // ตรวจสอบ session
             const { data: { session }, error } = await supabaseClient.auth.getSession();
             
             if (error) {
-                console.error('OAuth Error:', error);
-                alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google');
-                showMainLoginScreen();
-                return false;
+                console.error('OAuth Session Error:', error);
+                throw error;
             }
             
             if (session && session.user) {
-                console.log('Google OAuth สำเร็จ:', session.user.email);
+                console.log('✅ Google OAuth สำเร็จ!');
+                console.log('User:', session.user.email);
                 console.log('User metadata:', session.user.user_metadata);
                 
-                await processUserLogin(session.user);
+                // ลบ loading message
+                loadingMsg.remove();
                 
-                // ลบ hash ออกจาก URL
-                window.history.replaceState({}, document.title, window.location.pathname);
+                // ประมวลผลการล็อกอิน
+                await processGoogleLogin(session.user);
+                
+                // ล้าง hash จาก URL
+                const cleanURL = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, document.title, cleanURL);
                 
                 return true;
             } else {
-                console.log('ไม่พบ session หลัง OAuth');
-                showMainLoginScreen();
-                return false;
+                throw new Error('ไม่พบ session หลังจาก OAuth');
             }
         }
         
+        console.log('ไม่พบ OAuth callback');
         return false;
         
     } catch (error) {
-        console.error('Error checking OAuth callback:', error);
+        console.error('Error in OAuth callback:', error);
+        
+        // ลบ loading message (ถ้ามี)
+        const loadingMsg = document.querySelector('.oauth-loading');
+        if (loadingMsg) loadingMsg.remove();
+        
+        alert('เกิดข้อผิดพลาดในการเข้าสู่ระบบด้วย Google: ' + error.message);
         showMainLoginScreen();
         return false;
+    }
+}
+
+async function processGoogleLogin(user) {
+    console.log('🔄 ประมวลผล Google Login...');
+    
+    try {
+        // ตรวจสอบว่าเป็นแอดมินหรือไม่
+        const adminData = await checkIsAdmin(user.id);
+        
+        if (adminData) {
+            console.log('👑 ผู้ใช้เป็นแอดมิน');
+            
+            // โฟลว์แอดมิน
+            userMode = 'admin';
+            isAdminMode = true;
+            adminProfile = adminData;
+            currentUser = user;
+            currentPlayer = {
+                name: adminData.name || user.user_metadata?.full_name || user.email.split('@')[0],
+                mode: 'admin',
+                userId: user.id,
+                loginTime: new Date().toISOString(),
+                avatar: user.user_metadata?.avatar_url
+            };
+            
+            activateAdminMode();
+            hideMainLoginScreen();
+            startGameAfterLogin();
+            showWelcomeMessage(currentPlayer.name);
+            
+        } else {
+            console.log('👤 ผู้ใช้ทั่วไป');
+            
+            // ตั้งค่าโหมดผู้ใช้
+            userMode = 'user';
+            currentUser = user;
+            
+            // ตรวจสอบว่ามีชื่อผู้เล่นแล้วหรือยัง
+            const existingDisplayName = user.user_metadata?.display_name;
+            const googleFullName = user.user_metadata?.full_name;
+            const googleName = user.user_metadata?.name;
+            
+            // ลำดับความสำคัญในการเลือกชื่อ
+            const playerName = existingDisplayName || googleFullName || googleName || user.email.split('@')[0];
+            
+            console.log('ชื่อที่พบ:', {
+                display_name: existingDisplayName,
+                full_name: googleFullName,
+                name: googleName,
+                email: user.email,
+                selected: playerName
+            });
+            
+            // ✨ แก้ไข: ใช้ชื่อจาก Google เลย ไม่ต้องกรอกชื่อเพิ่ม
+            console.log('🎮 ใช้ชื่อจาก Google โดยตรง - เข้าเกมเลย!');
+            
+            currentPlayer = {
+                name: playerName,
+                mode: 'user',
+                userId: user.id,
+                loginTime: new Date().toISOString(),
+                avatar: user.user_metadata?.avatar_url
+            };
+            
+            // บันทึก display_name ลง Supabase เพื่อครั้งต่อไป (ถ้ายังไม่มี)
+            if (!existingDisplayName) {
+                try {
+                    await supabaseClient.auth.updateUser({
+                        data: { display_name: playerName }
+                    });
+                    console.log('✅ บันทึก display_name แล้ว:', playerName);
+                } catch (updateError) {
+                    console.warn('⚠️ ไม่สามารถบันทึก display_name:', updateError);
+                }
+            }
+            
+            hideMainLoginScreen();
+            startGameAfterLogin();
+            showWelcomeMessage(playerName);
+        }
+        
+    } catch (error) {
+        console.error('เกิดข้อผิดพลาดในการประมวลผล Google Login:', error);
+        alert('เกิดข้อผิดพลาดในการประมวลผลข้อมูล กรุณาลองใหม่อีกครั้ง');
+        showMainLoginScreen();
     }
 }
 
